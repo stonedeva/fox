@@ -1,3 +1,0 @@
-/home/leonard/Schreibtisch/coding/foxc/build/CMakeFiles/foxc.dir
-/home/leonard/Schreibtisch/coding/foxc/build/CMakeFiles/edit_cache.dir
-/home/leonard/Schreibtisch/coding/foxc/build/CMakeFiles/rebuild_cache.dir
