@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/foxc.dir/src/main.c.o CMakeFiles/foxc.dir/src/compiler.c.o CMakeFiles/foxc.dir/src/lexer.c.o CMakeFiles/foxc.dir/src/lib/vector.c.o -o foxc 

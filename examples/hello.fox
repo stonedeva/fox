@@ -1,0 +1,3 @@
+import linux.fox
+
+write("Hello World\n", stdout)
