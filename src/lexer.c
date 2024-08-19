@@ -1,5 +1,6 @@
 #include "lexer.h"
 #include "compiler.h"
+#include "parser.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +26,10 @@ void lexer_proc(const lexer_t* lexer) {
     while (fgets(lexer->line, sizeof(lexer->line), lexer->file)) {
 	_lexer_proc_string(lexer);
     }
-    compiler_proc(lexer);
+
+    //compiler_proc(lexer);
+    parser_t parser = parser_init(lexer);
+    parser_evaluate(&parser);
 }
 
 /*
@@ -73,10 +77,25 @@ static void _lexer_proc_string(const lexer_t* lexer) {
 /*
  * Public
 */
-char* lexer_get_nexttok(const lexer_t* lexer, const size_t index) {
-    return lexer->tokens->data[index + 1];
+
+char* lexer_get_nexttok(const vector_t* tokens, const size_t offset) {
+    if (tokens->pointer + offset > tokens->size)
+	return NULL;
+
+    return tokens->data[tokens->pointer + offset];
 }
 
-char* lexer_get_prevtok(const lexer_t* lexer, const size_t index) {
-    return lexer->tokens->data[index - 1];
+char* lexer_get_prevtok(const vector_t* tokens, const size_t offset) {
+    if (tokens->pointer - offset < 0)
+	return NULL;
+    return tokens->data[tokens->pointer - offset];
+}
+
+bool lexer_compare(char* token1, char* token2) {
+    while (*token1++ != '\0') {
+	*token2++;
+	if (*token1 != *token2) return false;
+    }
+
+    return true;
 }

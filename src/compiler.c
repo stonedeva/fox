@@ -1,11 +1,6 @@
 #include "compiler.h"
-
-/*compiler_t compiler_init(lexer_t* lexer, char* output_path) {
-    compiler_t compiler;
-    compiler.lexer = lexer;
-
-    return compiler;
-}*/
+#include "lib/vector.h"
+#include <string.h>
 
 void compiler_proc(lexer_t* lexer) {
     compiler_t compiler;
@@ -21,10 +16,20 @@ void compiler_proc(lexer_t* lexer) {
 }
 
 static void _compiler_proc_elf(compiler_t* compiler) {
-    char** tokens = compiler->lexer->tokens->data;
-    _compiler_set_elfheader(compiler);    
+    vector_t* tokens = compiler->lexer->tokens;
+    _compiler_set_elfheader(compiler);
 
-    _compiler_write(compiler);
+    char objcode[] = {};
+
+    size_t i;
+    while (i < tokens->size) {
+	char* tok = vector_get(tokens, i);
+	size_t next_code = sizeof(objcode) / sizeof(objcode[0]);
+
+	i++;
+    }
+
+    _compiler_write(compiler, objcode);
 }
 
 static void _compiler_set_elfheader(compiler_t* compiler) {
@@ -69,24 +74,7 @@ static void _compiler_set_elfheader(compiler_t* compiler) {
     compiler->phdr = phdr;
 }
 
-static void _compiler_write(compiler_t* compiler) {
-    char objcode[] = {
-        0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21, 0xa, // Hello!\n
-        0xb8, // mov rax (32bit)
-        1, 0, 0, 0, // write syscall 1
-        0xbf, // mov rdi (32 bit)
-        1, 0, 0, 0, // stdout
-        0x48, 0xbe, // mov rsi, 64 bit pointer
-        0x78, 0, 0x40, 0, 0, 0, 0, 0, // Hello strings address in virtual memory
-        0xba, // mov rdx (32bit)
-        7, 0, 0, 0, // number of bytes in Hello!\n
-        0xf, 0x5, // syscall
-        0xb8, // mov rax (32 bit)
-        0x3c, 0, 0, 0, // 60 = exit syscall
-        0x48, 0x31, 0xff, // xor rdi, rdi
-        0xf, 0x5 // syscall
-    };
-
+static void _compiler_write(compiler_t* compiler, char objcode[]) {
     size_t sz = fwrite(&compiler->header, 1, sizeof(compiler->header), compiler->output);
     if (sz != sizeof(compiler->header)) {
 	fprintf(stderr, "ERROR: sizeof(header) NOT equals sz\n");

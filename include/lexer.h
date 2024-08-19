@@ -25,7 +25,6 @@ static char* token_keywords[] = {
 typedef struct {
     FILE* file;
     vector_t* tokens;
-    size_t cursor;
     char line[MAX_TOKENS];
 } lexer_t;
 
@@ -37,9 +36,13 @@ void lexer_proc(const lexer_t* lexer);
 */
 static bool _lexer_is_delimiter(const char ch);
 static void _lexer_proc_string(const lexer_t* lexer);
-char* _lexer_get_nexttok(const lexer_t* lexer, const size_t index);
-char* _lexer_get_prevtok(const lexer_t* lexer, const size_t index);
 
+/*
+ * Public
+*/
+char* _lexer_get_nexttok(const vector_t* tokens, const size_t offset);
+char* _lexer_get_prevtok(const vector_t* tokens, const size_t offset);
+bool lexer_compare(char* token1, char* token2);
 
 #ifdef __cplusplus
 }

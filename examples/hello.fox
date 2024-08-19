@@ -1,3 +1,7 @@
-import linux.fox
+import "linux.fox"
+
+var i = 5
 
 write("Hello World\n", stdout)
+
+end

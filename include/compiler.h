@@ -32,7 +32,7 @@ void compiler_proc(lexer_t* lexer);
 */
 static void _compiler_proc_elf(compiler_t* compiler);
 static void _compiler_proc_exe(compiler_t* compiler);
-static void _compiler_write(compiler_t* compiler);
+static void _compiler_write(compiler_t* compiler, char objcode[]);
 static void _compiler_set_elfheader(compiler_t* compiler);
 
 #ifdef __cplusplus

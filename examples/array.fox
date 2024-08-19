@@ -1,4 +1,4 @@
-import linux.fox
+imprt linux.fox
 
 for i < 25 {
     write("***" * i, 1)

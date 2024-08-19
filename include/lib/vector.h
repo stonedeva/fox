@@ -12,6 +12,7 @@ typedef struct {
     char** data;
     size_t size;
     size_t capacity;
+    size_t pointer;
 } vector_t;
 
 vector_t* vector_init(const size_t capacity);

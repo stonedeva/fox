@@ -5,6 +5,7 @@ vector_t* vector_init(const size_t capacity) {
     vector->data = malloc(capacity * sizeof(char*));
     vector->capacity = capacity;
     vector->size = 0;
+    vector->pointer = 0;
 
     return vector;
 }
@@ -43,6 +44,8 @@ void vector_pop(vector_t* vector) {
 char* vector_get(vector_t* vector, const size_t index) {
     if (index > vector->size)
 	return NULL;
+
+    vector->pointer = index;
 
     return vector->data[index];
 }
