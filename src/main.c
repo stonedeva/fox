@@ -23,7 +23,7 @@ static int fox_init(int argc, char* argv[]) {
     char input_path[path_len];
     strcpy(input_path, argv[1]);
 
-    lexer_t fox_lexer = lexer_init(input_path);
+    lexer_t fox_lexer = lexer_init(argv[1]);
     lexer_proc(&fox_lexer);
     
     return 0;

@@ -1,6 +1,6 @@
 import "linux.fox"
 
-var i = 5
+var hello = 5 
 
 write("Hello World\n", stdout)
 

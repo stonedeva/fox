@@ -9,7 +9,7 @@
 /*
  * Public functions
 */
-lexer_t lexer_init(const char filename[]) {
+lexer_t lexer_init(const char* filename) {
     lexer_t lexer;
     lexer.file = fopen(filename, "r");
     if (lexer.file == NULL) {
@@ -18,7 +18,8 @@ lexer_t lexer_init(const char filename[]) {
     }
 
     lexer.tokens = vector_init(MAX_TOKENS); 
-    
+    lexer.filename = filename;
+
     return lexer;
 }
 
