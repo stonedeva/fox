@@ -22,7 +22,7 @@ void parser_evaluate(parser_t* parser) {
 	if (lexer_compare("var", data[i])) {
 	    //_parser_evaluate_function(parser, data[i + 1], data[i + 3]);
 	    _parser_evaluate_variable(parser, i);
-	    printf("Name: %s, Value: %d\n", parser->variables[0]->name, parser->variables[0]->value);
+	    printf("Name: %s, Value: %x\n", parser->variables[0]->name, parser->variables[0]->value);
 	}
 
 	tokens->pointer++;
@@ -37,7 +37,6 @@ static void _parser_throw_error(parser_t* parser, char* error) {
 }
 
 static void _parser_evaluate_variable(parser_t* parser, size_t pointer) {
-    size_t amount = sizeof(parser->variables) / sizeof(parser->variables[0]);
     char** tokens = parser->lexer->tokens->data;
 
     variable_expr_t variable_expr;
@@ -59,12 +58,11 @@ static void _parser_evaluate_variable(parser_t* parser, size_t pointer) {
 }
 
 static void _parser_evaluate_function(parser_t* parser, char* name, char* arguments[]) {
-    size_t function_amount = sizeof(parser->functions) / sizeof(parser->functions[0]);
     function_expr_t function_expr;
     function_expr.name = name;
     function_expr.arguments = arguments;
 
-    parser->functions[function_amount] = &function_expr;
+    parser->functions[parser->function_count] = &function_expr;
     parser->function_count++;
 
     vector_t* tokens = parser->lexer->tokens;
