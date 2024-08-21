@@ -7,6 +7,8 @@ extern "C" {
 #include "lexer.h"
 #include "expressions.h"
 
+#define DEBUG
+
 typedef struct {
     lexer_t* lexer;
     function_expr_t** functions;
@@ -27,6 +29,7 @@ static void _parser_evaluate_function(parser_t* parser);
 static void _parser_evaluate_end(parser_t* parser);
 static void _parser_evaluate_write(parser_t* parser);
 static void _parser_throw_error(parser_t* parser, char* error);
+static void _parser_print_expressions(parser_t* parser);
 
 #ifdef __cplusplus
 }

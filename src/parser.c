@@ -18,13 +18,25 @@ parser_t parser_init(lexer_t* lexer) {
 }
 
 void parser_delete(parser_t* parser) {
+    for (size_t i = 0; i < parser->variable_count; i++) {
+	free(parser->variables[i]);
+    }
+    free(parser->variables);
+
+    for (size_t i = 0; i < parser->function_count; i++) {
+	free(parser->functions[i]);
+    }
+    free(parser->functions);
+    
+    for (size_t i = 0; i < parser->write_call_count; i++) {
+	free(parser->write_calls[i]);
+    }
+    free(parser->write_calls);
+
     parser->variable_count = 0;
     parser->function_count = 0;
+    parser->write_call_count = 0;
     parser->lexer = NULL;
-    free(parser->variables);
-    free(parser->functions);
-    parser->variables = NULL;
-    parser->functions = NULL;
 }
 
 void parser_evaluate(parser_t* parser) {
@@ -38,9 +50,13 @@ void parser_evaluate(parser_t* parser) {
 	if (lexer_compare("end", current_tok)) _parser_evaluate_end(parser);
 	if (lexer_compare("proc", current_tok)) _parser_evaluate_function(parser);
 	if (lexer_compare("write", current_tok)) _parser_evaluate_write(parser);
-
+	
 	tokens->pointer++;
     }
+
+#ifdef DEBUG
+    _parser_print_expressions(parser);
+#endif
 }
 
 static void _parser_throw_error(parser_t* parser, char* error) {
@@ -51,7 +67,7 @@ static void _parser_throw_error(parser_t* parser, char* error) {
 }
 
 static void _parser_evaluate_variable(parser_t* parser) {
-    variable_expr_t variable_expr;
+    variable_expr_t* variable_expr = (variable_expr_t*)malloc(sizeof(variable_expr_t));
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = tokens->data;
@@ -64,15 +80,15 @@ static void _parser_evaluate_variable(parser_t* parser) {
     if (name == NULL)
 	_parser_throw_error(parser, "expected name after 'var' expression"); 
 
-    variable_expr.name = name;
-    variable_expr.value = value;
+    variable_expr->name = name;
+    variable_expr->value = value;
 
-    parser->variables[parser->variable_count] = &variable_expr;
+    parser->variables[parser->variable_count] = variable_expr;
     parser->variable_count++;
 }
 
 static void _parser_evaluate_function(parser_t* parser) {
-    function_expr_t function_expr;
+    function_expr_t* function_expr = (function_expr_t*)malloc(sizeof(function_expr_t));
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = tokens->data;
@@ -95,14 +111,14 @@ static void _parser_evaluate_function(parser_t* parser) {
 	    }
 	}
     }*/
-    function_expr.name = name;
-    function_expr.arguments = arguments;
-    parser->functions[parser->function_count] = &function_expr;
+    function_expr->name = name;
+    function_expr->arguments = arguments;
+    parser->functions[parser->function_count] = function_expr;
     parser->function_count++;
 }
 
 static void _parser_evaluate_write(parser_t* parser) {
-    write_expr_t write_expr;
+    write_expr_t* write_expr = (write_expr_t*)malloc(sizeof(write_expr_t));
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = tokens->data;
@@ -114,9 +130,9 @@ static void _parser_evaluate_write(parser_t* parser) {
 	_parser_throw_error(parser, "exptected content after 'write' expression");
     /* If no content given byte_amount is automatically 0 */
 
-    write_expr.content = content;
-    write_expr.byte_amount = byte_amount;
-    parser->write_calls[parser->write_call_count] = &write_expr;
+    write_expr->content = content;
+    write_expr->byte_amount = byte_amount;
+    parser->write_calls[parser->write_call_count] = write_expr;
     parser->write_call_count++;
 }
 
@@ -132,4 +148,21 @@ static void _parser_evaluate_end(parser_t* parser) {
 	_parser_throw_error(parser, "expected exit code of 0 or 1");
 
     parser->exit_code = exit_code;
+}
+
+static void _parser_print_expressions(parser_t* parser) {
+    printf("Variables (%d)\n=======\n", parser->variable_count);
+    for (size_t i = 0; i < parser->variable_count; i++) {
+	printf("Name: %s: Value: %d\n", parser->variables[i]->name, parser->variables[i]->value);
+    }
+    
+    printf("Functions (%d)\n=======\n", parser->function_count);
+    for (size_t i = 0; i < parser->function_count; i++) {
+	printf("Name: %s, Arguments: -\n", parser->functions[i]->name);
+    }
+
+    printf("Write Calls (%d)\n=======\n", parser->write_call_count);
+    for (size_t i = 0; i < parser->write_call_count; i++) {
+	printf("Content: %s, Amount of bytes: %d\n", parser->write_calls[i]->content, parser->write_calls[i]->byte_amount);
+    }
 }

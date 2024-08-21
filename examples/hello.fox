@@ -3,10 +3,14 @@ import "linux.fox"
 var hello = 5 
 var x = 4
 
-write "Hello, World!"
+write "Hello World 123"
 
 proc main() {
     
 }
 
-end 0  
+proc sum() {
+
+}
+
+end 0 

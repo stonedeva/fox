@@ -1,4 +1,5 @@
 #include "compiler.h"
+#include "parser.h"
 #include "lib/vector.h"
 #include <string.h>
 
