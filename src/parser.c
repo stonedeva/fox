@@ -2,14 +2,17 @@
 #include "lib/vector.h"
 #include <unistd.h>
 #include <limits.h>
+#include <string.h>
 
 parser_t parser_init(lexer_t* lexer) {
     parser_t parser;
     parser.lexer = lexer;
     parser.variable_count = 0;
-    parser.variables = (variable_expr_t**)malloc(sizeof(variable_expr_t*) * 20);
+    parser.variables = (variable_expr_t**)malloc(sizeof(variable_expr_t*) * MAX_EXPRESSIONS);
     parser.function_count = 0;
-    parser.functions = (function_expr_t**)malloc(sizeof(function_expr_t*) * 20);
+    parser.functions = (function_expr_t**)malloc(sizeof(function_expr_t*) * MAX_EXPRESSIONS);
+    parser.write_call_count = 0;
+    parser.write_calls = (write_expr_t**)malloc(sizeof(write_expr_t*) * MAX_EXPRESSIONS);
 
     return parser;
 }
@@ -31,17 +34,10 @@ void parser_evaluate(parser_t* parser) {
 
     for (size_t i = 0; i < size; i++) {
 	char* current_tok = data[i];
-	if (lexer_compare("var", current_tok)) {
-	    //_parser_evaluate_function(parser, data[i + 1], data[i + 3]);
-	    _parser_evaluate_variable(parser);
-	    printf("Name: %s, Value: %d\n", parser->variables[0]->name, parser->variables[0]->value);
-	}
-	if (lexer_compare("end", current_tok)) {
-	    _parser_evaluate_end(parser);
-	}
-	if (lexer_compare("proc", current_tok)) {
-	    _parser_evaluate_function(parser);
-	}
+	if (lexer_compare("var", current_tok)) _parser_evaluate_variable(parser);
+	if (lexer_compare("end", current_tok)) _parser_evaluate_end(parser);
+	if (lexer_compare("proc", current_tok)) _parser_evaluate_function(parser);
+	if (lexer_compare("write", current_tok)) _parser_evaluate_write(parser);
 
 	tokens->pointer++;
     }
@@ -55,11 +51,11 @@ static void _parser_throw_error(parser_t* parser, char* error) {
 }
 
 static void _parser_evaluate_variable(parser_t* parser) {
+    variable_expr_t variable_expr;
+
     vector_t* tokens = parser->lexer->tokens;
     char** data = tokens->data;
     size_t pointer = tokens->pointer;
-
-    variable_expr_t variable_expr;
 
     char* name = data[pointer + 1];
     int value = atoi(data[pointer + 3]);
@@ -103,8 +99,25 @@ static void _parser_evaluate_function(parser_t* parser) {
     function_expr.arguments = arguments;
     parser->functions[parser->function_count] = &function_expr;
     parser->function_count++;
+}
 
-    printf("Define function: %s()\n", function_expr.name);
+static void _parser_evaluate_write(parser_t* parser) {
+    write_expr_t write_expr;
+
+    vector_t* tokens = parser->lexer->tokens;
+    char** data = tokens->data;
+    size_t pointer = tokens->pointer;
+
+    char* content = data[pointer + 1];
+    char byte_amount = strlen(content);
+    if (content == NULL)
+	_parser_throw_error(parser, "exptected content after 'write' expression");
+    /* If no content given byte_amount is automatically 0 */
+
+    write_expr.content = content;
+    write_expr.byte_amount = byte_amount;
+    parser->write_calls[parser->write_call_count] = &write_expr;
+    parser->write_call_count++;
 }
 
 static void _parser_evaluate_end(parser_t* parser) {

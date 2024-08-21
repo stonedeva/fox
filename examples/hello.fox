@@ -3,7 +3,7 @@ import "linux.fox"
 var hello = 5 
 var x = 4
 
-write("Hello World\n", stdout)
+write "Hello, World!"
 
 proc main() {
     

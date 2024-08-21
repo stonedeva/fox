@@ -4,6 +4,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#define MAX_EXPRESSIONS 20
+
 typedef struct {
     char* name;
     int value;
@@ -14,6 +16,11 @@ typedef struct {
     char** arguments;
     variable_expr_t intern_variables[];
 } function_expr_t;
+
+typedef struct {
+    char* content;
+    char byte_amount;
+} write_expr_t;
 
 #ifdef __cplusplus
 }
