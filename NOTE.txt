@@ -1,2 +1,0 @@
-In the function _parser_evaluate_variable() from the parser.c file there is a problem
-in the last line of the function that causes a segfault!

@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "compiler.h"
 #include "lib/vector.h"
 #include <unistd.h>
 #include <limits.h>
@@ -62,7 +63,7 @@ void parser_evaluate(parser_t* parser) {
 static void _parser_throw_error(parser_t* parser, char* error) {
     char* filename = parser->lexer->filename;
 
-    fprintf(stderr, "[1m%s[0m: \033[31mERROR[0m: %s!\n", filename, error);
+    fprintf(stderr, "[1m%s:%d[0m: \033[31mERROR[0m: %s!\n", filename, parser->lexer->line_count, error);
     exit(1);
 }
 
@@ -75,7 +76,7 @@ static void _parser_evaluate_variable(parser_t* parser) {
 
     char* name = data[pointer + 1];
     int value = atoi(data[pointer + 3]);
-    if (value == NULL)
+    if (value < 0)
 	_parser_throw_error(parser, "expected value after variable name decleration");
     if (name == NULL)
 	_parser_throw_error(parser, "expected name after 'var' expression"); 
@@ -156,12 +157,12 @@ static void _parser_print_expressions(parser_t* parser) {
 	printf("Name: %s: Value: %d\n", parser->variables[i]->name, parser->variables[i]->value);
     }
     
-    printf("Functions (%d)\n=======\n", parser->function_count);
+    printf("\nFunctions (%d)\n=======\n", parser->function_count);
     for (size_t i = 0; i < parser->function_count; i++) {
-	printf("Name: %s, Arguments: -\n", parser->functions[i]->name);
+	printf("Name: %s(), Arguments: -\n", parser->functions[i]->name);
     }
 
-    printf("Write Calls (%d)\n=======\n", parser->write_call_count);
+    printf("\nWrite Calls (%d)\n=======\n", parser->write_call_count);
     for (size_t i = 0; i < parser->write_call_count; i++) {
 	printf("Content: %s, Amount of bytes: %d\n", parser->write_calls[i]->content, parser->write_calls[i]->byte_amount);
     }

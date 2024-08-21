@@ -27,10 +27,11 @@ typedef struct {
     vector_t* tokens;
     char line[MAX_TOKENS];
     char* filename;
+    size_t line_count;
 } lexer_t;
 
 lexer_t lexer_init(const char filename[]);
-void lexer_proc(const lexer_t* lexer);
+void lexer_proc(lexer_t* lexer);
 
 /*
  * Private
@@ -41,8 +42,8 @@ static void _lexer_proc_string(const lexer_t* lexer);
 /*
  * Public
 */
-char* _lexer_get_nexttok(const vector_t* tokens, const size_t offset);
-char* _lexer_get_prevtok(const vector_t* tokens, const size_t offset);
+char* lexer_get_nexttok(const vector_t* tokens, const size_t offset);
+char* lexer_get_prevtok(const vector_t* tokens, const size_t offset);
 bool lexer_compare(char* token1, char* token2);
 
 #ifdef __cplusplus

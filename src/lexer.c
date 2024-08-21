@@ -23,9 +23,11 @@ lexer_t lexer_init(const char* filename) {
     return lexer;
 }
 
-void lexer_proc(const lexer_t* lexer) {
+void lexer_proc(lexer_t* lexer) {
+    lexer->line_count = 0;
     while (fgets(lexer->line, sizeof(lexer->line), lexer->file)) {
 	_lexer_proc_string(lexer);
+	lexer->line_count++;
     }
 
     //compiler_proc(lexer);

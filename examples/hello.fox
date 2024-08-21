@@ -1,16 +1,8 @@
 import "linux.fox"
 
-var hello = 5 
-var x = 4
-
-write "Hello World 123"
+var count = 3
 
 proc main() {
-    
+    write "Hello, World!\n"
 }
 
-proc sum() {
-
-}
-
-end 0 

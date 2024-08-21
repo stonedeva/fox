@@ -7,7 +7,7 @@ void compiler_proc(lexer_t* lexer) {
     compiler_t compiler;
     compiler.lexer = lexer;
 
-    compiler.output = fopen("hello", "wb");
+    compiler.output = fopen("hello", "w");
     if (compiler.output == NULL) {
 	fprintf(stderr, "ERROR: Unable to open output file!\n");
 	exit(1);
@@ -17,20 +17,38 @@ void compiler_proc(lexer_t* lexer) {
 }
 
 static void _compiler_proc_elf(compiler_t* compiler) {
-    vector_t* tokens = compiler->lexer->tokens;
     _compiler_set_elfheader(compiler);
 
-    char objcode[] = {};
+    char objcode[] = {
+	0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21, 0xa, // Hello!\n
+        0xb8, // mov rax (32bit)
+        1, 0, 0, 0, // write syscall 1
+        0xbf, // mov rdi (32 bit)
+        1, 0, 0, 0, // stdout
+        0x48, 0xbe, // mov rsi, 64 bit pointer
+        0x78, 0, 0x40, 0, 0, 0, 0, 0, // Hello strings address in virtual memory
+        0xba, // mov rdx (32bit)
+        7, 0, 0, 0, // number of bytes in Hello!\n
+        0xf, 0x5, // syscall
+        0xb8, // mov rax (32 bit)
+        0x3c, 0, 0, 0, // 60 = exit syscall
+        0x48, 0x31, 0xff, // xor rdi, rdi
+        0xf, 0x5 // syscall
+    };
 
-    size_t i;
-    while (i < tokens->size) {
-	char* tok = vector_get(tokens, i);
-	size_t next_code = sizeof(objcode) / sizeof(objcode[0]);
-
-	i++;
-    }
+    printf("%x\n", objcode);
 
     _compiler_write(compiler, objcode);
+}
+
+static void _compiler_proc_nasm(compiler_t* compiler) {
+    FILE* output = compiler->output;
+    fprintf(output, "segment .text\n");
+    fprintf(output, "global _start:\n");
+    fprintf(output, "_start:\n");
+    fprintf(output, "	mov rax, 60\n");
+    fprintf(output,"	mov rdi, 0\n");
+    fprintf(output, "	syscall\n");
 }
 
 static void _compiler_set_elfheader(compiler_t* compiler) {

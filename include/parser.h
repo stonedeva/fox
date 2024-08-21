@@ -4,8 +4,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "lexer.h"
 #include "expressions.h"
+#include "lexer.h"
 
 #define DEBUG
 
