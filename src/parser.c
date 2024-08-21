@@ -9,8 +9,19 @@ parser_t parser_init(lexer_t* lexer) {
     parser.variable_count = 0;
     parser.variables = (variable_expr_t**)malloc(sizeof(variable_expr_t*) * 20);
     parser.function_count = 0;
+    parser.functions = (function_expr_t**)malloc(sizeof(function_expr_t*) * 20);
 
     return parser;
+}
+
+void parser_delete(parser_t* parser) {
+    parser->variable_count = 0;
+    parser->function_count = 0;
+    parser->lexer = NULL;
+    free(parser->variables);
+    free(parser->functions);
+    parser->variables = NULL;
+    parser->functions = NULL;
 }
 
 void parser_evaluate(parser_t* parser) {
@@ -19,10 +30,17 @@ void parser_evaluate(parser_t* parser) {
     size_t size = tokens->size;
 
     for (size_t i = 0; i < size; i++) {
-	if (lexer_compare("var", data[i])) {
+	char* current_tok = data[i];
+	if (lexer_compare("var", current_tok)) {
 	    //_parser_evaluate_function(parser, data[i + 1], data[i + 3]);
-	    _parser_evaluate_variable(parser, i);
-	    printf("Name: %s, Value: %x\n", parser->variables[0]->name, parser->variables[0]->value);
+	    _parser_evaluate_variable(parser);
+	    printf("Name: %s, Value: %d\n", parser->variables[0]->name, parser->variables[0]->value);
+	}
+	if (lexer_compare("end", current_tok)) {
+	    _parser_evaluate_end(parser);
+	}
+	if (lexer_compare("proc", current_tok)) {
+	    _parser_evaluate_function(parser);
 	}
 
 	tokens->pointer++;
@@ -32,23 +50,23 @@ void parser_evaluate(parser_t* parser) {
 static void _parser_throw_error(parser_t* parser, char* error) {
     char* filename = parser->lexer->filename;
 
-    fprintf(stderr, "[1m%s[0m: \033[31mERROR[0m: %s!", filename, error);
+    fprintf(stderr, "[1m%s[0m: \033[31mERROR[0m: %s!\n", filename, error);
     exit(1);
 }
 
-static void _parser_evaluate_variable(parser_t* parser, size_t pointer) {
-    char** tokens = parser->lexer->tokens->data;
+static void _parser_evaluate_variable(parser_t* parser) {
+    vector_t* tokens = parser->lexer->tokens;
+    char** data = tokens->data;
+    size_t pointer = tokens->pointer;
 
     variable_expr_t variable_expr;
 
-    char* name = tokens[pointer + 1];
-    char* value = tokens[pointer + 3];
-    if (name == NULL) {
-	_parser_throw_error(parser, "expected name after 'var' expression"); 
-    }
-    if (value == NULL) {
+    char* name = data[pointer + 1];
+    int value = atoi(data[pointer + 3]);
+    if (value == NULL)
 	_parser_throw_error(parser, "expected value after variable name decleration");
-    }
+    if (name == NULL)
+	_parser_throw_error(parser, "expected name after 'var' expression"); 
 
     variable_expr.name = name;
     variable_expr.value = value;
@@ -57,16 +75,17 @@ static void _parser_evaluate_variable(parser_t* parser, size_t pointer) {
     parser->variable_count++;
 }
 
-static void _parser_evaluate_function(parser_t* parser, char* name, char* arguments[]) {
+static void _parser_evaluate_function(parser_t* parser) {
     function_expr_t function_expr;
-    function_expr.name = name;
-    function_expr.arguments = arguments;
-
-    parser->functions[parser->function_count] = &function_expr;
-    parser->function_count++;
 
     vector_t* tokens = parser->lexer->tokens;
+    char** data = tokens->data;
     size_t pointer = tokens->pointer;
+
+    char* name = data[pointer + 1];
+    char* arguments[10];
+    if (name == NULL)
+	_parser_throw_error(parser, "expected name after 'proc' expression");
 
 /*    while (*tokens->data[pointer++] != "var") {
 	if (lexer_compare("var", tokens->data[pointer])) {
@@ -80,4 +99,24 @@ static void _parser_evaluate_function(parser_t* parser, char* name, char* argume
 	    }
 	}
     }*/
+    function_expr.name = name;
+    function_expr.arguments = arguments;
+    parser->functions[parser->function_count] = &function_expr;
+    parser->function_count++;
+
+    printf("Define function: %s()\n", function_expr.name);
+}
+
+static void _parser_evaluate_end(parser_t* parser) {
+    vector_t* tokens = parser->lexer->tokens;
+    size_t pointer = tokens->pointer;
+    char** data = tokens->data;
+    if (pointer + 1 > tokens->size)
+	parser->exit_code = 0;
+
+    int exit_code = atoi(data[pointer + 1]);
+    if (exit_code > 1)
+	_parser_throw_error(parser, "expected exit code of 0 or 1");
+
+    parser->exit_code = exit_code;
 }

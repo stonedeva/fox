@@ -1,7 +1,12 @@
 import "linux.fox"
 
 var hello = 5 
+var x = 4
 
 write("Hello World\n", stdout)
 
-end
+proc main() {
+    
+}
+
+end 0  
