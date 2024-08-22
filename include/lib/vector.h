@@ -9,7 +9,7 @@ extern "C" {
 #include <string.h>
 
 typedef struct {
-    char** data;
+    void** data;
     size_t size;
     size_t capacity;
     size_t pointer;
@@ -17,10 +17,10 @@ typedef struct {
 
 vector_t* vector_init(const size_t capacity);
 void vector_delete(vector_t* vector);
-void vector_push(vector_t* vector, const char* data);
+void vector_push(vector_t* vector, const void* data);
 void vector_pop(vector_t* vector);
 char* vector_get(vector_t* vector, const size_t index);
-void vector_set(vector_t* vector, const char* data, const size_t index);
+void vector_set(vector_t* vector, const void* data, const size_t index);
 void vector_resize(vector_t* vector, const size_t new_capacity);
 bool vector_is_full(vector_t* vector);
 

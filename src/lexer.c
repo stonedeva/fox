@@ -63,7 +63,7 @@ static void _lexer_proc_string(const lexer_t* lexer) {
         if (!inside_string && _lexer_is_delimiter(ch)) {
             if (token_index > 0) {
                 token[token_index] = '\0';  
-		vector_push(lexer->tokens, token);
+		vector_push(lexer->tokens, strdup(token));
                 token_index = 0;
 	    }
 	    continue;
@@ -73,7 +73,7 @@ static void _lexer_proc_string(const lexer_t* lexer) {
     
     if (token_index > 0) {
         token[token_index] = '\0';
-	vector_push(lexer->tokens, token);
+	vector_push(lexer->tokens, strdup(token));
     }
 }
 

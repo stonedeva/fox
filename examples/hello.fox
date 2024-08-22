@@ -1,8 +1,10 @@
 import "linux.fox"
 
 var count = 3
+var age = 15
 
 proc main() {
-    write "Hello, World!\n"
+    write "Hello, World!"
 }
 
+end 0
