@@ -37,7 +37,7 @@ void lexer_proc(lexer_t* lexer);
  * Private
 */
 static bool _lexer_is_delimiter(const char ch);
-static void _lexer_proc_string(const lexer_t* lexer);
+static void _lexer_tokenize(const lexer_t* lexer);
 
 /*
  * Public

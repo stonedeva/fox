@@ -12,6 +12,7 @@
 lexer_t lexer_init(const char* filename) {
     lexer_t lexer;
     lexer.file = fopen(filename, "r");
+    lexer.line_count = 0;
     if (lexer.file == NULL) {
 	perror(filename);
 	exit(1);
@@ -24,9 +25,8 @@ lexer_t lexer_init(const char* filename) {
 }
 
 void lexer_proc(lexer_t* lexer) {
-    lexer->line_count = 0;
     while (fgets(lexer->line, sizeof(lexer->line), lexer->file)) {
-	_lexer_proc_string(lexer);
+	_lexer_tokenize(lexer);
 	lexer->line_count++;
     }
 
@@ -44,7 +44,7 @@ static bool _lexer_is_delimiter(const char ch) {
 	    || ch == ')' || ch == '"';
 }
 
-static void _lexer_proc_string(const lexer_t* lexer) {
+static void _lexer_tokenize(const lexer_t* lexer) {
     const char *line = lexer->line;
     size_t len = strlen(line);
     char token[MAX_TOKENS]; 
@@ -54,11 +54,16 @@ static void _lexer_proc_string(const lexer_t* lexer) {
     for (size_t i = 0; i < len; i++) {
         char ch = line[i];
         
-        if (ch == '"') {
+	// Inside String
+        if (ch == '"' || ch == '\'') {
             inside_string = !inside_string;
             token[token_index++] = ch;
             continue;
         }
+
+	// Skip comments
+	if (ch == ';' && line[i + 1] == ';')
+	    continue;
 
         if (!inside_string && _lexer_is_delimiter(ch)) {
             if (token_index > 0) {

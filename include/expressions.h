@@ -6,15 +6,24 @@ extern "C" {
 
 #define MAX_EXPRESSIONS 20
 
+#include "lib/vector.h"
+
+#define DATATYPE_INT    0
+#define DATATYPE_CHAR   1
+#define DATATYPE_STR    2
+#define DATATYPE_FLOAT  3
+
 typedef struct {
     char* name;
-    int value;
+    void* value;
+    char datatype;
 } variable_expr_t;
 
 typedef struct {
     char* name;
     char** arguments;
-    variable_expr_t intern_variables[];
+    vector_t* tokens;
+    int ret_value;
 } function_expr_t;
 
 typedef struct {

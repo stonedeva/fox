@@ -2,6 +2,7 @@
 #include "compiler.h"
 #include <unistd.h>
 #include <limits.h>
+#include <ctype.h>
 #include <string.h>
 
 parser_t parser_init(lexer_t* lexer) {
@@ -40,7 +41,6 @@ void parser_evaluate(parser_t* parser) {
     for (size_t i = 0; i < size; i++) {
         char* current_tok = data[i];
         if (lexer_compare("var", current_tok)) _parser_evaluate_variable(parser);
-        if (lexer_compare("end", current_tok)) _parser_evaluate_end(parser);
         if (lexer_compare("proc", current_tok)) _parser_evaluate_function(parser);
         if (lexer_compare("write", current_tok)) _parser_evaluate_write(parser);
 	if (lexer_compare("%define", current_tok)) _parser_evaluate_macro(parser);
@@ -64,9 +64,8 @@ static void _parser_throw_error(parser_t* parser, char* error) {
 
 static void _parser_evaluate_variable(parser_t* parser) {
     variable_expr_t* variable_expr = (variable_expr_t*)malloc(sizeof(variable_expr_t));
-    if (!variable_expr) {
+    if (!variable_expr)
         _parser_throw_error(parser, "Memory allocation failed for variable_expr");
-    }
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = (char**)tokens->data;
@@ -74,22 +73,39 @@ static void _parser_evaluate_variable(parser_t* parser) {
 
     char* name = data[pointer + 1];
     int value = atoi(data[pointer + 3]);
+
     if (value < 0)
         _parser_throw_error(parser, "expected value after variable name declaration");
     if (name == NULL)
         _parser_throw_error(parser, "expected name after 'var' expression"); 
 
     variable_expr->name = name;
-    variable_expr->value = value;
+    variable_expr->value = (int)value;
+
+   //_parser_evaluate_datatype(variable_expr);
 
     vector_push(parser->variables, variable_expr);
 }
 
+static void _parser_evaluate_datatype(variable_expr_t* variable) {
+    char* name = variable->name;
+    if (*name == '-')
+	name++;
+
+    while (*name) {
+	if (isdigit(*name)) 
+	    variable->datatype = DATATYPE_INT;
+	*name++;
+    }
+
+    if (name[0] == '"' || name[0] == '\'')
+	variable->datatype = DATATYPE_STR;
+}
+
 static void _parser_evaluate_function(parser_t* parser) {
     function_expr_t* function_expr = (function_expr_t*)malloc(sizeof(function_expr_t));
-    if (!function_expr) {
+    if (!function_expr)
         _parser_throw_error(parser, "Memory allocation failed for function_expr");
-    }
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = (char**)tokens->data;
@@ -101,15 +117,21 @@ static void _parser_evaluate_function(parser_t* parser) {
 
     function_expr->name = name;
     function_expr->arguments = NULL; // Assuming no arguments for now
+    function_expr->tokens = vector_init(MAX_TOKENS);
+
+    pointer += 2;
+    while (strcmp(data[pointer], "end")) {
+	vector_push(function_expr->tokens, data[pointer]);
+	pointer++;
+    }
 
     vector_push(parser->functions, function_expr);
 }
 
 static void _parser_evaluate_write(parser_t* parser) {
     write_expr_t* write_expr = (write_expr_t*)malloc(sizeof(write_expr_t));
-    if (!write_expr) {
+    if (!write_expr)
         _parser_throw_error(parser, "Memory allocation failed for write_expr");
-    }
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = (char**)tokens->data;
@@ -135,21 +157,6 @@ static void _parser_evaluate_macro(parser_t* parser) {
         _parser_throw_error(parser, "expected macro after '%define' keyword");
 
     vector_push(parser->macros, strdup(macro));
-}
-
-static void _parser_evaluate_end(parser_t* parser) {
-    vector_t* tokens = parser->lexer->tokens;
-    size_t pointer = tokens->pointer;
-    char** data = tokens->data;
-
-    if (pointer + 1 > tokens->size)
-        parser->exit_code = 0;
-
-    int exit_code = atoi(data[pointer + 1]);
-    if (exit_code > 1)
-        _parser_throw_error(parser, "expected exit code of 0 or 1");
-
-    parser->exit_code = exit_code;
 }
 
 static void _parser_print_expressions(parser_t* parser) {
