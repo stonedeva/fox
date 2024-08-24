@@ -1,5 +1,6 @@
 #include "compiler.h"
 #include "lib/vector.h"
+#include "lib/hex.h"
 #include <string.h>
 
 void compiler_proc(parser_t* parser) {
@@ -17,39 +18,42 @@ void compiler_proc(parser_t* parser) {
 }
 
 static void _compiler_proc_elf(compiler_t* compiler) {
-    _compiler_set_elfheader(compiler);
+    size_t binary_size;
 
     char hello_code[] = {
 	0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21, 0xa, // Hello!\n
-        0xb8, // mov rax (32bit)
-        1, 0, 0, 0, // write syscall 1
-        0xbf, // mov rdi (32 bit)
-        1, 0, 0, 0, // stdout
-        0x48, 0xbe, // mov rsi, 64 bit pointer
-        0x78, 0, 0x40, 0, 0, 0, 0, 0, // Hello strings address in virtual memory
-        0xba, // mov rdx (32bit)
-        7, 0, 0, 0, // number of bytes in Hello!\n
-        0xf, 0x5, // syscall
-        0xb8, // mov rax (32 bit)
-        0x3c, 0, 0, 0, // 60 = exit syscall
-        0x48, 0x31, 0xff, // xor rdi, rdi
-        0xf, 0x5 // syscall
+	0xb8, // mov rax (32bit)
+	1, 0, 0, 0, // write syscall 1
+	0xbf, // mov rdi (32 bit)
+	1, 0, 0, 0, // stdout
+	0x48, 0xbe, // mov rsi, 64 bit pointer
+	0x78, 0, 0x40, 0, 0, 0, 0, 0, // Hello strings address in virtual memory
+	0xba, // mov rdx (32bit)
+	7, 0, 0, 0, // number of bytes in Hello!\n
+	0xf, 0x5, // syscall
     };
 
-    vector_push_array(compiler->objcode, hello_code, sizeof(hello_code));
+    char exit_code[] = {
+	0xb8,
+	0x3c, 0, 0, 0,
+	0x48, 0x31, 0xff,
+	0xf, 0x5
+    };
 
+    binary_size += sizeof(hello_code) + sizeof(exit_code);
+
+    vector_push_array(compiler->objcode, hello_code, sizeof(hello_code));
+    vector_push_array(compiler->objcode, exit_code, sizeof(exit_code));
     char* objcode_array = vector_extract_charray(compiler->objcode);
 
-    for (size_t i = 0; i < sizeof(objcode_array) / sizeof(objcode_array[0]); i++) {
-	printf("%x, ", objcode_array[i]);
-    }
-    printf("\n");
-
-    _compiler_write(compiler, objcode_array, sizeof(hello_code));
+    _compiler_set_elfheader(compiler, binary_size);
+    _compiler_write(compiler, objcode_array, binary_size);
     free(objcode_array);
+
+    _compiler_print_objcode(objcode_array);
 }
 
-static void _compiler_set_elfheader(compiler_t* compiler) {
+static void _compiler_set_elfheader(compiler_t* compiler, size_t objcode_size) {
     Elf64_Ehdr header = {
         .e_ident = {
             ELFMAG0,
@@ -81,8 +85,8 @@ static void _compiler_set_elfheader(compiler_t* compiler) {
         .p_offset = 0x78, // 64 + 56 = 120
         .p_vaddr = 0x400078,
         .p_paddr = 0x400078,
-        .p_filesz = 44,
-        .p_memsz = 44,
+        .p_filesz = sizeof(objcode_size),
+        .p_memsz = sizeof(objcode_size),
         .p_flags = PF_X | PF_R | PF_W,
         .p_align = 0x8
     };
@@ -110,4 +114,14 @@ static void _compiler_write(compiler_t* compiler, char objcode[], size_t objcode
     }
 
     fclose(compiler->output);
+}
+
+static void _compiler_print_objcode(char objcode[]) {
+    size_t len = sizeof(objcode) / sizeof(objcode[0]);
+    
+    printf("Object Code\n=======\n");
+    for (size_t i = 0; i < len; i++) {
+	printf("%x, ", objcode[i]);
+    }
+    printf("\n");
 }

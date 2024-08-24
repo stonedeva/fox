@@ -26,8 +26,8 @@ typedef struct {
     FILE* file;
     vector_t* tokens;
     char line[MAX_TOKENS];
-    char* filename;
     size_t line_count;
+    char* filename;
 } lexer_t;
 
 lexer_t lexer_init(const char filename[]);

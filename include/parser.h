@@ -7,8 +7,6 @@ extern "C" {
 #include "expressions.h"
 #include "lexer.h"
 
-#define DEBUG
-
 typedef struct {
     lexer_t* lexer;
     vector_t* functions;
