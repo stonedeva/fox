@@ -52,6 +52,8 @@ void parser_evaluate(parser_t* parser) {
     _parser_print_expressions(parser);
 #endif
 
+    compiler_proc(&parser);
+
     parser_delete(parser);
 }
 
@@ -82,7 +84,7 @@ static void _parser_evaluate_variable(parser_t* parser) {
     variable_expr->name = name;
     variable_expr->value = (int)value;
 
-   //_parser_evaluate_datatype(variable_expr);
+    _parser_evaluate_datatype(variable_expr);
 
     vector_push(parser->variables, variable_expr);
 }

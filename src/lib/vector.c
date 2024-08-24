@@ -40,6 +40,16 @@ void vector_push(vector_t* vector, const void* data) {
     vector->size++;
 }
 
+void vector_push_array(vector_t* vector, const char data[], size_t data_size) {
+    for (size_t i = 0; i < data_size; i++) {
+	char* opcode = (char*)malloc(sizeof(char));
+	if (opcode == NULL)
+	    return;
+	*opcode = data[i];
+	vector_push(vector, opcode);
+    }
+}
+
 void vector_pop(vector_t* vector) {
     if (vector->size == 0)
         return;
@@ -61,5 +71,22 @@ void vector_set(vector_t* vector, const void* data, const size_t index) {
         return;
 
     vector->data[index] = (void*)data; // Set the data at the index
+}
+
+char* vector_extract_charray(vector_t* vector) {
+    if (vector->size == 0)
+	return NULL;
+
+    char* data = (char*)malloc(vector->size * sizeof(char));
+    if (data == NULL)
+	return NULL;
+
+    for (size_t i = 0; i < vector->size; i++) {
+	data[i] = *((char*)vector->data[i]);
+    }
+
+    vector->size = 0;
+
+    return data;
 }
 

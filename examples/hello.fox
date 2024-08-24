@@ -6,4 +6,7 @@ var count = 3
 
 proc main()
     write "Hello, World!\n"
+    var prev_age = 14
 end
+
+var age = 15

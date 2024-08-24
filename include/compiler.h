@@ -8,31 +8,32 @@ extern "C" {
 #include <elf.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include "lexer.h"
+#include "parser.h"
 
-#define MAX_OBJCODE 255
+#define MAX_BINARY_OPCODES 255
 
 typedef struct {
     FILE* output;
-    lexer_t* lexer;
+    parser_t* parser;
 
     /* ELF Executable */
     Elf64_Ehdr header;
     Elf64_Phdr phdr;
-    char objcode[];
+    vector_t* objcode;
 } compiler_t;
 
 /*
  * Public
 */
-void compiler_proc(lexer_t* lexer);
+void compiler_proc(parser_t* parser);
 
 /*
  * Private
 */
 static void _compiler_proc_elf(compiler_t* compiler);
 static void _compiler_proc_exe(compiler_t* compiler);
-static void _compiler_write(compiler_t* compiler, char objcode[]);
+static void _compiler_proc_nasm(compiler_t* compiler);
+static void _compiler_write(compiler_t* compiler, char objcode[], size_t objcode_size);
 static void _compiler_set_elfheader(compiler_t* compiler);
 
 #ifdef __cplusplus

@@ -1,11 +1,11 @@
 #include "compiler.h"
-#include "parser.h"
 #include "lib/vector.h"
 #include <string.h>
 
-void compiler_proc(lexer_t* lexer) {
+void compiler_proc(parser_t* parser) {
     compiler_t compiler;
-    compiler.lexer = lexer;
+    compiler.parser = parser;
+    compiler.objcode = vector_init(MAX_BINARY_OPCODES);
 
     compiler.output = fopen("hello", "w");
     if (compiler.output == NULL) {
@@ -19,7 +19,7 @@ void compiler_proc(lexer_t* lexer) {
 static void _compiler_proc_elf(compiler_t* compiler) {
     _compiler_set_elfheader(compiler);
 
-    char objcode[] = {
+    char hello_code[] = {
 	0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21, 0xa, // Hello!\n
         0xb8, // mov rax (32bit)
         1, 0, 0, 0, // write syscall 1
@@ -36,19 +36,17 @@ static void _compiler_proc_elf(compiler_t* compiler) {
         0xf, 0x5 // syscall
     };
 
-    printf("%x\n", objcode);
+    vector_push_array(compiler->objcode, hello_code, sizeof(hello_code));
 
-    _compiler_write(compiler, objcode);
-}
+    char* objcode_array = vector_extract_charray(compiler->objcode);
 
-static void _compiler_proc_nasm(compiler_t* compiler) {
-    FILE* output = compiler->output;
-    fprintf(output, "segment .text\n");
-    fprintf(output, "global _start:\n");
-    fprintf(output, "_start:\n");
-    fprintf(output, "	mov rax, 60\n");
-    fprintf(output,"	mov rdi, 0\n");
-    fprintf(output, "	syscall\n");
+    for (size_t i = 0; i < sizeof(objcode_array) / sizeof(objcode_array[0]); i++) {
+	printf("%x, ", objcode_array[i]);
+    }
+    printf("\n");
+
+    _compiler_write(compiler, objcode_array, sizeof(hello_code));
+    free(objcode_array);
 }
 
 static void _compiler_set_elfheader(compiler_t* compiler) {
@@ -85,7 +83,7 @@ static void _compiler_set_elfheader(compiler_t* compiler) {
         .p_paddr = 0x400078,
         .p_filesz = 44,
         .p_memsz = 44,
-        .p_flags = PF_X | PF_R,
+        .p_flags = PF_X | PF_R | PF_W,
         .p_align = 0x8
     };
 
@@ -93,7 +91,7 @@ static void _compiler_set_elfheader(compiler_t* compiler) {
     compiler->phdr = phdr;
 }
 
-static void _compiler_write(compiler_t* compiler, char objcode[]) {
+static void _compiler_write(compiler_t* compiler, char objcode[], size_t objcode_size) {
     size_t sz = fwrite(&compiler->header, 1, sizeof(compiler->header), compiler->output);
     if (sz != sizeof(compiler->header)) {
 	fprintf(stderr, "ERROR: sizeof(header) NOT equals sz\n");
@@ -105,8 +103,8 @@ static void _compiler_write(compiler_t* compiler, char objcode[]) {
 	fprintf(stderr, "ERROR: sizeof(phdr) NOT equals sz\n");
     }
 
-    sz = fwrite(objcode, 1, sizeof(objcode), compiler->output);
-    if (sz != sizeof(objcode)) {
+    sz = fwrite(objcode, 1, objcode_size, compiler->output);
+    if (sz != objcode_size) {
 	fprintf(stderr, "ERROR: sizeof(objcode) NOT equals sz\n");
 	exit(1);
     }
