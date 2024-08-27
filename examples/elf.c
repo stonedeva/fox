@@ -44,8 +44,12 @@ int main(int argc, char* argv[]) {
         .p_align = 0x8
     };
 
-    char objcode[] = {
-        0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21, 0xa, // Hello!\n
+    char inputcode[] = {
+	'T', 'E', 'S', 'T'
+    };
+
+    char hello_code[] = {
+        0x48, 0x49, 0x65, 0x6c, 0x6c, 0x6f, 0x21, 0xa, // Hello!\n
         0xb8, // mov rax (32bit)
         1, 0, 0, 0, // write syscall 1
         0xbf, // mov rdi (32 bit)
@@ -79,9 +83,14 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    s = fwrite(objcode, 1, sizeof(objcode), f);
+    s = fwrite(inputcode, 1, sizeof(inputcode), f);
+    if (s != sizeof(inputcode)) {
+	perror("fwrite");
+	exit(EXIT_FAILURE);
+    }
 
-    if (s != sizeof(objcode)) {
+    s = fwrite(hello_code, 1, sizeof(hello_code), f);
+    if (s != sizeof(hello_code)) {
         perror("fwrite");
         exit(EXIT_FAILURE);
     }
@@ -89,4 +98,5 @@ int main(int argc, char* argv[]) {
     fclose(f);
 
     return EXIT_SUCCESS;
+
 }

@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdint.h>
 
 parser_t parser_init(lexer_t* lexer) {
     parser_t parser;
@@ -40,19 +41,32 @@ void parser_evaluate(parser_t* parser) {
 
     for (size_t i = 0; i < size; i++) {
         char* current_tok = data[i];
-        if (lexer_compare("var", current_tok)) _parser_evaluate_variable(parser);
-        if (lexer_compare("proc", current_tok)) _parser_evaluate_function(parser);
-        if (lexer_compare("write", current_tok)) _parser_evaluate_write(parser);
-	if (lexer_compare("%define", current_tok)) _parser_evaluate_macro(parser);
+        if (lexer_compare("int8", current_tok)) 
+	    parser_evaluate_variable(parser, BIT8_INT_DATATYPE);
+	else if (lexer_compare("int16", current_tok))
+	    parser_evaluate_variable(parser, BIT16_INT_DATATYPE);
+	else if (lexer_compare("int32", current_tok))
+	    parser_evaluate_variable(parser, BIT32_INT_DATATYPE);
+	else if (lexer_compare("int64", current_tok))
+	    parser_evaluate_variable(parser, BIT64_INT_DATATYPE);
+	else if (lexer_compare("string", current_tok))
+	    parser_evaluate_variable(parser, STRING_DATATYPE);
+	else if (lexer_compare("float32", current_tok))
+	    parser_evaluate_variable(parser, FLOAT32_DATATYPE);
+	else if (lexer_compare("float64", current_tok))
+	    parser_evaluate_variable(parser, FLOAT64_DATATYPE);
+	else if (lexer_compare("proc", current_tok))
+	    parser_evaluate_function(parser);
+	else if (lexer_compare("write", current_tok)) 
+	    parser_evaluate_write(parser);
+	else if (lexer_compare("define", current_tok)) 
+	    parser_evaluate_macro(parser);
 
         tokens->pointer++;
     }
 
-#ifdef DEBUG
     _parser_print_expressions(parser);
-#endif
-
-    compiler_proc(&parser);
+    compiler_proc(parser);
 
     parser_delete(parser);
 }
@@ -64,7 +78,7 @@ static void _parser_throw_error(parser_t* parser, char* error) {
     exit(1);
 }
 
-static void _parser_evaluate_variable(parser_t* parser) {
+void parser_evaluate_variable(parser_t* parser, char datatype) {
     variable_expr_t* variable_expr = (variable_expr_t*)malloc(sizeof(variable_expr_t));
     if (!variable_expr)
         _parser_throw_error(parser, "Memory allocation failed for variable_expr");
@@ -74,37 +88,45 @@ static void _parser_evaluate_variable(parser_t* parser) {
     size_t pointer = tokens->pointer;
 
     char* name = data[pointer + 1];
-    int value = atoi(data[pointer + 3]);
+    
+    int value_int;
+    char* value_str;
+    if (datatype == STRING_DATATYPE)
+	value_str = data[pointer + 3];
+    else
+	value_int = atoi(data[pointer + 3]);
 
-    if (value < 0)
-        _parser_throw_error(parser, "expected value after variable name declaration");
     if (name == NULL)
         _parser_throw_error(parser, "expected name after 'var' expression"); 
 
     variable_expr->name = name;
-    variable_expr->value = (int)value;
 
-    _parser_evaluate_datatype(variable_expr);
+    switch (datatype) {
+    case BIT8_INT_DATATYPE:
+	variable_expr->value = (uint8_t*)value_int;
+	break;
+    case BIT16_INT_DATATYPE:
+	variable_expr->value = (uint16_t*)value_int;
+	break;
+    case BIT32_INT_DATATYPE:
+	variable_expr->value = (uint32_t*)value_int;
+	break;
+    case BIT64_INT_DATATYPE:
+	variable_expr->value = (uint64_t*)value_int;
+	break;
+    case FLOAT32_DATATYPE:
+	variable_expr->value = (float*)value_int;
+	break;
+    case FLOAT64_DATATYPE:
+	variable_expr->value = (double*)value_int;
+    default:
+	break;
+    }
 
     vector_push(parser->variables, variable_expr);
 }
 
-static void _parser_evaluate_datatype(variable_expr_t* variable) {
-    char* name = variable->name;
-    if (*name == '-')
-	name++;
-
-    while (*name) {
-	if (isdigit(*name)) 
-	    variable->datatype = DATATYPE_INT;
-	*name++;
-    }
-
-    if (name[0] == '"' || name[0] == '\'')
-	variable->datatype = DATATYPE_STR;
-}
-
-static void _parser_evaluate_function(parser_t* parser) {
+void parser_evaluate_function(parser_t* parser) {
     function_expr_t* function_expr = (function_expr_t*)malloc(sizeof(function_expr_t));
     if (!function_expr)
         _parser_throw_error(parser, "Memory allocation failed for function_expr");
@@ -130,7 +152,7 @@ static void _parser_evaluate_function(parser_t* parser) {
     vector_push(parser->functions, function_expr);
 }
 
-static void _parser_evaluate_write(parser_t* parser) {
+void parser_evaluate_write(parser_t* parser) {
     write_expr_t* write_expr = (write_expr_t*)malloc(sizeof(write_expr_t));
     if (!write_expr)
         _parser_throw_error(parser, "Memory allocation failed for write_expr");
@@ -149,7 +171,7 @@ static void _parser_evaluate_write(parser_t* parser) {
     vector_push(parser->write_calls, write_expr);
 }
 
-static void _parser_evaluate_macro(parser_t* parser) {
+void parser_evaluate_macro(parser_t* parser) {
     vector_t* tokens = parser->lexer->tokens;
     char** data = (char**)tokens->data;
     size_t pointer = tokens->pointer;

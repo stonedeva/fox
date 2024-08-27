@@ -8,7 +8,7 @@ void compiler_proc(parser_t* parser) {
     compiler.parser = parser;
     compiler.objcode = vector_init(MAX_BINARY_OPCODES);
 
-    compiler.output = fopen("hello", "w");
+    compiler.output = fopen("bin", "wb");
     if (compiler.output == NULL) {
 	fprintf(stderr, "ERROR: Unable to open output file!\n");
 	exit(1);
@@ -18,110 +18,70 @@ void compiler_proc(parser_t* parser) {
 }
 
 static void _compiler_proc_elf(compiler_t* compiler) {
-    size_t binary_size;
+    _compiler_set_elfheader(compiler);
 
-    char hello_code[] = {
-	0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x21, 0xa, // Hello!\n
-	0xb8, // mov rax (32bit)
-	1, 0, 0, 0, // write syscall 1
-	0xbf, // mov rdi (32 bit)
-	1, 0, 0, 0, // stdout
-	0x48, 0xbe, // mov rsi, 64 bit pointer
-	0x78, 0, 0x40, 0, 0, 0, 0, 0, // Hello strings address in virtual memory
-	0xba, // mov rdx (32bit)
-	7, 0, 0, 0, // number of bytes in Hello!\n
-	0xf, 0x5, // syscall
-    };
-
-    char exit_code[] = {
-	0xb8,
-	0x3c, 0, 0, 0,
-	0x48, 0x31, 0xff,
-	0xf, 0x5
-    };
-
-    binary_size += sizeof(hello_code) + sizeof(exit_code);
-
-    vector_push_array(compiler->objcode, hello_code, sizeof(hello_code));
-    vector_push_array(compiler->objcode, exit_code, sizeof(exit_code));
-    char* objcode_array = vector_extract_charray(compiler->objcode);
-
-    _compiler_set_elfheader(compiler, binary_size);
-    _compiler_write(compiler, objcode_array, binary_size);
-    free(objcode_array);
-
-    _compiler_print_objcode(objcode_array);
+#ifdef DEBUG
+    _compiler_print_objcode(objcode_array, binary_size);
+#endif
 }
 
-static void _compiler_set_elfheader(compiler_t* compiler, size_t objcode_size) {
-    Elf64_Ehdr header = {
-        .e_ident = {
-            ELFMAG0,
-            ELFMAG1,
-            ELFMAG2,
-            ELFMAG3,
-            ELFCLASS64,
-            ELFDATA2LSB,
-            EV_CURRENT,
-            ELFOSABI_SYSV,
-            0, 0, 0, 0, 0, 0, 0, 0
-        },
-        .e_type = ET_EXEC,
-        .e_machine = EM_X86_64,
-        .e_entry = 0x40007f,
-        .e_phoff = 64,
-        .e_shoff = 0,
-        .e_flags = 0,
-        .e_ehsize = 64,
-        .e_phentsize = 56,
-        .e_phnum = 1,
-        .e_shentsize = 64,
-        .e_shnum = 0,
-        .e_shstrndx = SHN_UNDEF
+static void _compiler_set_elfheader(compiler_t* compiler) {
+    unsigned char code[] = {
+	0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00, // mov rax, 1 (sys_write)
+        0x48, 0xc7, 0xc7, 0x01, 0x00, 0x00, 0x00, // mov rdi, 1 (stdout)
+        0x48, 0x8d, 0x35, 0x0c, 0x00, 0x00, 0x00, // lea rsi, [rip + 0x0c] (msg)
+        0x48, 0xc7, 0xc2, 0x0e, 0x00, 0x00, 0x00, // mov rdx, 14 (length)
+        0x0f, 0x05,                               // syscall
+        0x48, 0xc7, 0xc0, 0x3c, 0x00, 0x00, 0x00, // mov rax, 60 (sys_exit)
+        0x48, 0x31, 0xff,                         // xor rdi, rdi (exiexit0)
+        0x0f, 0x05                                // syscall
     };
 
-    Elf64_Phdr phdr = {
-        .p_type = PT_LOAD,
-        .p_offset = 0x78, // 64 + 56 = 120
-        .p_vaddr = 0x400078,
-        .p_paddr = 0x400078,
-        .p_filesz = sizeof(objcode_size),
-        .p_memsz = sizeof(objcode_size),
-        .p_flags = PF_X | PF_R | PF_W,
-        .p_align = 0x8
-    };
+    unsigned char message[] = "Hello, World!\n";
 
-    compiler->header = header;
-    compiler->phdr = phdr;
+    Elf64_Ehdr elf_header = {0};
+    memcpy(elf_header.e_ident, ELFMAG, SELFMAG);
+    elf_header.e_ident[EI_CLASS] = ELFCLASS64;
+    elf_header.e_ident[EI_DATA] = ELFDATA2LSB;
+    elf_header.e_ident[EI_VERSION] = EV_CURRENT;
+    elf_header.e_ident[EI_OSABI] = ELFOSABI_SYSV;
+    elf_header.e_type = ET_EXEC;
+    elf_header.e_machine = EM_X86_64;
+    elf_header.e_version = EV_CURRENT;
+    elf_header.e_entry = 0x400078; // Entry point address
+    elf_header.e_phoff = sizeof(Elf64_Ehdr);
+    elf_header.e_ehsize = sizeof(Elf64_Ehdr);
+    elf_header.e_phentsize = sizeof(Elf64_Phdr);
+    elf_header.e_phnum = 1;
+
+    // Program Header
+    Elf64_Phdr prog_header = {0};
+    prog_header.p_type = PT_LOAD;
+    prog_header.p_offset = 0;
+    prog_header.p_vaddr = 0x400000;
+    prog_header.p_paddr = 0x400000;
+    prog_header.p_filesz = sizeof(Elf64_Ehdr) + sizeof(Elf64_Phdr) + sizeof(code) + sizeof(message);
+    prog_header.p_memsz = prog_header.p_filesz;
+    prog_header.p_flags = PF_R | PF_X;
+    prog_header.p_align = 0x200000;
+
+    // Writing ELF Header
+    fwrite(&elf_header, 1, sizeof(elf_header), compiler->output);
+
+    // Writing Program Header
+    fwrite(&prog_header, 1, sizeof(prog_header), compiler->output);
+
+    // Writing code and message
+    fwrite(code, 1, sizeof(code), compiler->output);
+    fwrite(message, 1, sizeof(message), compiler->output);
 }
 
-static void _compiler_write(compiler_t* compiler, char objcode[], size_t objcode_size) {
-    size_t sz = fwrite(&compiler->header, 1, sizeof(compiler->header), compiler->output);
-    if (sz != sizeof(compiler->header)) {
-	fprintf(stderr, "ERROR: sizeof(header) NOT equals sz\n");
-	exit(1);
-    }
-
-    sz = fwrite(&compiler->phdr, 1, sizeof(compiler->phdr), compiler->output);
-    if (sz != sizeof(compiler->phdr)) {
-	fprintf(stderr, "ERROR: sizeof(phdr) NOT equals sz\n");
-    }
-
-    sz = fwrite(objcode, 1, objcode_size, compiler->output);
-    if (sz != objcode_size) {
-	fprintf(stderr, "ERROR: sizeof(objcode) NOT equals sz\n");
-	exit(1);
-    }
-
-    fclose(compiler->output);
-}
-
-static void _compiler_print_objcode(char objcode[]) {
-    size_t len = sizeof(objcode) / sizeof(objcode[0]);
-    
+static void _compiler_print_objcode(char* objcode, size_t objcode_size) {
     printf("Object Code\n=======\n");
-    for (size_t i = 0; i < len; i++) {
-	printf("%x, ", objcode[i]);
+    for (size_t i = 0; i < objcode_size; i++) {
+	printf("%02x, ", (unsigned char)objcode[i]);
+	if ((i + 1) % 16 == 0)
+	    printf("\n");
     }
     printf("\n");
 }

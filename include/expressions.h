@@ -8,10 +8,14 @@ extern "C" {
 
 #include "lib/vector.h"
 
-#define DATATYPE_INT    0
-#define DATATYPE_CHAR   1
-#define DATATYPE_STR    2
-#define DATATYPE_FLOAT  3
+#define BIT8_INT_DATATYPE 0
+#define BIT16_INT_DATATYPE 1
+#define BIT32_INT_DATATYPE 2
+#define BIT64_INT_DATATYPE 3
+#define STRING_DATATYPE 4
+#define FLOAT32_DATATYPE 5
+#define FLOAT64_DATATYPE 6
+#define INVALID_DATATYPE 7
 
 typedef struct {
     char* name;

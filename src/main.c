@@ -5,6 +5,8 @@
 #include "compiler.h"
 #include "lexer.h"
 
+#define DEBUG
+
 static void fox_print_help(int code) {
     FILE* stream = code ? stderr : stdout;
 
