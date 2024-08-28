@@ -9,7 +9,7 @@
 /*
  * Public functions
 */
-lexer_t lexer_init(const char* filename) {
+lexer_t lexer_init(char* filename) {
     lexer_t lexer;
     lexer.file = fopen(filename, "r");
     lexer.line_count = 0;
@@ -40,8 +40,8 @@ void lexer_proc(lexer_t* lexer) {
 */
 static bool _lexer_is_delimiter(const char ch) {
     return isspace(ch) || ch == '#' || ch == ',' || ch == '.' || ch == ';' || ch == ':' 
-	    || ch == '!' || ch == '?' || ch == '<' || ch == '>' || ch == '(' 
-	    || ch == ')' || ch == '"';
+	    || ch == '!' || ch == '?' || ch == '<' || ch == '>' || ch == '"'
+	    || ch == '(' || ch == ')';
 }
 
 static void _lexer_tokenize(const lexer_t* lexer) {
@@ -69,7 +69,7 @@ static void _lexer_tokenize(const lexer_t* lexer) {
             if (token_index > 0) {
                 token[token_index] = '\0';  
 		vector_push(lexer->tokens, strdup(token));
-                token_index = 0;
+		token_index = 0;
 	    }
 	    continue;
 	}
@@ -106,4 +106,17 @@ bool lexer_compare(char* token1, char* token2) {
     }
 
     return true;
+}
+
+bool lexer_contains(char ch, char* token) {
+    while (*token++ != '\0') {
+	if (*token == ch) return true;
+    }
+    return false;
+}
+
+char* lexer_cut(char ch, char* token) {
+    while (*token++ != '\0')
+	if (*token == ch) *token = '\0';
+    return token;
 }

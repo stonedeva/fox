@@ -1,9 +1,12 @@
 import "linux.fox"
 
 int32 count = 3
-string text = "Hallo, Welt!"
+int8 character = 5
 
-proc main()
+int8 main()
     write "Hello, World!\n"
 end
 
+int8 init_program()
+    int16 pid = fork()
+end

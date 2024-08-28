@@ -20,11 +20,11 @@ void parser_evaluate(parser_t* parser);
 parser_t parser_init(lexer_t* lexer);
 void parser_delete(parser_t* parser);
 
-void parser_evaluate_variable(parser_t* parser, char datatype);
-void parser_evaluate_function(parser_t* parser);
+void parser_evaluate_variable(parser_t* parser, char datatype, size_t pointer);
+void parser_evaluate_function(parser_t* parser, char datatype, size_t pointer);
 void parser_evaluate_write(parser_t* parser);
 void parser_evaluate_macro(parser_t* parser);
-static void _parser_evaluate_datatype(variable_expr_t* variable);
+static char _parser_evaluate_datatype(char* str);
 static void _parser_throw_error(parser_t* parser, char* error);
 static void _parser_print_expressions(parser_t* parser);
 

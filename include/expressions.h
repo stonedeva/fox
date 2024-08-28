@@ -26,6 +26,7 @@ typedef struct {
 typedef struct {
     char* name;
     char** arguments;
+    char return_type;
     vector_t* tokens;
     int ret_value;
 } function_expr_t;
