@@ -33,10 +33,10 @@ typedef struct {
 } function_expr_t;
 
 typedef struct {
-    size_t rax;
+    int rax;
     void* rdi;
     void* rsi;
-    size_t rdx;
+    int rdx;
 } syscall_expr_t;
 
 typedef enum {

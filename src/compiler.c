@@ -27,8 +27,26 @@ static void _compiler_proc_assembly(compiler_t* compiler) {
     vector_t* expressions = parser->expressions;
 
     fprintf(out, "segment .text\n");
-    fprintf(out, "global _start\n");
-    fprintf(out, "_start:\n");
+    fprintf(out, "global _start\n\n");
+
+    for (size_t i = 0; i < expressions->size; i++) {
+	expression_t* expr_wrapper = (expression_t*)expressions->data[i];
+	if (expr_wrapper == NULL)
+	    continue;
+
+	switch (expr_wrapper->type) {
+	case FUNCTION_EXPR:
+	    function_expr_t* func = (function_expr_t*)expr_wrapper->expr;
+	    fprintf(out, "%s:\n", func->name);
+	    fprintf(out, "	ret\n");
+	    break;
+
+	case SYSCALL_EXPR:
+	    break;
+	}
+    }
+
+    fprintf(out, "\n_start:\n");
     fprintf(out, "	mov rax, 60\n");
     fprintf(out, "	mov rdi, 0\n");
     fprintf(out, "	syscall\n");

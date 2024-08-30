@@ -273,10 +273,12 @@ void parser_evaluate_syscall(parser_t* parser, size_t pointer) {
     vector_t* tokens = parser->lexer->tokens;
     char** data = (char**)tokens->data;
 
-    size_t rax = atoi(data[pointer++]);
+    pointer++; // Skip 'syscall' keyword
+
+    int rax = atoi(data[pointer++]);
     void* rdi = data[pointer++];
     void* rsi = data[pointer++];
-    size_t rdx = atoi(data[pointer++]);
+    int rdx = atoi(data[pointer++]);
 
     syscall_expr->rax = rax;
     syscall_expr->rdi = rdi;
@@ -288,7 +290,6 @@ void parser_evaluate_syscall(parser_t* parser, size_t pointer) {
     expr_wrapper->expr = syscall_expr;
 
     vector_push(parser->expressions, expr_wrapper);
-
     parser->expression_count++;
 }
 
@@ -340,7 +341,7 @@ static void _parser_print_expressions(parser_t* parser) {
             }
             case SYSCALL_EXPR: {
                 syscall_expr_t* syscall = (syscall_expr_t*)wrapped_expr->expr;
-                printf("Syscall - rax: %zu, rdi: %p, rsi: %p, rdx: %zu\n",
+                printf("Syscall - rax: %d, rdi: %p, rsi: %p, rdx: %d\n",
                        syscall->rax, syscall->rdi, syscall->rsi, syscall->rdx);
                 break;
             }
