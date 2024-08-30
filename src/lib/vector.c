@@ -90,3 +90,7 @@ char* vector_extract_charray(vector_t* vector) {
     return data;
 }
 
+
+size_t vector_get_size(vector_t* vector) {
+    return vector->size;
+}

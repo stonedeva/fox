@@ -8,13 +8,32 @@ void compiler_proc(parser_t* parser) {
     compiler.parser = parser;
     compiler.objcode = vector_init(MAX_BINARY_OPCODES);
 
-    compiler.output = fopen("bin", "wb");
+    compiler.output = fopen("hello.asm", "w");
     if (compiler.output == NULL) {
 	fprintf(stderr, "ERROR: Unable to open output file!\n");
 	exit(1);
     }
 
-    _compiler_proc_elf(&compiler);
+//    _compiler_proc_elf(&compiler);
+
+    _compiler_proc_assembly(&compiler);
+    system("nasm -felf64 hello.asm && ld -o hello hello.o");
+}
+
+static void _compiler_proc_assembly(compiler_t* compiler) {
+    FILE* out = compiler->output;
+    parser_t* parser = compiler->parser;
+
+    vector_t* expressions = parser->expressions;
+
+    fprintf(out, "segment .text\n");
+    fprintf(out, "global _start\n");
+    fprintf(out, "_start:\n");
+    fprintf(out, "	mov rax, 60\n");
+    fprintf(out, "	mov rdi, 0\n");
+    fprintf(out, "	syscall\n");
+
+    fclose(out);
 }
 
 static void _compiler_proc_elf(compiler_t* compiler) {

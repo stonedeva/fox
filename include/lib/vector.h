@@ -25,6 +25,7 @@ void vector_set(vector_t* vector, const void* data, const size_t index);
 void vector_resize(vector_t* vector, const size_t new_capacity);
 bool vector_is_full(vector_t* vector);
 char* vector_extract_charray(vector_t* vector);
+size_t vector_get_size(vector_t* vector);
 
 #ifdef __cplusplus
 }

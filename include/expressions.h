@@ -5,6 +5,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #define MAX_EXPRESSIONS 20
+#define MAX_ARGUMENT_COUNT 10
 
 #include "lib/vector.h"
 
@@ -32,9 +33,24 @@ typedef struct {
 } function_expr_t;
 
 typedef struct {
-    char* content;
-    char byte_amount;
-} write_expr_t;
+    size_t rax;
+    void* rdi;
+    void* rsi;
+    size_t rdx;
+} syscall_expr_t;
+
+typedef enum {
+    VARIABLE_EXPR,
+    FUNCTION_EXPR,
+    SYSCALL_EXPR,
+    MACRO_EXPR
+} expr_type_t;
+
+typedef struct {
+    expr_type_t type;
+    void* expr;
+} expression_t;
+
 
 #ifdef __cplusplus
 }

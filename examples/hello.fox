@@ -3,10 +3,12 @@ import "linux.fox"
 int32 count = 3
 int8 character = 5
 
-int8 main()
-    write "Hello, World!\n"
+proc main() do
+    syscall 1, "Hello, World!\n", 14
 end
 
-int8 init_program()
-    int16 pid = fork()
+proc calculate() do
+    int32 x = 15
+    int32 y = 44
+    return x + y
 end
