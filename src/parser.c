@@ -93,19 +93,19 @@ void parser_evaluate(parser_t* parser) {
     for (size_t i = 0; i < size; i++) {
         char* current_tok = data[tokens->pointer];
 
-	if (lexer_compare(data[i], "proc")) parser_evaluate_function(parser, BIT8_INT_DATATYPE, i);
-	if (lexer_compare(data[i], "syscall")) parser_evaluate_syscall(parser, i);
+	if (lexer_compare(data[i], "proc")) parser_evaluate_function(parser, BIT8_INT_DATATYPE);
+	if (lexer_compare(data[i], "syscall")) parser_evaluate_syscall(parser);
 
 	bool is_datatype = _parser_evaluate_datatype(current_tok) != INVALID_DATATYPE;
 	if (is_datatype) {
 	    char datatype = _parser_evaluate_datatype(current_tok);
-	    parser_evaluate_variable(parser, datatype, i);
+	    parser_evaluate_variable(parser, datatype);
 	}
 	tokens->pointer++;
     }
 
     _parser_print_expressions(parser);
-    compiler_proc(parser);
+    compiler_init(parser, "hello.ll");
 
 //    parser_delete(parser);
 }
@@ -136,7 +136,7 @@ static void _parser_throw_error(parser_t* parser, char* error) {
     exit(1);
 }
 
-void parser_evaluate_variable(parser_t* parser, char datatype, size_t pointer) {
+void parser_evaluate_variable(parser_t* parser, char datatype) {
     variable_expr_t* variable_expr = (variable_expr_t*)malloc(sizeof(variable_expr_t));
     if (!variable_expr)
         _parser_throw_error(parser, "Memory allocation failed for variable_expr");
@@ -145,6 +145,7 @@ void parser_evaluate_variable(parser_t* parser, char datatype, size_t pointer) {
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = (char**)tokens->data;
+    size_t pointer = tokens->pointer;
 
     char* name = data[pointer + 1];
     
@@ -207,13 +208,14 @@ void parser_evaluate_variable(parser_t* parser, char datatype, size_t pointer) {
     parser->expression_count++;
 }
 
-void parser_evaluate_function(parser_t* parser, char datatype, size_t pointer) {
+void parser_evaluate_function(parser_t* parser, char datatype) {
     function_expr_t* function_expr = (function_expr_t*)malloc(sizeof(function_expr_t));
     if (!function_expr)
         _parser_throw_error(parser, "Memory allocation failed for function_expr");
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = (char**)tokens->data;
+    size_t pointer = tokens->pointer;
 
     char* name = data[pointer + 1];
     vector_t* arguments = vector_init(MAX_ARGUMENT_COUNT);
@@ -265,13 +267,18 @@ void parser_evaluate_function(parser_t* parser, char datatype, size_t pointer) {
     parser->expression_count++;
 }
 
-void parser_evaluate_syscall(parser_t* parser, size_t pointer) {
+void parser_evaluate_calculation(parser_t* parser) {
+
+}
+
+void parser_evaluate_syscall(parser_t* parser) {
     syscall_expr_t* syscall_expr = (syscall_expr_t*)malloc(sizeof(syscall_expr_t));
     if (!syscall_expr)
         _parser_throw_error(parser, "Memory allocation failed for syscall_expr");
 
     vector_t* tokens = parser->lexer->tokens;
     char** data = (char**)tokens->data;
+    size_t pointer = tokens->pointer;
 
     pointer++; // Skip 'syscall' keyword
 
@@ -315,24 +322,24 @@ static void _parser_print_expressions(parser_t* parser) {
             case VARIABLE_EXPR: {
                 variable_expr_t* var = (variable_expr_t*)wrapped_expr->expr;
                 if (var->name) {
-                    printf("Variable - Name: %s\n", var->name);
+                    printf("Variable:\n   Name: %s\n", var->name);
                     switch (var->datatype) {
                         case STRING_DATATYPE:
-                            printf("Value: %s\n", (char*)var->value);
+                            printf("   Value: %s\n", (char*)var->value);
                             break;
                         case FLOAT32_DATATYPE:
                         case FLOAT64_DATATYPE:
-                            printf("Value: %f\n", *(double*)var->value);
+                            printf("   Value: %f\n", *(double*)var->value);
                             break;
                         default:
-                            printf("Value: %d\n", *(int*)var->value);
+                            printf("   Value: %d\n", *(int*)var->value);
                     }
                 }
                 break;
             }
             case FUNCTION_EXPR: {
                 function_expr_t* func = (function_expr_t*)wrapped_expr->expr;
-                printf("Function - Name: %s(), Arguments:\n", func->name);
+                printf("Function:\n   Name: %s()\nArguments:\n", func->name);
                 for (size_t j = 0; j < 0; j++) {
                     variable_expr_t* arg = (variable_expr_t*)vector_get(func->arguments, j);
                     printf(" - %s\n", arg->name);
@@ -341,7 +348,7 @@ static void _parser_print_expressions(parser_t* parser) {
             }
             case SYSCALL_EXPR: {
                 syscall_expr_t* syscall = (syscall_expr_t*)wrapped_expr->expr;
-                printf("Syscall - rax: %d, rdi: %p, rsi: %p, rdx: %d\n",
+                printf("Syscall:\n   rax: %d\nrdi: %p\nrsi: %p\nrdx: %d\n",
                        syscall->rax, syscall->rdi, syscall->rsi, syscall->rdx);
                 break;
             }

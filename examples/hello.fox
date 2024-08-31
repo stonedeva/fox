@@ -7,8 +7,6 @@ proc main() do
     syscall 1, 1, "Hello, World!\n", 14
 end
 
-proc calculate() do
-    int32 x = 15
-    int32 y = 44
-    return x + y
+proc calculate(int32 num1, int32 num2) do
+    return num1 + num2
 end

@@ -1,43 +1,31 @@
-#ifndef _COMPILER_H_
-#define _COMPILER_H_
+#ifndef _LLVM_COMPILER_H_
+#define _LLVM_COMPILER_H_
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-#include <stdio.h>
-#include <elf.h>
-#include <unistd.h>
-#include <stdlib.h>
 #include "parser.h"
-
-#define MAX_BINARY_OPCODES 255
+#include <llvm-c/Core.h>
+#include <llvm-c/ExecutionEngine.h>
+#include <llvm-c/Target.h>
+#include <llvm-c/TargetMachine.h>
+#include <llvm-c/Transforms/PassManagerBuilder.h>
+#include <llvm-c/Analysis.h>
+#include <stdio.h>
 
 typedef struct {
-    FILE* output;
+    char* module_path;
+    LLVMContextRef context;
+    LLVMModuleRef mod;
+    LLVMBuilderRef builder;
     parser_t* parser;
-
-    /* ELF Executable */
-    Elf64_Ehdr header;
-    Elf64_Phdr phdr;
-    vector_t* objcode;
 } compiler_t;
 
-/*
- * Public
-*/
-void compiler_proc(parser_t* parser);
-
-/*
- * Private
-*/
-static void _compiler_proc_elf(compiler_t* compiler);
-static void _compiler_proc_exe(compiler_t* compiler);
-static void _compiler_proc_assembly(compiler_t* compiler);
-static void _compiler_write(compiler_t* compiler, char objcode[], size_t objcode_size);
-static void _compiler_set_elfheader(compiler_t* compiler);
-static void _compiler_print_objcode(char* objcode, size_t objcode_size);
+void compiler_init(parser_t* parser, char* module_path);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-#endif /* _COMPILER_H_ */
+
+#endif /* _LLVM_COMPILER_H_ */
+

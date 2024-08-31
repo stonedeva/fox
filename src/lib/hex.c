@@ -1,6 +1,7 @@
 #include "lib/hex.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 char* ascii_to_hex(const char* ascii) {
     size_t len = strlen(ascii);
