@@ -170,7 +170,17 @@ void parser_evaluate_variable(parser_t* parser, char datatype) {
     char** data = (char**)tokens->data;
     size_t pointer = tokens->pointer;
 
-    char* name = data[pointer + 1];
+    char* name;
+    
+    if (lexer_compare(data[pointer + 1], "const")) {
+	variable_expr->is_constant = true;
+	name = data[pointer + 2];
+    } else {
+	name = data[pointer + 1];
+	variable_expr->is_constant = false;
+    }
+
+    pointer++; // Skip '=' sign
     
     int value_int;
     char* value_str;
@@ -220,8 +230,8 @@ void parser_evaluate_variable(parser_t* parser, char datatype) {
         return;
     }
 
-    bool is_inserted = hashtable_insert(parser->variable_map, variable_expr->name, variable_expr);
-    if (!is_inserted) {
+    bool inserted = hashtable_insert(parser->variable_map, variable_expr->name, variable_expr);
+    if (!inserted) {
 	free(variable_expr->name);
 	free(variable_expr->value);
 	free(variable_expr);
@@ -317,26 +327,6 @@ void parser_evaluate_calculation(parser_t* parser) {
     char operation = data[pointer][0];
     int left = atoi(data[pointer - 1]);
     int right = atoi(data[pointer + 1]);
-
-    // Detected variable
-    if (left == NULL) {
-	variable_expr_t* variable = (variable_expr_t*)hashtable_get_entry(parser->variable_map, data[pointer - 1]);
-	if (data[pointer][1] == NULL) {
-	    variable->value = right;
-	    printf("Redefine variable (%s) to: %d\n", variable->name, right);
-	}
-
-	switch (operation) {
-	case '+':
-	    variable->value += right;
-	    break;
-	case '-':
-	    variable->value -= right;
-	    break;
-	default:
-	    break;
-	}
-    }
 
     switch (operation) {
     case '+':
@@ -440,6 +430,8 @@ static void _parser_print_expressions(parser_t* parser) {
                         default:
                             printf("   Value: %d\n", *(int*)var->value);
                     }
+
+		    printf("   Constant: %d\n", var->is_constant);
                 }
                 break;
             }
@@ -463,11 +455,6 @@ static void _parser_print_expressions(parser_t* parser) {
                 printf("Macro: %s\n", macro);
                 break;
             }
-	    case CALCULATION_EXPR: {
-		calculation_expr_t* calc = (calculation_expr_t*)wrapped_expr->expr;
-		printf("Calculation:\n   result: %d\n", calc->result);
-		break;
-	    }
             default:
                 printf("Unknown expression type\n");
                 break;
