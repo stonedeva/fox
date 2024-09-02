@@ -1,12 +1,8 @@
 import "linux.fox"
 
-int32 count = 3
-int8 character = 5
+int32 count = 3;
+int8 character = 5;
 
 proc main() do
     syscall 1, 1, "Hello, World!\n", 14
-end
-
-proc calculate(int32 num1, int32 num2) do
-    return num1 + num2
 end

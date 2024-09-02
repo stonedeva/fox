@@ -14,18 +14,52 @@ static void fox_print_help(int code) {
     fprintf(stream, "Options:\n");
     fprintf(stream, "-h	Show help map\n");
     fprintf(stream, "-o	Set output file\n");
-    fprintf(stream, "-s	Compile to assembly\n");
+    fprintf(stream, "-l	Compile to assembly\n");
     fprintf(stream, "-v	Get compiler version\n");
 
     exit(code);
 }
 
 static int fox_init(int argc, char* argv[]) {
-    size_t path_len = strlen(argv[1]);
-    char input_path[path_len];
-    strcpy(input_path, argv[1]);
+    char* program_path = argv[0];
+    char* input_path = argv[1];
+    char* output_path;
 
-    lexer_t fox_lexer = lexer_init(argv[1]);
+    size_t i = 2;
+    while (i < argc) {
+	if (argv[i][0] != '-') {
+	    if (i + 1 > argc)
+		break;
+	    i++;
+	}
+
+	char option = argv[i][1];
+	switch (option) {
+	case 'h':
+	    fox_print_help(0);
+	    break;
+	case 'o':
+	    if (i + 1 > argc) {
+		fprintf(stderr, "%s: No output file provided!\n", program_path);
+		exit(1);
+	    }
+
+	    output_path = argv[i + 1];
+	    break;
+	case 'v':
+	    printf("v0.01\n");
+	    break;
+
+	default:
+	    fprintf(stderr, "%s: Invalid option provided!\n", program_path);
+	    fox_print_help(1);
+	    break;
+	}
+
+	i++;
+    }
+
+    lexer_t fox_lexer = lexer_init(input_path);
     lexer_proc(&fox_lexer);
     
     return 0;

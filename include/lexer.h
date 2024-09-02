@@ -10,14 +10,7 @@ extern "C" {
 
 
 #define MAX_TOKENS 255
-
-static char* token_keywords[] = {
-    "int", "char", "string", "short",
-    "long", "double", "struct",
-    "function", "import",
-    "if", "else", "switch", "case",
-    "break", "default", "return"
-};
+#define SEMICOLON ';'
 
 /*
  * Public

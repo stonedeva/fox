@@ -39,9 +39,9 @@ void lexer_proc(lexer_t* lexer) {
  * Private functions
 */
 static bool _lexer_is_delimiter(const char ch) {
-    return isspace(ch) || ch == '#' || ch == ',' || ch == '.' || ch == ';' || ch == ':' 
+    return isspace(ch) || ch == '#' || ch == ',' || ch == '.' || ch == ':' 
 	    || ch == '!' || ch == '?' || ch == '<' || ch == '>' || ch == '"'
-	    || ch == '(' || ch == ')';
+	    || ch == '(' || ch == ')' || ch == ';';
 }
 
 static void _lexer_tokenize(const lexer_t* lexer) {
@@ -62,7 +62,7 @@ static void _lexer_tokenize(const lexer_t* lexer) {
         }
 
 	// Skip comments
-	if (ch == ';' && line[i + 1] == ';')
+	if (ch == '#')
 	    continue;
 
         if (!inside_string && _lexer_is_delimiter(ch)) {
@@ -71,6 +71,12 @@ static void _lexer_tokenize(const lexer_t* lexer) {
 		vector_push(lexer->tokens, strdup(token));
 		token_index = 0;
 	    }
+
+	    if (ch == ';') {
+		char* semicolon = ";";
+		vector_push(lexer->tokens, semicolon);
+	    }
+
 	    continue;
 	}
 	token[token_index++] = ch;
@@ -100,6 +106,11 @@ char* lexer_get_prevtok(const vector_t* tokens, const size_t offset) {
 }
 
 bool lexer_compare(char* token1, char* token2) {
+    if (token1 == NULL)
+	return false;
+    if (token2 == NULL)
+	return false;
+
     while (*token1++ != '\0') {
 	*token2++;
 	if (*token1 != *token2) return false;

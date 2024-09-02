@@ -6,6 +6,7 @@ extern "C" {
 
 #include "expressions.h"
 #include "lexer.h"
+#include "lib/hashtable.h"
 
 typedef struct {
     lexer_t* lexer;
@@ -13,6 +14,7 @@ typedef struct {
     int exit_code;
     bool inside_parameters;
     size_t expression_count;
+    hashtable_t* variable_map;
 } parser_t;
 
 void parser_evaluate(parser_t* parser);
@@ -22,6 +24,7 @@ void parser_delete(parser_t* parser);
 void parser_evaluate_variable(parser_t* parser, char datatype);
 void parser_evaluate_function(parser_t* parser, char datatype);
 void parser_evaluate_syscall(parser_t* parser);
+void parser_evaluate_calculation(parser_t* parser);
 void parser_evaluate_macro(parser_t* parser);
 static char _parser_evaluate_datatype(char* str);
 static void _parser_throw_error(parser_t* parser, char* error);

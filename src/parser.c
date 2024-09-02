@@ -6,12 +6,15 @@
 #include <string.h>
 #include <stdint.h>
 
+static size_t pointer_copy = 0;
+
 parser_t parser_init(lexer_t* lexer) {
     parser_t parser;
     parser.lexer = lexer;
     parser.expressions = vector_init(MAX_EXPRESSIONS);
     parser.inside_parameters = false;
     parser.expression_count = 0;
+    parser.variable_map = hashtable_create(100);
 
     return parser;
 }
@@ -90,18 +93,38 @@ void parser_evaluate(parser_t* parser) {
     char** data = (char**)tokens->data;
     size_t size = tokens->size;
 
-    for (size_t i = 0; i < size; i++) {
-        char* current_tok = data[tokens->pointer];
+    while (tokens->pointer < size) {
+        char* current_tok = data[pointer_copy];
 
-	if (lexer_compare(data[i], "proc")) parser_evaluate_function(parser, BIT8_INT_DATATYPE);
-	if (lexer_compare(data[i], "syscall")) parser_evaluate_syscall(parser);
-
-	bool is_datatype = _parser_evaluate_datatype(current_tok) != INVALID_DATATYPE;
-	if (is_datatype) {
+	if (lexer_compare(current_tok, "proc")) {
+	    parser_evaluate_function(parser, BIT8_INT_DATATYPE);
+	} else if (lexer_compare(current_tok, "syscall")) {
+	    parser_evaluate_syscall(parser);
+	} else if (_parser_evaluate_datatype(current_tok) != INVALID_DATATYPE) {
 	    char datatype = _parser_evaluate_datatype(current_tok);
 	    parser_evaluate_variable(parser, datatype);
+	} /*else if (lexer_compare(current_tok, ";")) {
+	    pointer_copy++;
+	    continue;
+	}*/
+
+
+	// Calculation
+	switch (data[tokens->pointer][0]) {
+	case '+':
+	case '-':
+	case '*':
+	case '/':
+	case '%':
+	case '=':
+	    parser_evaluate_calculation(parser);
+	    break;
+	default:
+	    break;
 	}
+
 	tokens->pointer++;
+	pointer_copy++;
     }
 
     _parser_print_expressions(parser);
@@ -159,7 +182,7 @@ void parser_evaluate_variable(parser_t* parser, char datatype) {
     if (name == NULL)
         _parser_throw_error(parser, "expected name after 'var' expression"); 
 
-    variable_expr->name = name;
+    variable_expr->name = strdup(name);
     variable_expr->datatype = datatype;
 
     switch (datatype) {
@@ -197,6 +220,16 @@ void parser_evaluate_variable(parser_t* parser, char datatype) {
         return;
     }
 
+    bool is_inserted = hashtable_insert(parser->variable_map, variable_expr->name, variable_expr);
+    if (!is_inserted) {
+	free(variable_expr->name);
+	free(variable_expr->value);
+	free(variable_expr);
+	variable_expr = NULL;
+
+	_parser_throw_error(parser, "Failed to insert variable into hash table");
+    }
+
     expression_t* expr_wrapper = (expression_t*)malloc(sizeof(expression_t));
     if (!expr_wrapper)
 	_parser_throw_error(parser, "Memory allocation failed for expr_wrapper");
@@ -217,11 +250,16 @@ void parser_evaluate_function(parser_t* parser, char datatype) {
     char** data = (char**)tokens->data;
     size_t pointer = tokens->pointer;
 
-    char* name = data[pointer + 1];
+    pointer++; // Skip 'proc' keyword
+
+    char* name = data[pointer];
+    if (!name || !isalpha(name[0]))
+	_parser_throw_error(parser, "Invalid function name");
+
     vector_t* arguments = vector_init(MAX_ARGUMENT_COUNT);
 
     parser->inside_parameters = true;
-    pointer += 2;
+    pointer++; // Skip function name
 
     while (!lexer_compare(data[pointer], "do")) {
 	variable_expr_t* arg_expr = (variable_expr_t*)malloc(sizeof(variable_expr_t));
@@ -268,7 +306,75 @@ void parser_evaluate_function(parser_t* parser, char datatype) {
 }
 
 void parser_evaluate_calculation(parser_t* parser) {
+    calculation_expr_t* calc_expr = (calculation_expr_t*)malloc(sizeof(calculation_expr_t));
+    if (!calc_expr)
+	_parser_throw_error(parser, "Memory allocation failed for calc_expr");
 
+    vector_t* tokens = parser->lexer->tokens;
+    char** data = (char**)tokens->data;
+    size_t pointer = tokens->pointer;
+
+    char operation = data[pointer][0];
+    int left = atoi(data[pointer - 1]);
+    int right = atoi(data[pointer + 1]);
+
+    // Detected variable
+    if (left == NULL) {
+	variable_expr_t* variable = (variable_expr_t*)hashtable_get_entry(parser->variable_map, data[pointer - 1]);
+	if (data[pointer][1] == NULL) {
+	    variable->value = right;
+	    printf("Redefine variable (%s) to: %d\n", variable->name, right);
+	}
+
+	switch (operation) {
+	case '+':
+	    variable->value += right;
+	    break;
+	case '-':
+	    variable->value -= right;
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    switch (operation) {
+    case '+':
+	calc_expr->type = OP_PLUS;
+	calc_expr->result = left + right;
+	break;
+    case '-':
+	calc_expr->type = OP_MINUS;
+	calc_expr->result = left - right;
+	break;
+    case '*':
+	calc_expr->type = OP_MUL;
+	calc_expr->result = left * right;
+	break;
+    case '/':
+	calc_expr->type = OP_DIV;
+	calc_expr->result = left / right;
+	break;
+    case '%':
+	calc_expr->type = OP_MODULO;
+	calc_expr->result = left % right;
+	break;
+    case '=':
+	calc_expr->type = OP_EQUALS;
+	break;
+    default:
+	break;
+    }
+
+    expression_t* expr_wrapper = (expression_t*)malloc(sizeof(expression_t));
+    if (!expr_wrapper)
+	_parser_throw_error(parser, "Memory allocation failed for expr_wrapper");
+
+    expr_wrapper->type = CALCULATION_EXPR;
+    expr_wrapper->expr = calc_expr;
+
+    vector_push(parser->expressions, expr_wrapper);
+    parser->expression_count++;
 }
 
 void parser_evaluate_syscall(parser_t* parser) {
@@ -348,7 +454,7 @@ static void _parser_print_expressions(parser_t* parser) {
             }
             case SYSCALL_EXPR: {
                 syscall_expr_t* syscall = (syscall_expr_t*)wrapped_expr->expr;
-                printf("Syscall:\n   rax: %d\nrdi: %p\nrsi: %p\nrdx: %d\n",
+                printf("Syscall:\n   rax: %d\n   rdi: %p\n   rsi: %p\n   rdx: %d\n",
                        syscall->rax, syscall->rdi, syscall->rsi, syscall->rdx);
                 break;
             }
@@ -357,6 +463,11 @@ static void _parser_print_expressions(parser_t* parser) {
                 printf("Macro: %s\n", macro);
                 break;
             }
+	    case CALCULATION_EXPR: {
+		calculation_expr_t* calc = (calculation_expr_t*)wrapped_expr->expr;
+		printf("Calculation:\n   result: %d\n", calc->result);
+		break;
+	    }
             default:
                 printf("Unknown expression type\n");
                 break;

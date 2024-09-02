@@ -22,6 +22,7 @@ add_executable(foxc
     src/parser.c 
     src/lib/vector.c 
     src/lib/hex.c
+    src/lib/hashtable.c
 )
 
 target_link_libraries(foxc PRIVATE LLVM)

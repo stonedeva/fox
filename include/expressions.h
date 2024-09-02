@@ -18,10 +18,18 @@ extern "C" {
 #define FLOAT64_DATATYPE 6
 #define INVALID_DATATYPE 7
 
+#define OP_PLUS 0
+#define OP_MINUS 1
+#define OP_MUL 2
+#define OP_DIV 3
+#define OP_MODULO 4
+#define OP_EQUALS 5
+
 typedef struct {
     char* name;
     void* value;
     char datatype;
+    bool is_constant;
 } variable_expr_t;
 
 typedef struct {
@@ -39,18 +47,23 @@ typedef struct {
     int rdx;
 } syscall_expr_t;
 
+typedef struct {
+    char type;
+    int result;
+} calculation_expr_t;
+
 typedef enum {
     VARIABLE_EXPR,
     FUNCTION_EXPR,
     SYSCALL_EXPR,
-    MACRO_EXPR
+    MACRO_EXPR,
+    CALCULATION_EXPR
 } expr_type_t;
 
 typedef struct {
     expr_type_t type;
     void* expr;
 } expression_t;
-
 
 #ifdef __cplusplus
 }
