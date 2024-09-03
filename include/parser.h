@@ -4,7 +4,7 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#include "expressions.h"
+#include "nodes.h"
 #include "lexer.h"
 #include "lib/hashtable.h"
 

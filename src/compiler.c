@@ -1,5 +1,5 @@
 #include "compiler.h"
-#include "expressions.h"
+#include "nodes.h"
 
 void compiler_init(parser_t* parser, char* module_path, char* output_path) {
     compiler_t compiler;
