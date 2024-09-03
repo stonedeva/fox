@@ -4,5 +4,8 @@ int32 count = 3;
 int8 const character = 5;
 
 proc main() do
+    if count == 5 do
+	write("Hello, World!\n");
+    end
     syscall 1, 1, "Hello, World!\n", 14
 end

@@ -1,5 +1,5 @@
-#ifndef _EXPRESSIONS_H_
-#define _EXPRESSIONS_H_
+#ifndef _NODE_H_
+#define _NODE_H_
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -25,6 +25,20 @@ extern "C" {
 #define OP_DIV 3
 #define OP_MODULO 4
 #define OP_EQUALS 5
+
+typedef enum {
+    VARIABLE_NODE,
+    FUNCTION_NODE,
+    SYSCALL_NODE,
+    MACRO_NODE,
+    CALCULATION_NODE,
+    CONDITION_NODE
+} node_type_t;
+
+typedef struct {
+    node_type_t type;
+    void* node;
+} node_t;
 
 typedef struct {
     char* name;
@@ -54,20 +68,12 @@ typedef struct {
     int result;
 } calculation_node_t;
 
-typedef enum {
-    VARIABLE_EXPR,
-    FUNCTION_EXPR,
-    SYSCALL_EXPR,
-    MACRO_EXPR,
-    CALCULATION_EXPR
-} node_type_t;
-
 typedef struct {
-    node_type_t type;
-    void* node;
-} node_t;
+    node_t* condition;
+    node_t* body;
+} condition_node_t;
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-#endif /* _EXPRESSIONS_H_ */
+#endif /* _NODE_H_ */

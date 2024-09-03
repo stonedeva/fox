@@ -25,7 +25,7 @@ void parser_delete(parser_t* parser) {
         if (wrapped_node == NULL) continue;
 
         switch (wrapped_node->type) {
-            case VARIABLE_EXPR: {
+            case VARIABLE_NODE: {
                 variable_node_t* var = (variable_node_t*)wrapped_node->node;
                 if (var) {
                     if (var->value) {
@@ -38,7 +38,7 @@ void parser_delete(parser_t* parser) {
                 }
                 break;
             }
-            case FUNCTION_EXPR: {
+            case FUNCTION_NODE: {
                 function_node_t* func = (function_node_t*)wrapped_node->node;
                 if (func) {
                     for (size_t j = 0; j < 0; j++) {
@@ -60,7 +60,7 @@ void parser_delete(parser_t* parser) {
                 }
                 break;
             }
-            case SYSCALL_EXPR: {
+            case SYSCALL_NODE: {
                 syscall_node_t* syscall = (syscall_node_t*)wrapped_node->node;
                 if (syscall) {
 		    free(syscall);
@@ -68,7 +68,7 @@ void parser_delete(parser_t* parser) {
 		}
 		break;
             }
-            case MACRO_EXPR: {
+            case MACRO_NODE: {
                 char* macro = (char*)wrapped_node->node;
                 if (macro) {
 		    free(macro);
@@ -100,27 +100,11 @@ void parser_evaluate(parser_t* parser) {
 	    parser_evaluate_function(parser, BIT8_INT_DATATYPE);
 	} else if (lexer_compare(current_tok, "syscall")) {
 	    parser_evaluate_syscall(parser);
+	} else if (lexer_compare(current_tok, "if")) {
+	    parser_evaluate_condition(parser);
 	} else if (_parser_evaluate_datatype(current_tok) != INVALID_DATATYPE) {
 	    char datatype = _parser_evaluate_datatype(current_tok);
 	    parser_evaluate_variable(parser, datatype);
-	} /*else if (lexer_compare(current_tok, ";")) {
-	    pointer_copy++;
-	    continue;
-	}*/
-
-
-	// Calculation
-	switch (data[tokens->pointer][0]) {
-	case '+':
-	case '-':
-	case '*':
-	case '/':
-	case '%':
-	case '=':
-	    parser_evaluate_calculation(parser);
-	    break;
-	default:
-	    break;
 	}
 
 	tokens->pointer++;
@@ -190,7 +174,7 @@ void parser_evaluate_variable(parser_t* parser, char datatype) {
 	value_int = atoi(data[pointer + 3]);
 
     if (name == NULL)
-        _parser_throw_error(parser, "expected name after 'var' node"); 
+        _parser_throw_error(parser, "expected name after variable node"); 
 
     variable_node->name = strdup(name);
     variable_node->datatype = datatype;
@@ -244,7 +228,7 @@ void parser_evaluate_variable(parser_t* parser, char datatype) {
     if (!node_wrapper)
 	_parser_throw_error(parser, "Memory allocation failed for node_wrapper");
 
-    node_wrapper->type = VARIABLE_EXPR;
+    node_wrapper->type = VARIABLE_NODE;
     node_wrapper->node = variable_node;
 
     vector_push(parser->nodes, node_wrapper);
@@ -309,8 +293,45 @@ void parser_evaluate_function(parser_t* parser, char datatype) {
     if (!node_wrapper)
 	_parser_throw_error(parser, "Memory allocation failed for node_wrapper");
 
-    node_wrapper->type = FUNCTION_EXPR;
+    node_wrapper->type = FUNCTION_NODE;
     node_wrapper->node = function_node;
+
+    vector_push(parser->nodes, node_wrapper);
+    parser->node_count++;
+}
+
+void parser_evaluate_condition(parser_t* parser) {
+    condition_node_t* condition_node = (condition_node_t*)malloc(sizeof(condition_node_t));
+    if (!condition_node)
+	_parser_throw_error(parser, "Memory allocation failed for condition node");
+
+    vector_t* tokens = parser->lexer->tokens;
+    char** data = (char**)tokens->data;
+    size_t pointer = tokens->pointer;
+
+    pointer++; // Skip 'if' keyword
+    while (!lexer_compare(data[pointer], "do")) {
+	/*
+	 * Read condition
+	*/
+	pointer++;
+    }
+
+    pointer++; // Skip 'do' keyword
+    while (!lexer_compare(data[pointer], "end")) {
+	/*
+	 * Read body
+	*/
+	printf("If node body: %s\n", data[pointer]);
+	pointer++;
+    }
+
+    node_t* node_wrapper = (node_t*)malloc(sizeof(node_t));
+    if (!node_wrapper)
+	_parser_throw_error(parser, "Memory allocation failed for node_wrapper");
+
+    node_wrapper->type = CONDITION_NODE;
+    node_wrapper->node = condition_node;
 
     vector_push(parser->nodes, node_wrapper);
     parser->node_count++;
@@ -361,7 +382,7 @@ void parser_evaluate_calculation(parser_t* parser) {
     if (!node_wrapper)
 	_parser_throw_error(parser, "Memory allocation failed for node_wrapper");
 
-    node_wrapper->type = CALCULATION_EXPR;
+    node_wrapper->type = CALCULATION_NODE;
     node_wrapper->node = calc_node;
 
     vector_push(parser->nodes, node_wrapper);
@@ -390,7 +411,7 @@ void parser_evaluate_syscall(parser_t* parser) {
     syscall_node->rdx = rdx;
 
     node_t* node_wrapper = (node_t*)malloc(sizeof(node_t));
-    node_wrapper->type = SYSCALL_EXPR;
+    node_wrapper->type = SYSCALL_NODE;
     node_wrapper->node = syscall_node;
 
     vector_push(parser->nodes, node_wrapper);
@@ -416,7 +437,7 @@ static void _parser_print_nodes(parser_t* parser) {
         if (wrapped_node == NULL || wrapped_node->node == NULL) continue;
 
         switch (wrapped_node->type) {
-            case VARIABLE_EXPR: {
+            case VARIABLE_NODE: {
                 variable_node_t* var = (variable_node_t*)wrapped_node->node;
                 if (var->name) {
                     printf("Variable:\n   Name: %s\n", var->name);
@@ -436,7 +457,7 @@ static void _parser_print_nodes(parser_t* parser) {
                 }
                 break;
             }
-            case FUNCTION_EXPR: {
+            case FUNCTION_NODE: {
                 function_node_t* func = (function_node_t*)wrapped_node->node;
                 printf("Function:\n   Name: %s()\nArguments:\n", func->name);
                 for (size_t j = 0; j < 0; j++) {
@@ -445,13 +466,13 @@ static void _parser_print_nodes(parser_t* parser) {
                 }
                 break;
             }
-            case SYSCALL_EXPR: {
+            case SYSCALL_NODE: {
                 syscall_node_t* syscall = (syscall_node_t*)wrapped_node->node;
                 printf("Syscall:\n   rax: %d\n   rdi: %p\n   rsi: %p\n   rdx: %d\n",
                        syscall->rax, syscall->rdi, syscall->rsi, syscall->rdx);
                 break;
             }
-            case MACRO_EXPR: {
+            case MACRO_NODE: {
                 char* macro = (char*)wrapped_node->node;
                 printf("Macro: %s\n", macro);
                 break;
