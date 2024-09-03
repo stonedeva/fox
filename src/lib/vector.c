@@ -73,6 +73,10 @@ void vector_set(vector_t* vector, const void* data, const size_t index) {
     vector->data[index] = (void*)data; // Set the data at the index
 }
 
+void* vector_get_last(vector_t* vector) {
+    return vector->data[vector->size - 1];
+}
+
 char* vector_extract_charray(vector_t* vector) {
     if (vector->size == 0)
 	return NULL;

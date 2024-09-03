@@ -4,8 +4,9 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define MAX_EXPRESSIONS 20
+#define MAX_NODES 20
 #define MAX_ARGUMENT_COUNT 10
+#define MAX_VARIABLES 100
 
 #include "lib/vector.h"
 
@@ -27,30 +28,31 @@ extern "C" {
 
 typedef struct {
     char* name;
-    void* value;
-    char datatype;
-    bool is_constant;
-} variable_expr_t;
-
-typedef struct {
-    char* name;
     char** arguments;
     char return_type;
     vector_t* tokens;
     int ret_value;
-} function_expr_t;
+} function_node_t;
+
+typedef struct {
+    char* name;
+    void* value;
+    char datatype;
+    bool is_constant;
+    function_node_t* scope;
+} variable_node_t;
 
 typedef struct {
     int rax;
     void* rdi;
     void* rsi;
     int rdx;
-} syscall_expr_t;
+} syscall_node_t;
 
 typedef struct {
     char type;
     int result;
-} calculation_expr_t;
+} calculation_node_t;
 
 typedef enum {
     VARIABLE_EXPR,
@@ -58,12 +60,12 @@ typedef enum {
     SYSCALL_EXPR,
     MACRO_EXPR,
     CALCULATION_EXPR
-} expr_type_t;
+} node_type_t;
 
 typedef struct {
-    expr_type_t type;
-    void* expr;
-} expression_t;
+    node_type_t type;
+    void* node;
+} node_t;
 
 #ifdef __cplusplus
 }

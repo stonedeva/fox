@@ -21,6 +21,7 @@ void vector_push(vector_t* vector, const void* data);
 void vector_push_array(vector_t* vector, const char data[], size_t data_size);
 void vector_pop(vector_t* vector);
 char* vector_get(vector_t* vector, const size_t index);
+void* vector_get_last(vector_t* vector);
 void vector_set(vector_t* vector, const void* data, const size_t index);
 void vector_resize(vector_t* vector, const size_t new_capacity);
 bool vector_is_full(vector_t* vector);

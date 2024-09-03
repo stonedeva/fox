@@ -10,10 +10,10 @@ extern "C" {
 
 typedef struct {
     lexer_t* lexer;
-    vector_t* expressions;
+    vector_t* nodes;
     int exit_code;
     bool inside_parameters;
-    size_t expression_count;
+    size_t node_count;
     hashtable_t* variable_map;
 } parser_t;
 
@@ -28,7 +28,7 @@ void parser_evaluate_calculation(parser_t* parser);
 void parser_evaluate_macro(parser_t* parser);
 static char _parser_evaluate_datatype(char* str);
 static void _parser_throw_error(parser_t* parser, char* error);
-static void _parser_print_expressions(parser_t* parser);
+static void _parser_print_nodes(parser_t* parser);
 
 #ifdef __cplusplus
 }
