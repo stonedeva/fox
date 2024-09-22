@@ -17,26 +17,27 @@ extern "C" {
 */
 typedef struct {
     FILE* file;
-    vector_t* tokens;
+    Vector* tokens;
     char line[MAX_TOKENS];
     size_t line_count;
     char* filename;
-} lexer_t;
+} Lexer;
 
-lexer_t lexer_init(char* filename);
-void lexer_proc(lexer_t* lexer);
+Lexer lexer_init(char* filename);
+void lexer_proc(Lexer* lexer);
 
 /*
  * Private
 */
 static bool _lexer_is_delimiter(const char ch);
-static void _lexer_tokenize(const lexer_t* lexer);
+static void _lexer_tokenize(const Lexer* lexer);
 
 /*
  * Public
 */
-char* lexer_get_nexttok(const vector_t* tokens, const size_t offset);
-char* lexer_get_prevtok(const vector_t* tokens, const size_t offset);
+char* token_next(const Vector* tokens, const size_t offset);
+char* token_prev(const Vector* tokens, const size_t offset);
+void token_skip(Vector* tokens, const size_t offset);
 bool lexer_compare(char* token1, char* token2);
 bool lexer_contains(char ch, char* token);
 char* lexer_cut(char ch, char* token);

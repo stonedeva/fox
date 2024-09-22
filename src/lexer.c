@@ -1,6 +1,5 @@
 #include "lexer.h"
 #include "compiler.h"
-#include "parser.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,8 +8,8 @@
 /*
  * Public functions
 */
-lexer_t lexer_init(char* filename) {
-    lexer_t lexer;
+Lexer lexer_init(char* filename) {
+    Lexer lexer;
     lexer.file = fopen(filename, "r");
     lexer.line_count = 0;
     if (lexer.file == NULL) {
@@ -24,15 +23,17 @@ lexer_t lexer_init(char* filename) {
     return lexer;
 }
 
-void lexer_proc(lexer_t* lexer) {
+void lexer_proc(Lexer* lexer) {
     while (fgets(lexer->line, sizeof(lexer->line), lexer->file)) {
 	_lexer_tokenize(lexer);
 	lexer->line_count++;
     }
 
-    //compiler_proc(lexer);
-    parser_t parser = parser_init(lexer);
-    parser_evaluate(&parser);
+    char** tokens = lexer->tokens->data;
+    size_t tok_sz = lexer->tokens->size;
+
+    Compiler* compiler = compiler_init("hello.asm", tokens, tok_sz);
+    compiler_emit(compiler);
 }
 
 /*
@@ -44,7 +45,7 @@ static bool _lexer_is_delimiter(const char ch) {
 	    || ch == '(' || ch == ')' || ch == ';';
 }
 
-static void _lexer_tokenize(const lexer_t* lexer) {
+static void _lexer_tokenize(const Lexer* lexer) {
     const char *line = lexer->line;
     size_t len = strlen(line);
     char token[MAX_TOKENS]; 
@@ -73,8 +74,12 @@ static void _lexer_tokenize(const lexer_t* lexer) {
 	    }
 
 	    if (ch == ';') {
-		char* semicolon = ";";
-		vector_push(lexer->tokens, semicolon);
+		vector_push(lexer->tokens, strdup(";"));
+	    }
+
+	    if (ch == ':') {
+		char* doubledot = ":";
+		vector_push(lexer->tokens, strdup(":"));
 	    }
 
 	    continue;
@@ -92,17 +97,21 @@ static void _lexer_tokenize(const lexer_t* lexer) {
  * Public
 */
 
-char* lexer_get_nexttok(const vector_t* tokens, const size_t offset) {
+char* token_prev(const Vector* tokens, const size_t offset) {
     if (tokens->pointer + offset > tokens->size)
 	return NULL;
 
     return tokens->data[tokens->pointer + offset];
 }
 
-char* lexer_get_prevtok(const vector_t* tokens, const size_t offset) {
+char* token_next(const Vector* tokens, const size_t offset) {
     if (tokens->pointer - offset < 0)
 	return NULL;
     return tokens->data[tokens->pointer - offset];
+}
+
+void token_skip(Vector* tokens, const size_t offset) {
+    tokens->pointer += offset;
 }
 
 bool lexer_compare(char* token1, char* token2) {

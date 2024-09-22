@@ -13,20 +13,21 @@ typedef struct {
     size_t size;
     size_t capacity;
     size_t pointer;
-} vector_t;
+} Vector;
 
-vector_t* vector_init(const size_t capacity);
-void vector_delete(vector_t* vector);
-void vector_push(vector_t* vector, const void* data);
-void vector_push_array(vector_t* vector, const char data[], size_t data_size);
-void vector_pop(vector_t* vector);
-char* vector_get(vector_t* vector, const size_t index);
-void* vector_get_last(vector_t* vector);
-void vector_set(vector_t* vector, const void* data, const size_t index);
-void vector_resize(vector_t* vector, const size_t new_capacity);
-bool vector_is_full(vector_t* vector);
-char* vector_extract_charray(vector_t* vector);
-size_t vector_get_size(vector_t* vector);
+Vector* vector_init(const size_t capacity);
+void vector_delete(Vector* vector);
+void vector_push(Vector* vector, const void* data);
+void vector_push_array(Vector* vector, const char data[], size_t data_size);
+void vector_pop(Vector* vector);
+char* vector_get(Vector* vector, const size_t index);
+void vector_increment(Vector* vector, const size_t by);
+void* vector_get_last(Vector* vector);
+void vector_set(Vector* vector, const void* data, const size_t index);
+void vector_resize(Vector* vector, const size_t new_capacity);
+bool vector_is_full(Vector* vector);
+char* vector_extract_charray(Vector* vector);
+size_t vector_get_size(Vector* vector);
 
 #ifdef __cplusplus
 }

@@ -2,7 +2,6 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include "compiler.h"
 #include "lexer.h"
 
 #define DEBUG
@@ -59,9 +58,9 @@ static int fox_init(int argc, char* argv[]) {
 	i++;
     }
 
-    lexer_t fox_lexer = lexer_init(input_path);
+    Lexer fox_lexer = lexer_init(input_path);
     lexer_proc(&fox_lexer);
-    
+
     return 0;
 }
 

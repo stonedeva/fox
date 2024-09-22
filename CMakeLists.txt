@@ -18,11 +18,9 @@ add_definitions(${LLVM_DEFINITIONS})
 add_executable(foxc 
     src/main.c 
     src/lexer.c 
-    src/compiler.c 
-    src/parser.c 
+    src/compiler.c
     src/lib/vector.c 
-    src/lib/hex.c
-    src/lib/hashtable.c
+    src/lib/utils.c
 )
 
 target_link_libraries(foxc PRIVATE LLVM)
