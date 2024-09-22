@@ -8,7 +8,8 @@
 /*
  * Public functions
 */
-Lexer lexer_init(char* filename) {
+Lexer lexer_init(char* filename) 
+{
     Lexer lexer;
     lexer.file = fopen(filename, "r");
     lexer.line_count = 0;
@@ -23,7 +24,8 @@ Lexer lexer_init(char* filename) {
     return lexer;
 }
 
-void lexer_proc(Lexer* lexer) {
+void lexer_proc(Lexer* lexer) 
+{
     while (fgets(lexer->line, sizeof(lexer->line), lexer->file)) {
 	_lexer_tokenize(lexer);
 	lexer->line_count++;
@@ -39,13 +41,15 @@ void lexer_proc(Lexer* lexer) {
 /*
  * Private functions
 */
-static bool _lexer_is_delimiter(const char ch) {
+static bool _lexer_is_delimiter(const char ch)
+{
     return isspace(ch) || ch == '#' || ch == ',' || ch == '.' || ch == ':' 
 	    || ch == '!' || ch == '?' || ch == '<' || ch == '>' || ch == '"'
 	    || ch == '(' || ch == ')' || ch == ';';
 }
 
-static void _lexer_tokenize(const Lexer* lexer) {
+static void _lexer_tokenize(const Lexer* lexer) 
+{
     const char *line = lexer->line;
     size_t len = strlen(line);
     char token[MAX_TOKENS]; 
@@ -97,24 +101,28 @@ static void _lexer_tokenize(const Lexer* lexer) {
  * Public
 */
 
-char* token_prev(const Vector* tokens, const size_t offset) {
+char* token_prev(const Vector* tokens, const size_t offset) 
+{
     if (tokens->pointer + offset > tokens->size)
 	return NULL;
 
     return tokens->data[tokens->pointer + offset];
 }
 
-char* token_next(const Vector* tokens, const size_t offset) {
+char* token_next(const Vector* tokens, const size_t offset) 
+{
     if (tokens->pointer - offset < 0)
 	return NULL;
     return tokens->data[tokens->pointer - offset];
 }
 
-void token_skip(Vector* tokens, const size_t offset) {
+void token_skip(Vector* tokens, const size_t offset) 
+{
     tokens->pointer += offset;
 }
 
-bool lexer_compare(char* token1, char* token2) {
+bool lexer_compare(char* token1, char* token2) 
+{
     if (token1 == NULL)
 	return false;
     if (token2 == NULL)
@@ -128,14 +136,16 @@ bool lexer_compare(char* token1, char* token2) {
     return true;
 }
 
-bool lexer_contains(char ch, char* token) {
+bool lexer_contains(char ch, char* token) 
+{
     while (*token++ != '\0') {
 	if (*token == ch) return true;
     }
     return false;
 }
 
-char* lexer_cut(char ch, char* token) {
+char* lexer_cut(char ch, char* token) 
+{
     while (*token++ != '\0')
 	if (*token == ch) *token = '\0';
     return token;

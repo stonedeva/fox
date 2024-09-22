@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-char* utils_ascii_to_hex(const char* ascii) {
+char* utils_ascii_to_hex(const char* ascii) 
+{
     size_t len = strlen(ascii);
     char* hex_str = (char*)malloc((len * 3 + 1) * sizeof(char));
     if (hex_str == NULL)
@@ -19,7 +20,8 @@ char* utils_ascii_to_hex(const char* ascii) {
     return hex_str;
 }
 
-bool utils_is_number(char* str) {
+bool utils_is_number(char* str) 
+{
     while (*str != '\0') {
 	if (!isdigit(*str)) 
 	    return false;
@@ -28,7 +30,8 @@ bool utils_is_number(char* str) {
     return true;
 }
 
-int utils_cstr_as_number(char* str) {
+int utils_cstr_as_number(char* str) 
+{
     int result = 0;
     while (*str != '\0') {	
 	if (isdigit((unsigned char)*str))
@@ -38,7 +41,21 @@ int utils_cstr_as_number(char* str) {
     return result;
 }
 
-void utils_execute_command(char* command) {
+bool utils_is_operator(char* str) 
+{
+    switch (str[0]) {
+    case '+':
+    case '-':
+    case '*':
+    case '/':
+	return true;
+    }
+
+    return false;
+}
+
+void utils_execute_command(char* command) 
+{
     printf("[CMD] %s\n", command);
     system(command);
 }

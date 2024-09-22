@@ -6,7 +6,8 @@
 
 #define DEBUG
 
-static void fox_print_help(int code) {
+static void fox_print_help(int code) 
+{
     FILE* stream = code ? stderr : stdout;
 
     fprintf(stream, "Usage: foxc <file> [options...]\n\n");
@@ -19,7 +20,8 @@ static void fox_print_help(int code) {
     exit(code);
 }
 
-static int fox_init(int argc, char* argv[]) {
+static int fox_init(int argc, char* argv[]) 
+{
     char* program_path = argv[0];
     char* input_path = argv[1];
     char* output_path;
@@ -64,7 +66,8 @@ static int fox_init(int argc, char* argv[]) {
     return 0;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) 
+{
     if (argc < 2) {
 	fprintf(stderr, "Usage: %s <file> [options...]\n", argv[0]);
 	return 1;

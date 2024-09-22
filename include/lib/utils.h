@@ -11,6 +11,7 @@ extern "C" {
 char* utils_ascii_to_hex(const char* ascii);
 bool utils_is_number(char* str);
 int utils_cstr_as_number(char* str);
+bool utils_is_operator(char* str);
 void utils_execute_command(char* command);
 bool is_datatype(char* str);
 
