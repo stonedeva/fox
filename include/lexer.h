@@ -15,9 +15,28 @@ extern "C" {
 /*
  * Public
 */
+
+typedef enum {
+    TOK_BINARYOP,
+    TOK_NUMBER,
+    TOK_PRINT,
+    TOK_DEF_FUNC,
+    TOK_DEF_VAR,
+    TOK_RETURN,
+    TOK_END,
+    TOK_NEW_LINE,
+    TOK_NAME_LITERAL
+} TokenType;
+
+typedef struct {
+    TokenType type;
+    char* token;
+} Token;
+
 typedef struct {
     FILE* file;
-    Vector* tokens;
+    Token tokens[MAX_TOKENS];
+    size_t tok_sz;
     char line[MAX_TOKENS];
     size_t line_count;
     char* filename;
@@ -30,7 +49,8 @@ void lexer_proc(Lexer* lexer);
  * Private
 */
 static bool _lexer_is_delimiter(const char ch);
-static void _lexer_tokenize(const Lexer* lexer);
+static void _lexer_tokenize(Lexer* lexer);
+static TokenType _lexer_type_from_cstr(char* cstr);
 
 /*
  * Public

@@ -1,5 +1,4 @@
 BITS 64
-segment .text
 dump:
         mov  r8, -3689348814741910323
         sub     rsp, 40
@@ -36,12 +35,13 @@ _start:
 	mov rdi, 0
 	syscall
 main:
-	push 2
-	push 56
+	push 35
+	push 95
 	pop rax
 	pop rbx
-        mul rax, rbx
+        add rax, rbx
         push rax
 	pop rdi
 	call dump
 	ret
+segment .text

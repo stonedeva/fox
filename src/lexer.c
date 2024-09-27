@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 /*
  * Public functions
@@ -18,7 +19,6 @@ Lexer lexer_init(char* filename)
 	exit(1);
     }
 
-    lexer.tokens = vector_init(MAX_TOKENS); 
     lexer.filename = filename;
 
     return lexer;
@@ -31,8 +31,8 @@ void lexer_proc(Lexer* lexer)
 	lexer->line_count++;
     }
 
-    char** tokens = lexer->tokens->data;
-    size_t tok_sz = lexer->tokens->size;
+    Token* tokens = lexer->tokens;
+    size_t tok_sz = lexer->tok_sz;
 
     Compiler* compiler = compiler_init("hello.asm", tokens, tok_sz);
     compiler_emit(compiler);
@@ -48,7 +48,7 @@ static bool _lexer_is_delimiter(const char ch)
 	    || ch == '(' || ch == ')' || ch == ';';
 }
 
-static void _lexer_tokenize(const Lexer* lexer) 
+static void _lexer_tokenize(Lexer* lexer) 
 {
     const char *line = lexer->line;
     size_t len = strlen(line);
@@ -73,17 +73,20 @@ static void _lexer_tokenize(const Lexer* lexer)
         if (!inside_string && _lexer_is_delimiter(ch)) {
             if (token_index > 0) {
                 token[token_index] = '\0';
-		vector_push(lexer->tokens, strdup(token));
+		lexer->tokens[lexer->tok_sz] = (Token) {
+		    .type = _lexer_type_from_cstr(token),
+		    .token = strdup(token)
+		};
+		lexer->tok_sz++;
 		token_index = 0;
 	    }
 
 	    if (ch == ';') {
-		vector_push(lexer->tokens, strdup(";"));
-	    }
-
-	    if (ch == ':') {
-		char* doubledot = ":";
-		vector_push(lexer->tokens, strdup(":"));
+		lexer->tokens[lexer->tok_sz] = (Token) {
+		    .type = TOK_NEW_LINE,
+		    .token = strdup(token)
+		};
+		lexer->tok_sz++;
 	    }
 
 	    continue;
@@ -93,7 +96,11 @@ static void _lexer_tokenize(const Lexer* lexer)
     
     if (token_index > 0) {
         token[token_index] = '\0';
-	vector_push(lexer->tokens, strdup(token));
+	lexer->tokens[lexer->tok_sz] = (Token) {
+	    .type = _lexer_type_from_cstr(token),
+	    .token = strdup(token)
+	};
+	lexer->tok_sz++;
     }
 }
 
@@ -149,4 +156,28 @@ char* lexer_cut(char ch, char* token)
     while (*token++ != '\0')
 	if (*token == ch) *token = '\0';
     return token;
+}
+
+/*
+ * Private
+*/
+static TokenType _lexer_type_from_cstr(char* cstr)
+{
+    if (strcmp("func", cstr) == 0) {
+	return TOK_DEF_FUNC;
+    } else if (strcmp("const", cstr) == 0) {
+	return TOK_DEF_VAR;
+    } else if (strcmp("end", cstr) == 0) {
+	return TOK_END;
+    } else if (strcmp("print", cstr) == 0) {
+	return TOK_PRINT;
+    } else if (strcmp("return", cstr) == 0) {
+	return TOK_RETURN;
+    } else if (utils_is_number(cstr)) {
+	return TOK_NUMBER;
+    } else if (utils_is_operator(cstr)) {
+	return TOK_BINARYOP;
+    } else {
+	return TOK_NAME_LITERAL;
+    }
 }

@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <string.h>
 
-Compiler* compiler_init(char* output_path, char** tokens, size_t tok_sz)
+Compiler* compiler_init(char* output_path, Token* tokens, size_t tok_sz)
 {
     Compiler* compiler = (Compiler*)malloc(sizeof(Compiler));
     if (!compiler) {
@@ -21,12 +21,17 @@ Compiler* compiler_init(char* output_path, char** tokens, size_t tok_sz)
     compiler->tokens = tokens;
     compiler->tok_sz = tok_sz;
     compiler->tok_ptr = 0;
+    compiler->var_count = 0;
 
     return compiler;
 }
 
 void compiler_free(Compiler* compiler) 
 {
+    if (compiler->output) {
+	fflush(compiler->output);
+	fclose(compiler->output);
+    }
     free(compiler);
 }
 
@@ -35,8 +40,6 @@ void compiler_emit_base(Compiler* compiler)
     FILE* out = compiler->output;
 
     fprintf(out, "BITS 64\n");
-    fprintf(out, "segment .text\n");
-
     fprintf(out, "dump:\n");
     fprintf(out, "        mov  r8, -3689348814741910323\n");
     fprintf(out, "        sub     rsp, 40\n");
@@ -83,22 +86,58 @@ void compiler_emit_print(Compiler* compiler)
     fprintf(out, "	call dump\n");
 }
 
+void compiler_emit_variable(Compiler* compiler)
+{
+    size_t ptr = compiler->tok_ptr;
+    Token name = compiler->tokens[ptr + 1];
+    Token value = compiler->tokens[ptr + 3];
+
+    compiler->vars[compiler->var_count] = (Variable) {
+	.name = name.token,
+	.value = value.token
+    };
+
+    compiler->var_count++;
+    compiler->tok_ptr += 3;
+}
+
 void compiler_emit_function(Compiler* compiler)
 {
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
-    char* name = compiler->tokens[ptr + 1];
+    
+    Token name_tok = compiler->tokens[ptr + 1];
+    char* name = name_tok.token;
 
     fprintf(out, "%s:\n", name);
+}
+
+void compiler_emit_func_call(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t ptr = compiler->tok_ptr;
+
+    Token name_tok = compiler->tokens[ptr];
+    char* name = name_tok.token[ptr + 1];
+
+    fprintf(out, "call %s\n", name);
 }
 
 void compiler_emit_push(Compiler* compiler)
 {
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
-    char* val = compiler->tokens[ptr];
+
+    Token tok = compiler->tokens[ptr];
+    char* val = tok.token;
 
     fprintf(out, "	push %s\n", val);
+}
+
+void compiler_emit_cstr(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t ptr = compiler->tok_ptr;
 }
 
 void compiler_emit_binaryop(Compiler* compiler)
@@ -106,7 +145,8 @@ void compiler_emit_binaryop(Compiler* compiler)
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
 
-    char op = compiler->tokens[ptr][0];
+    Token tok = compiler->tokens[ptr];
+    char op = tok.token[0];
 
     fprintf(out, "	pop rax\n");
     fprintf(out, "	pop rbx\n");
@@ -119,10 +159,10 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "        sub rax, rbx\n");
 	break;
     case '*':
-	fprintf(out, "        mul rax, rbx\n");
+	fprintf(out, "        mul rax\n");
 	break;
     case '/':
-	fprintf(out, "        div rax, rbx\n");
+	fprintf(out, "        div rax\n");
 	break;
     case '=':
 	fprintf(out, "	      cmp rax, rbx\n");
@@ -134,6 +174,17 @@ void compiler_emit_binaryop(Compiler* compiler)
     fprintf(out, "        push rax\n");
 }
 
+void compiler_emit_textseg(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    fprintf(out, "segment .text\n");
+
+    for (size_t i = 0; i < compiler->var_count; i++) {
+	Variable var = compiler->vars[i];
+	fprintf(out, "        %s: db %s\n", var.name, var.value);
+    }
+}
+
 void compiler_emit(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -141,19 +192,44 @@ void compiler_emit(Compiler* compiler)
     compiler_emit_base(compiler);
 
     for (size_t i = 0; i < compiler->tok_sz; i++) {
-	char* tok = compiler->tokens[i];
-	if (strcmp("func", tok) == 0) {
+	Token tok = compiler->tokens[i];
+
+	switch (tok.type) {
+	case TOK_DEF_FUNC:
 	    compiler_emit_function(compiler);
-	} else if (strcmp("end", tok) == 0) {
+	    break;
+	case TOK_END:
 	    fprintf(out, "	ret\n");
-	} else if (strcmp("print", tok) == 0) {
+	    break;
+	case TOK_DEF_VAR:
+	    compiler_emit_variable(compiler);
+	    break;
+	case TOK_PRINT:
 	    compiler_emit_print(compiler);
-	} else if (utils_is_number(tok)) {
+	    break;
+	case TOK_NUMBER:
 	    compiler_emit_push(compiler);
-	} else if (utils_is_operator(tok)) {
+	    break;
+	case TOK_BINARYOP:
 	    compiler_emit_binaryop(compiler);
+	    break;
+	default:
+	    break;
 	}
 
+	i = compiler->tok_ptr;
 	compiler->tok_ptr++;
+    }
+
+    compiler_emit_textseg(compiler);
+    compiler_free(compiler);
+}
+
+void compiler_assemble(Compiler* compiler, bool remove_tmp)
+{
+    system("nasm -felf64 hello.asm");
+
+    if (remove_tmp) {
+	system("rm -r hello.asm hello.o");
     }
 }

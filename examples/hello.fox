@@ -1,3 +1,4 @@
 func main
-    2 56 * print
+    35 95 + print
 end
+
