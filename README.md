@@ -2,11 +2,16 @@
 This is the repository for the fox programming language
 
 ## Installation Guide
-′′′git clone https://github.com/stonedeva/fox.git′′′
-′′′mkdir -p build′′′
-′′′chmod +x build.sh && ./build.sh′′′
+### Dependencies
+- GCC / CC / CLANG
+- NASM
+- CMake
 
-The final executable will be stored in the ′′′build/′′′ directory
+```console
+git clone https://github.com/stonedeva/fox.git
+mkdir -p build
+chmod +x build.sh && ./build.sh
+```
 
 ## TODO
 - [x] Basic operations

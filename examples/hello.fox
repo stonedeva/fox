@@ -1,8 +1,4 @@
 func main
-    "Hello from the Earth!" print
-    @sum
+    "Hello, World!" print
 end
 
-func sum
-    "Sum them!" print
-end
