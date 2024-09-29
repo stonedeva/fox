@@ -12,7 +12,7 @@ The final executable will be stored in the ′′′build/′′′ directory
 ### Hello World!
 ```code
 func main
-    "Hello, World!" puts
+    "Hello, World!" print
 end
 ```
 Output:
