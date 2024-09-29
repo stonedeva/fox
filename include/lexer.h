@@ -19,13 +19,16 @@ extern "C" {
 typedef enum {
     TOK_BINARYOP,
     TOK_NUMBER,
+    TOK_CONDITION,
     TOK_PRINT,
     TOK_DEF_FUNC,
     TOK_DEF_VAR,
     TOK_RETURN,
     TOK_END,
     TOK_NEW_LINE,
-    TOK_NAME_LITERAL
+    TOK_NAME_LITERAL,
+    TOK_TRUE_BLOCK,
+    TOK_FALSE_BLOCK
 } TokenType;
 
 typedef struct {

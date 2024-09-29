@@ -1,4 +1,8 @@
 func main
-    35 95 + print
+    23 200 = if
+	300 print
+    end
+
+    5000 print
 end
 

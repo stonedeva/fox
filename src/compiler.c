@@ -3,6 +3,9 @@
 #include <errno.h>
 #include <string.h>
 
+static int addr_counter = 0;
+static int block_counter = 0;
+
 Compiler* compiler_init(char* output_path, Token* tokens, size_t tok_sz)
 {
     Compiler* compiler = (Compiler*)malloc(sizeof(Compiler));
@@ -81,7 +84,7 @@ void compiler_emit_base(Compiler* compiler)
 void compiler_emit_print(Compiler* compiler)
 {
     FILE* out = compiler->output;
-
+    fprintf(out, "addr_%d:\n", addr_counter);
     fprintf(out, "	pop rdi\n");
     fprintf(out, "	call dump\n");
 }
@@ -90,7 +93,7 @@ void compiler_emit_variable(Compiler* compiler)
 {
     size_t ptr = compiler->tok_ptr;
     Token name = compiler->tokens[ptr + 1];
-    Token value = compiler->tokens[ptr + 3];
+    Token value = compiler->tokens[ptr + 2];
 
     compiler->vars[compiler->var_count] = (Variable) {
 	.name = name.token,
@@ -101,7 +104,7 @@ void compiler_emit_variable(Compiler* compiler)
     compiler->tok_ptr += 3;
 }
 
-void compiler_emit_function(Compiler* compiler)
+void compiler_emit_func(Compiler* compiler)
 {
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
@@ -110,12 +113,37 @@ void compiler_emit_function(Compiler* compiler)
     char* name = name_tok.token;
 
     fprintf(out, "%s:\n", name);
+    compiler->tok_ptr++;
+}
+
+void compiler_emit_return(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t ptr = compiler->tok_ptr;
+
+    Token val = compiler->tokens[ptr + 1];
+    char* val_cstr = val.token;
+
+    fprintf(out, "	mov rax, %s\n", val_cstr);
+    fprintf(out, "	ret\n");
+}
+
+void compiler_emit_condition(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "	; IF\n");
+    fprintf(out, "	pop rax\n");
+    fprintf(out, "	cmp rax, 1\n");
+    fprintf(out, "	je addr_%d\n", addr_counter + 1);
+    fprintf(out, "	jne block_addr_%d\n", block_counter);
 }
 
 void compiler_emit_func_call(Compiler* compiler)
 {
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
+    fprintf(out, "	ret\n");
 
     Token name_tok = compiler->tokens[ptr];
     char* name = name_tok.token[ptr + 1];
@@ -131,13 +159,9 @@ void compiler_emit_push(Compiler* compiler)
     Token tok = compiler->tokens[ptr];
     char* val = tok.token;
 
-    fprintf(out, "	push %s\n", val);
-}
-
-void compiler_emit_cstr(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    size_t ptr = compiler->tok_ptr;
+    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "	mov rax, %s\n", val);
+    fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_binaryop(Compiler* compiler)
@@ -148,26 +172,27 @@ void compiler_emit_binaryop(Compiler* compiler)
     Token tok = compiler->tokens[ptr];
     char op = tok.token[0];
 
+    fprintf(out, "addr_%d:\n", addr_counter);
     fprintf(out, "	pop rax\n");
     fprintf(out, "	pop rbx\n");
 
     switch (op) {
     case '+':
-	fprintf(out, "        add rax, rbx\n");
+	fprintf(out, "	add rax, rbx\n");
 	break;
     case '-':
-	fprintf(out, "        sub rax, rbx\n");
+	fprintf(out, "	sub rax, rbx\n");
 	break;
     case '*':
-	fprintf(out, "        mul rax\n");
+	fprintf(out, "	mul rax\n");
 	break;
     case '/':
-	fprintf(out, "        div rax\n");
+	fprintf(out, "	div rax\n");
 	break;
     case '=':
-	fprintf(out, "	      cmp rax, rbx\n");
-	fprintf(out, "	      sete al\n");
-	fprintf(out, "	      movzx rax, al\n");
+	fprintf(out, "	cmp rax, rbx\n");
+	fprintf(out, "	sete al\n");
+	fprintf(out, "	movzx rax, al\n");
 	break;
     }
 
@@ -196,24 +221,37 @@ void compiler_emit(Compiler* compiler)
 
 	switch (tok.type) {
 	case TOK_DEF_FUNC:
-	    compiler_emit_function(compiler);
+	    compiler_emit_func(compiler);
+	    addr_counter++;
 	    break;
 	case TOK_END:
-	    fprintf(out, "	ret\n");
+	    fprintf(out, "block_addr_%d:\n", block_counter);
+	    block_counter++;
+	    break;
+	case TOK_CONDITION:
+	    compiler_emit_condition(compiler);
+	    addr_counter++;
+	    break;
+	case TOK_RETURN:
+	    compiler_emit_return(compiler);
 	    break;
 	case TOK_DEF_VAR:
 	    compiler_emit_variable(compiler);
 	    break;
 	case TOK_PRINT:
 	    compiler_emit_print(compiler);
+	    addr_counter++;
 	    break;
 	case TOK_NUMBER:
 	    compiler_emit_push(compiler);
+	    addr_counter++;
 	    break;
 	case TOK_BINARYOP:
 	    compiler_emit_binaryop(compiler);
+	    addr_counter++;
 	    break;
 	default:
+	    fprintf(out, "; Unhandled token: %s\n", tok.token);
 	    break;
 	}
 
@@ -221,13 +259,20 @@ void compiler_emit(Compiler* compiler)
 	compiler->tok_ptr++;
     }
 
+    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "	mov rax, 60\n");
+    fprintf(out, "	mov rdi, 0\n");
+    fprintf(out, "	syscall\n");
+
     compiler_emit_textseg(compiler);
-    compiler_free(compiler);
+    fflush(compiler->output);
+
+    compiler_assemble(compiler, false);
 }
 
 void compiler_assemble(Compiler* compiler, bool remove_tmp)
 {
-    system("nasm -felf64 hello.asm");
+    system("nasm -felf64 hello.asm && ld -o hello hello.o");
 
     if (remove_tmp) {
 	system("rm -r hello.asm hello.o");

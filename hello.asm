@@ -35,13 +35,41 @@ _start:
 	mov rdi, 0
 	syscall
 main:
-	push 35
-	push 95
+addr_1:
+	mov rax, 23
+	push rax
+addr_2:
+	mov rax, 200
+	push rax
+addr_3:
 	pop rax
 	pop rbx
-        add rax, rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
         push rax
+addr_4:
+	; IF
+	pop rax
+	cmp rax, 1
+	je addr_5
+	jne block_addr_0
+addr_5:
+	mov rax, 300
+	push rax
+addr_6:
 	pop rdi
 	call dump
-	ret
+block_addr_0:
+addr_7:
+	mov rax, 5000
+	push rax
+addr_8:
+	pop rdi
+	call dump
+block_addr_1:
+addr_9:
+	mov rax, 60
+	mov rdi, 0
+	syscall
 segment .text
