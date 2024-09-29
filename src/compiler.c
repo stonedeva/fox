@@ -132,7 +132,6 @@ void compiler_emit_condition(Compiler* compiler)
 {
     FILE* out = compiler->output;
     fprintf(out, "addr_%d:\n", addr_counter);
-    fprintf(out, "	; IF\n");
     fprintf(out, "	pop rax\n");
     fprintf(out, "	cmp rax, 1\n");
     fprintf(out, "	je addr_%d\n", addr_counter + 1);

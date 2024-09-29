@@ -36,7 +36,7 @@ _start:
 	syscall
 main:
 addr_1:
-	mov rax, 23
+	mov rax, 200
 	push rax
 addr_2:
 	mov rax, 200
@@ -60,15 +60,41 @@ addr_5:
 addr_6:
 	pop rdi
 	call dump
-block_addr_0:
 addr_7:
-	mov rax, 5000
+	mov rax, 25
 	push rax
 addr_8:
+	mov rax, 200
+	push rax
+addr_9:
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+        push rax
+addr_10:
+	; IF
+	pop rax
+	cmp rax, 1
+	je addr_11
+	jne block_addr_0
+addr_11:
+	mov rax, 200
+	push rax
+addr_12:
 	pop rdi
 	call dump
+block_addr_0:
 block_addr_1:
-addr_9:
+addr_13:
+	mov rax, 5000
+	push rax
+addr_14:
+	pop rdi
+	call dump
+block_addr_2:
+addr_15:
 	mov rax, 60
 	mov rdi, 0
 	syscall

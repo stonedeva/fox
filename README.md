@@ -8,5 +8,15 @@ This is the repository for the fox programming language
 
 The final executable will be stored in the ′′′build/′′′ directory
 
+## Getting Started
 
+```code
+func main
+    500 print
+end
+```
+Output:
+```code
+500
+```
 
