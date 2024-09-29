@@ -297,9 +297,15 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_FUNC_CALL:
 	    compiler_emit_func_call(compiler);
+	    addr_counter++;
 	    break;
 	case TOK_VAR_REF:
 	    compiler_emit_reference(compiler);
+	    addr_counter++;
+	    break;
+	case TOK_DROP:
+	    fprintf(out, "addr_%d:\n", addr_counter);
+	    fprintf(out, "	pop rdi\n");
 	    addr_counter++;
 	    break;
 	default:
