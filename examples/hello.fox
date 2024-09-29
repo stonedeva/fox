@@ -2,3 +2,6 @@ func main
     "Hello from the Earth!" print
 end
 
+func sum
+    "Sum them!" print
+end

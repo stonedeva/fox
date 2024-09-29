@@ -80,6 +80,7 @@ void compiler_emit_base(Compiler* compiler)
 
     fprintf(out, "\nglobal _start\n");
     fprintf(out, "_start:\n");
+    fprintf(out, "	mov byte [call_flag], 1\n");
     fprintf(out, "	call main\n");
 }
 
@@ -117,6 +118,9 @@ void compiler_emit_func(Compiler* compiler)
     char* name = name_tok.token;
 
     fprintf(out, "%s:\n", name);
+    fprintf(out, "	cmp byte [call_flag], 1\n");
+    fprintf(out, "	mov byte [call_flag], 0\n");
+    fprintf(out, "	jne block_addr_%d\n", block_counter);
     compiler->tok_ptr++;
 }
 
@@ -149,9 +153,7 @@ void compiler_emit_func_call(Compiler* compiler)
     fprintf(out, "	ret\n");
 
     Token name_tok = compiler->tokens[ptr];
-    char* name = name_tok.token[ptr + 1];
-
-    fprintf(out, "call %s\n", name);
+    fprintf(out, "call %s\n", name_tok.token);
 }
 
 void compiler_emit_push(Compiler* compiler)
@@ -213,6 +215,7 @@ void compiler_emit_segments(Compiler* compiler)
     }
 
     fprintf(out, "segment .data\n");
+    fprintf(out, "call_flag db 0\n");
     for (size_t i = 0; i < compiler->literal_count; i++) {
 	char* literal = compiler->literals[i];
 	size_t lit_len = strlen(literal) - 2;
