@@ -25,6 +25,7 @@ Compiler* compiler_init(char* output_path, Token* tokens, size_t tok_sz)
     compiler->tok_sz = tok_sz;
     compiler->tok_ptr = 0;
     compiler->var_count = 0;
+    compiler->literal_count = 0;
 
     return compiler;
 }
@@ -71,14 +72,15 @@ void compiler_emit_base(Compiler* compiler)
     fprintf(out, "        syscall\n");
     fprintf(out, "        add     rsp, 40\n");
     fprintf(out, "        ret\n");
-
+    fprintf(out, "puts:\n");
+    fprintf(out, "	mov rax, 1\n");
+    fprintf(out, "	mov rdi, 1\n");
+    fprintf(out, "	syscall\n");
+    fprintf(out, "	ret\n");
 
     fprintf(out, "\nglobal _start\n");
     fprintf(out, "_start:\n");
     fprintf(out, "	call main\n");
-    fprintf(out, "	mov rax, 60\n");
-    fprintf(out, "	mov rdi, 0\n");
-    fprintf(out, "	syscall\n");
 }
 
 void compiler_emit_print(Compiler* compiler)
@@ -87,6 +89,16 @@ void compiler_emit_print(Compiler* compiler)
     fprintf(out, "addr_%d:\n", addr_counter);
     fprintf(out, "	pop rdi\n");
     fprintf(out, "	call dump\n");
+}
+
+void compiler_emit_puts(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t lit_count = compiler->literal_count;
+    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "	mov rsi, str%d\n", lit_count - 1);
+    fprintf(out, "	mov rdx, str%d_len\n", lit_count - 1);
+    fprintf(out, "	call puts\n");
 }
 
 void compiler_emit_variable(Compiler* compiler)
@@ -198,14 +210,23 @@ void compiler_emit_binaryop(Compiler* compiler)
     fprintf(out, "        push rax\n");
 }
 
-void compiler_emit_textseg(Compiler* compiler)
+void compiler_emit_segments(Compiler* compiler)
 {
     FILE* out = compiler->output;
     fprintf(out, "segment .text\n");
 
     for (size_t i = 0; i < compiler->var_count; i++) {
 	Variable var = compiler->vars[i];
-	fprintf(out, "        %s: db %s\n", var.name, var.value);
+	fprintf(out, "%s: db %s\n", var.name, var.value);
+    }
+
+    fprintf(out, "segment .data\n");
+    for (size_t i = 0; i < compiler->literal_count; i++) {
+	char* literal = compiler->literals[i];
+	size_t lit_len = strlen(literal) - 2;
+	
+	fprintf(out, "str%d: db %s, 0xA\n", i, literal);
+	fprintf(out, "str%d_len: equ $ - str%d\n", i, i);
     }
 }
 
@@ -241,6 +262,10 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_print(compiler);
 	    addr_counter++;
 	    break;
+	case TOK_PUTS:
+	    compiler_emit_puts(compiler);
+	    addr_counter++;
+	    break;
 	case TOK_NUMBER:
 	    compiler_emit_push(compiler);
 	    addr_counter++;
@@ -248,6 +273,10 @@ void compiler_emit(Compiler* compiler)
 	case TOK_BINARYOP:
 	    compiler_emit_binaryop(compiler);
 	    addr_counter++;
+	    break;
+	case TOK_STRING_LITERAL:
+	    compiler->literals[compiler->literal_count] = tok.token;
+	    compiler->literal_count++;
 	    break;
 	default:
 	    fprintf(out, "; Unhandled token: %s\n", tok.token);
@@ -263,7 +292,7 @@ void compiler_emit(Compiler* compiler)
     fprintf(out, "	mov rdi, 0\n");
     fprintf(out, "	syscall\n");
 
-    compiler_emit_textseg(compiler);
+    compiler_emit_segments(compiler);
     fflush(compiler->output);
 
     compiler_assemble(compiler, false);

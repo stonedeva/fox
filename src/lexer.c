@@ -171,15 +171,21 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_END;
     } else if (strcmp("print", cstr) == 0) {
 	return TOK_PRINT;
+    } else if (strcmp("puts", cstr) == 0) {
+	return TOK_PUTS;
     } else if (strcmp("return", cstr) == 0) {
 	return TOK_RETURN;
     } else if (strcmp("if", cstr) == 0) {
 	return TOK_CONDITION;
+    } else if (strcmp("else", cstr) == 0) {
+	return TOK_ELSE;
+    } else if (strcmp("while", cstr) == 0) {
+	return TOK_LOOP;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {
 	return TOK_BINARYOP;
     } else {
-	return TOK_NAME_LITERAL;
+	return TOK_STRING_LITERAL;
     }
 }

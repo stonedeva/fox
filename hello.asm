@@ -27,75 +27,57 @@ dump:
         syscall
         add     rsp, 40
         ret
+puts:
+	mov rax, 1
+	mov rdi, 1
+	syscall
+	ret
 
 global _start
 _start:
 	call main
-	mov rax, 60
-	mov rdi, 0
-	syscall
 main:
 addr_1:
-	mov rax, 200
-	push rax
+	mov rsi, str0
+	mov rdx, str0_len
+	call puts
 addr_2:
 	mov rax, 200
 	push rax
 addr_3:
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-        push rax
+	mov rax, 200
+	push rax
 addr_4:
-	; IF
-	pop rax
-	cmp rax, 1
-	je addr_5
-	jne block_addr_0
-addr_5:
-	mov rax, 300
-	push rax
-addr_6:
-	pop rdi
-	call dump
-addr_7:
-	mov rax, 25
-	push rax
-addr_8:
-	mov rax, 200
-	push rax
-addr_9:
 	pop rax
 	pop rbx
 	cmp rax, rbx
 	sete al
 	movzx rax, al
         push rax
-addr_10:
-	; IF
+addr_5:
 	pop rax
 	cmp rax, 1
-	je addr_11
+	je addr_6
 	jne block_addr_0
-addr_11:
-	mov rax, 200
-	push rax
-addr_12:
-	pop rdi
-	call dump
+addr_6:
+	mov rsi, str1
+	mov rdx, str1_len
+	call puts
 block_addr_0:
+addr_7:
+	mov rsi, str2
+	mov rdx, str2_len
+	call puts
 block_addr_1:
-addr_13:
-	mov rax, 5000
-	push rax
-addr_14:
-	pop rdi
-	call dump
-block_addr_2:
-addr_15:
+addr_8:
 	mov rax, 60
 	mov rdi, 0
 	syscall
 segment .text
+segment .data
+str0: db "Hello, World!", 0xA
+str0_len: equ $ - str0
+str1: db "equals!", 0xA
+str1_len: equ $ - str1
+str2: db "End of program!", 0xA
+str2_len: equ $ - str2

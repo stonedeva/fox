@@ -1,4 +1,9 @@
 func main
+    "Hello, World!" puts
+    200 200 = if
+	"equals!" puts
+    end
 
+    "End of program!" puts
 end
 

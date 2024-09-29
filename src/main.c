@@ -15,6 +15,7 @@ static void fox_print_help(int code)
     fprintf(stream, "-h	Show help map\n");
     fprintf(stream, "-o	Set output file\n");
     fprintf(stream, "-l	Compile to assembly\n");
+    fprintf(stream, "-r Execute after compiling\n");
     fprintf(stream, "-v	Get compiler version\n");
 
     exit(code);
@@ -50,7 +51,6 @@ static int fox_init(int argc, char* argv[])
 	case 'v':
 	    printf("v0.01\n");
 	    break;
-
 	default:
 	    fprintf(stderr, "%s: Invalid option provided!\n", program_path);
 	    fox_print_help(1);

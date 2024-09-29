@@ -6,6 +6,9 @@
 #include <stdbool.h>
 #include "lexer.h"
 
+#define MAX_VARIABLES 20
+#define MAX_LITERALS 20
+
 typedef struct {
     char* name;
     char* value;
@@ -16,8 +19,10 @@ typedef struct {
     size_t tok_sz;
     size_t tok_ptr;
     size_t var_count;
+    size_t literal_count;
     Token* tokens;
-    Variable vars[];
+    Variable vars[MAX_VARIABLES];
+    char* literals[MAX_LITERALS];
 } Compiler;
 
 
@@ -26,7 +31,7 @@ void compiler_free(Compiler* compiler);
 
 void compiler_emit_binaryop(Compiler* compiler);
 void compiler_emit_push(Compiler* compiler);
-void compiler_emit_function(Compiler* compiler);
+void compiler_emit_func(Compiler* compiler);
 void compiler_emit_base(Compiler* compiler);
 void compiler_emit(Compiler* compiler);
 void compiler_assemble(Compiler* compiler, bool remove_tmp);
