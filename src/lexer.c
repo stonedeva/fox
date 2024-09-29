@@ -1,5 +1,4 @@
 #include "lexer.h"
-#include "compiler.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,17 +8,17 @@
 /*
  * Public functions
 */
-Lexer lexer_init(char* filename) 
+Lexer* lexer_init(char* filename) 
 {
-    Lexer lexer;
-    lexer.file = fopen(filename, "r");
-    lexer.line_count = 0;
-    if (lexer.file == NULL) {
+    Lexer* lexer = (Lexer*)malloc(sizeof(Lexer));;
+    lexer->file = fopen(filename, "r");
+    lexer->line_count = 0;
+    if (lexer->file == NULL) {
 	perror(filename);
 	exit(1);
     }
 
-    lexer.filename = filename;
+    lexer->filename = filename;
 
     return lexer;
 }
@@ -33,9 +32,6 @@ void lexer_proc(Lexer* lexer)
 
     Token* tokens = lexer->tokens;
     size_t tok_sz = lexer->tok_sz;
-
-    Compiler* compiler = compiler_init("hello.asm", tokens, tok_sz);
-    compiler_emit(compiler);
 }
 
 /*
@@ -44,7 +40,7 @@ void lexer_proc(Lexer* lexer)
 static bool _lexer_is_delimiter(const char ch)
 {
     return isspace(ch) || ch == '#' || ch == ',' || ch == '.' || ch == ':' 
-	    || ch == '!' || ch == '?' || ch == '<' || ch == '>' || ch == '"'
+	    || ch == '!' || ch == '?' || ch == '"'
 	    || ch == '(' || ch == ')' || ch == ';';
 }
 
@@ -165,7 +161,7 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 {
     if (strcmp("func", cstr) == 0) {
 	return TOK_DEF_FUNC;
-    } else if (strcmp("const", cstr) == 0) {
+    } else if (strcmp("var", cstr) == 0) {
 	return TOK_DEF_VAR;
     } else if (strcmp("end", cstr) == 0) {
 	return TOK_END;
@@ -179,6 +175,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_ELSE;
     } else if (strcmp("while", cstr) == 0) {
 	return TOK_LOOP;
+    } else if (strcmp("import", cstr) == 0) {
+	return TOK_IMPORT;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {
@@ -187,5 +185,7 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_STRING_LITERAL;
     } else if (cstr[0] == '@') {
 	return TOK_FUNC_CALL;
+    } else if (cstr[0] == '%') {
+	return TOK_VAR_REF;
     }
 }

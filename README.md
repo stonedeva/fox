@@ -16,6 +16,7 @@ chmod +x build.sh && ./build.sh
 ## TODO
 - [x] Basic operations
 - [x] String literals
+- [x] Variables
 - [x] Conditions
 - [ ] Implement functions
 - [ ] Else-conditions

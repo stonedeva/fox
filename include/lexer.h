@@ -26,13 +26,13 @@ typedef enum {
     TOK_PUTS,
     TOK_DEF_FUNC,
     TOK_FUNC_CALL,
+    TOK_VAR_REF,
     TOK_DEF_VAR,
     TOK_RETURN,
     TOK_END,
     TOK_NEW_LINE,
     TOK_STRING_LITERAL,
-    TOK_TRUE_BLOCK,
-    TOK_FALSE_BLOCK
+    TOK_IMPORT
 } TokenType;
 
 typedef struct {
@@ -49,7 +49,7 @@ typedef struct {
     char* filename;
 } Lexer;
 
-Lexer lexer_init(char* filename);
+Lexer* lexer_init(char* filename);
 void lexer_proc(Lexer* lexer);
 
 /*

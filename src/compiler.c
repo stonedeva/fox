@@ -6,7 +6,7 @@
 static int addr_counter = 0;
 static int block_counter = 0;
 
-Compiler* compiler_init(char* output_path, Token* tokens, size_t tok_sz)
+Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry)
 {
     Compiler* compiler = (Compiler*)malloc(sizeof(Compiler));
     if (!compiler) {
@@ -20,9 +20,10 @@ Compiler* compiler_init(char* output_path, Token* tokens, size_t tok_sz)
 	exit(1);
     }
 
+    compiler->has_entry = has_entry;
     compiler->output = output;
-    compiler->tokens = tokens;
-    compiler->tok_sz = tok_sz;
+    compiler->tokens = lexer->tokens;
+    compiler->tok_sz = lexer->tok_sz;
     compiler->tok_ptr = 0;
     compiler->var_count = 0;
     compiler->literal_count = 0;
@@ -80,8 +81,10 @@ void compiler_emit_base(Compiler* compiler)
 
     fprintf(out, "\nglobal _start\n");
     fprintf(out, "_start:\n");
-    fprintf(out, "	mov byte [call_flag], 1\n");
-    fprintf(out, "	call main\n");
+    if (compiler->has_entry) {
+	fprintf(out, "	mov byte [call_flag], 1\n");
+	fprintf(out, "	call main\n");
+    }
 }
 
 void compiler_emit_puts(Compiler* compiler)
@@ -98,7 +101,7 @@ void compiler_emit_variable(Compiler* compiler)
 {
     size_t ptr = compiler->tok_ptr;
     Token name = compiler->tokens[ptr + 1];
-    Token value = compiler->tokens[ptr + 2];
+    Token value = compiler->tokens[ptr + 3];
 
     compiler->vars[compiler->var_count] = (Variable) {
 	.name = name.token,
@@ -107,6 +110,17 @@ void compiler_emit_variable(Compiler* compiler)
 
     compiler->var_count++;
     compiler->tok_ptr += 3;
+}
+
+void compiler_emit_reference(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    char* name = compiler->tokens[compiler->tok_ptr].token;
+    name++;
+
+    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "	mov rax, [%s]\n", name);
+    fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_func(Compiler* compiler)
@@ -155,6 +169,7 @@ void compiler_emit_func_call(Compiler* compiler)
     name_tok.token++;
     fprintf(out, "	mov byte [call_flag], 1\n");
     fprintf(out, "	call %s\n", name_tok.token);
+    fprintf(out, "addr_%d:\n", addr_counter);
 }
 
 void compiler_emit_push(Compiler* compiler)
@@ -198,6 +213,16 @@ void compiler_emit_binaryop(Compiler* compiler)
     case '=':
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	sete al\n");
+	fprintf(out, "	movzx rax, al\n");
+	break;
+    case '<':
+	fprintf(out, "	cmp rax, rbx\n");
+	fprintf(out, "	setl al\n");
+	fprintf(out, "	movzx rax, al\n");
+	break;
+    case '>':
+	fprintf(out, "	cmp rax, rbx\n");
+	fprintf(out, "	setg al\n");
 	fprintf(out, "	movzx rax, al\n");
 	break;
     }
@@ -272,6 +297,10 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_FUNC_CALL:
 	    compiler_emit_func_call(compiler);
+	    break;
+	case TOK_VAR_REF:
+	    compiler_emit_reference(compiler);
+	    addr_counter++;
 	    break;
 	default:
 	    fprintf(out, "; Unhandled token: %s\n", tok.token);

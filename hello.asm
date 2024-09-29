@@ -45,26 +45,39 @@ addr_1:
 	mov rsi, str0
 	mov rdx, str0_len
 	call puts
-	mov byte [call_flag], 1
-	call sum
-block_addr_0:
-sum:
-	cmp byte [call_flag], 1
-	mov byte [call_flag], 0
-	jne block_addr_1
+addr_2:
+	mov rax, [count]
+	push rax
 addr_3:
+	mov rax, 15
+	push rax
+addr_4:
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+        push rax
+addr_5:
+	pop rax
+	cmp rax, 1
+	je addr_6
+	jne block_addr_0
+addr_6:
 	mov rsi, str1
 	mov rdx, str1_len
 	call puts
+block_addr_0:
 block_addr_1:
-addr_4:
+addr_7:
 	mov rax, 60
 	mov rdi, 0
 	syscall
 segment .text
+count: db 15
 segment .data
 call_flag db 0
-str0: db "Hello from the Earth!", 0xA
+str0: db "Hello, World!", 0xA
 str0_len: equ $ - str0
-str1: db "Sum them!", 0xA
+str1: db "Are equals", 0xA
 str1_len: equ $ - str1

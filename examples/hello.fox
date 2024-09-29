@@ -1,4 +1,8 @@
 func main
     "Hello, World!" print
+    var count = 15
+    %count 15 = if
+	"Are equals" print
+    end
 end
 

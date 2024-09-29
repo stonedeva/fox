@@ -23,10 +23,11 @@ typedef struct {
     Token* tokens;
     Variable vars[MAX_VARIABLES];
     char* literals[MAX_LITERALS];
+    bool has_entry;
 } Compiler;
 
 
-Compiler* compiler_init(char* output_path, Token* tokens, size_t tok_sz);
+Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry);
 void compiler_free(Compiler* compiler);
 
 void compiler_emit_binaryop(Compiler* compiler);

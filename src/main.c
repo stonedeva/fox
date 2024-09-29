@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "lexer.h"
+#include "compiler.h"
 
 #define DEBUG
 
@@ -17,6 +18,7 @@ static void fox_print_help(int code)
     fprintf(stream, "-l	Compile to assembly\n");
     fprintf(stream, "-r Execute after compiling\n");
     fprintf(stream, "-v	Get compiler version\n");
+    fprintf(stream, "-e Set NO entry point\n");
 
     exit(code);
 }
@@ -26,6 +28,7 @@ static int fox_init(int argc, char* argv[])
     char* program_path = argv[0];
     char* input_path = argv[1];
     char* output_path;
+    bool has_entry = true;
 
     size_t i = 2;
     while (i < argc) {
@@ -51,6 +54,9 @@ static int fox_init(int argc, char* argv[])
 	case 'v':
 	    printf("v0.01\n");
 	    break;
+	case 'e':
+	    has_entry = false;
+	    break;
 	default:
 	    fprintf(stderr, "%s: Invalid option provided!\n", program_path);
 	    fox_print_help(1);
@@ -60,8 +66,11 @@ static int fox_init(int argc, char* argv[])
 	i++;
     }
 
-    Lexer fox_lexer = lexer_init(input_path);
-    lexer_proc(&fox_lexer);
+    Lexer* lexer = lexer_init(input_path);
+    lexer_proc(lexer);
+
+    Compiler* compiler = compiler_init("hello.asm", lexer, has_entry);
+    compiler_emit(compiler);
 
     return 0;
 }

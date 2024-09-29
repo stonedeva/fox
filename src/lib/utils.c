@@ -49,6 +49,8 @@ bool utils_is_operator(char* str)
     case '*':
     case '/':
     case '=':
+    case '<':
+    case '>':
 	return true;
     }
 
