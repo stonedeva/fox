@@ -9,14 +9,14 @@ This is the repository for the fox programming language
 The final executable will be stored in the ′′′build/′′′ directory
 
 ## Getting Started
-
+### Hello World!
 ```code
 func main
-    500 print
+    "Hello, World!" puts
 end
 ```
 Output:
 ```code
-500
+Hello World
 ```
 
