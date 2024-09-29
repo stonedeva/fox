@@ -1,5 +1,6 @@
 func main
     "Hello from the Earth!" print
+    @sum
 end
 
 func sum

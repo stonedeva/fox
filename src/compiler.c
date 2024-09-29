@@ -150,10 +150,11 @@ void compiler_emit_func_call(Compiler* compiler)
 {
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
-    fprintf(out, "	ret\n");
 
     Token name_tok = compiler->tokens[ptr];
-    fprintf(out, "call %s\n", name_tok.token);
+    name_tok.token++;
+    fprintf(out, "	mov byte [call_flag], 1\n");
+    fprintf(out, "	call %s\n", name_tok.token);
 }
 
 void compiler_emit_push(Compiler* compiler)
@@ -268,6 +269,9 @@ void compiler_emit(Compiler* compiler)
 	case TOK_STRING_LITERAL:
 	    compiler->literals[compiler->literal_count] = tok.token;
 	    compiler->literal_count++;
+	    break;
+	case TOK_FUNC_CALL:
+	    compiler_emit_func_call(compiler);
 	    break;
 	default:
 	    fprintf(out, "; Unhandled token: %s\n", tok.token);

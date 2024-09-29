@@ -12,6 +12,7 @@ The final executable will be stored in the ′′′build/′′′ directory
 - [x] Basic operations
 - [x] String literals
 - [x] Conditions
+- [ ] Implement functions
 - [ ] Else-conditions
 - [ ] Comments
 - [ ] Self hosted

@@ -42,17 +42,19 @@ main:
 	mov byte [call_flag], 0
 	jne block_addr_0
 addr_1:
-	mov rsi, str4
-	mov rdx, str4_len
+	mov rsi, str0
+	mov rdx, str0_len
 	call puts
+	mov byte [call_flag], 1
+	call sum
 block_addr_0:
 sum:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_1
 addr_3:
-	mov rsi, str5
-	mov rdx, str5_len
+	mov rsi, str1
+	mov rdx, str1_len
 	call puts
 block_addr_1:
 addr_4:
@@ -62,15 +64,7 @@ addr_4:
 segment .text
 segment .data
 call_flag db 0
-str0: db This, 0xA
+str0: db "Hello from the Earth!", 0xA
 str0_len: equ $ - str0
-str1: db is, 0xA
+str1: db "Sum them!", 0xA
 str1_len: equ $ - str1
-str2: db a, 0xA
-str2_len: equ $ - str2
-str3: db comment, 0xA
-str3_len: equ $ - str3
-str4: db "Hello from the Earth!", 0xA
-str4_len: equ $ - str4
-str5: db "Sum them!", 0xA
-str5_len: equ $ - str5

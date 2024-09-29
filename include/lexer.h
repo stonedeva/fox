@@ -25,6 +25,7 @@ typedef enum {
     TOK_PRINT,
     TOK_PUTS,
     TOK_DEF_FUNC,
+    TOK_FUNC_CALL,
     TOK_DEF_VAR,
     TOK_RETURN,
     TOK_END,
