@@ -8,6 +8,15 @@ This is the repository for the fox programming language
 
 The final executable will be stored in the ′′′build/′′′ directory
 
+## TODO
+- [x] Basic operations
+- [x] String literals
+- [x] Conditions
+- [ ] Else-conditions
+- [ ] Comments
+- [ ] Self hosted
+- [ ] Static types
+
 ## Getting Started
 ### Hello World!
 ```code
