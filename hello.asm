@@ -41,43 +41,12 @@ addr_1:
 	mov rsi, str0
 	mov rdx, str0_len
 	call puts
-addr_2:
-	mov rax, 200
-	push rax
-addr_3:
-	mov rax, 200
-	push rax
-addr_4:
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-        push rax
-addr_5:
-	pop rax
-	cmp rax, 1
-	je addr_6
-	jne block_addr_0
-addr_6:
-	mov rsi, str1
-	mov rdx, str1_len
-	call puts
 block_addr_0:
-addr_7:
-	mov rsi, str2
-	mov rdx, str2_len
-	call puts
-block_addr_1:
-addr_8:
+addr_2:
 	mov rax, 60
 	mov rdi, 0
 	syscall
 segment .text
 segment .data
-str0: db "Hello, World!", 0xA
+str0: db "Hello from the Earth!", 0xA
 str0_len: equ $ - str0
-str1: db "equals!", 0xA
-str1_len: equ $ - str1
-str2: db "End of program!", 0xA
-str2_len: equ $ - str2

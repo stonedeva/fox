@@ -83,14 +83,6 @@ void compiler_emit_base(Compiler* compiler)
     fprintf(out, "	call main\n");
 }
 
-void compiler_emit_print(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    fprintf(out, "addr_%d:\n", addr_counter);
-    fprintf(out, "	pop rdi\n");
-    fprintf(out, "	call dump\n");
-}
-
 void compiler_emit_puts(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -259,10 +251,6 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_variable(compiler);
 	    break;
 	case TOK_PRINT:
-	    compiler_emit_print(compiler);
-	    addr_counter++;
-	    break;
-	case TOK_PUTS:
 	    compiler_emit_puts(compiler);
 	    addr_counter++;
 	    break;
