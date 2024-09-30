@@ -93,8 +93,8 @@ void compiler_emit_puts(Compiler* compiler)
     FILE* out = compiler->output;
     size_t lit_count = compiler->literal_count;
     fprintf(out, "addr_%d:\n", addr_counter);
-    fprintf(out, "	mov rsi, str%d\n", lit_count - 1);
-    fprintf(out, "	mov rdx, str%d_len\n", lit_count - 1);
+    fprintf(out, "	pop rdx\n");
+    fprintf(out, "	pop rsi\n");
     fprintf(out, "	call puts\n");
 }
 
@@ -120,7 +120,7 @@ void compiler_emit_reference(Compiler* compiler)
     name++;
 
     fprintf(out, "addr_%d:\n", addr_counter);
-    fprintf(out, "	mov rax, [%s]\n", name);
+    fprintf(out, "	mov rax, %s\n", name);
     fprintf(out, "	push rax\n");
 }
 
@@ -182,6 +182,20 @@ void compiler_emit_push(Compiler* compiler)
     fprintf(out, "	push rax\n");
 }
 
+void compiler_emit_cstr(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Token cstr = compiler->tokens[compiler->tok_ptr];
+    compiler->literals[compiler->literal_count] = cstr.token;
+
+    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "	mov rax, str%d\n", compiler->literal_count);
+    fprintf(out, "	push rax\n");
+    fprintf(out, "	mov rax, str%d_len\n", compiler->literal_count);
+    fprintf(out, "	push rax\n");
+    compiler->literal_count++;
+}
+
 void compiler_emit_binaryop(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -234,7 +248,7 @@ void compiler_emit_segments(Compiler* compiler)
 
     for (size_t i = 0; i < compiler->var_count; i++) {
 	Variable var = compiler->vars[i];
-	fprintf(out, "%s db %s\n", var.name, var.value);
+	fprintf(out, "%s = %s\n", var.name, var.value);
     }
 
     fprintf(out, "call_flag db 0\n");
@@ -289,8 +303,8 @@ void compiler_emit(Compiler* compiler)
 	    addr_counter++;
 	    break;
 	case TOK_STRING_LITERAL:
-	    compiler->literals[compiler->literal_count] = tok.token;
-	    compiler->literal_count++;
+	    compiler_emit_cstr(compiler);
+	    addr_counter++;
 	    break;
 	case TOK_FUNC_CALL:
 	    compiler_emit_func_call(compiler);
@@ -304,6 +318,10 @@ void compiler_emit(Compiler* compiler)
 	    fprintf(out, "addr_%d:\n", addr_counter);
 	    fprintf(out, "	pop rdi\n");
 	    addr_counter++;
+	    break;
+	case TOK_IMPORT:
+	    fprintf(out, "include %s\n", compiler->tokens[compiler->tok_ptr + 1].token);
+	    compiler->tok_ptr++;
 	    break;
 	default:
 	    fprintf(out, "; Unhandled token: %s\n", tok.token);

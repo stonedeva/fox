@@ -1,12 +1,8 @@
 func main
-    "Hello, World!" print
-    5 5 +
-    @sum
-    "Return value" print
-end
-
-func sum
-    10 10 +
-    return
+    var a = 15
+    var b = 12
+    %a %b +
+    drop
+    @dump
 end
 
