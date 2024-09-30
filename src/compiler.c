@@ -44,7 +44,9 @@ void compiler_emit_base(Compiler* compiler)
 {
     FILE* out = compiler->output;
 
-    fprintf(out, "BITS 64\n");
+    fprintf(out, "format ELF64 executable 0\n");
+    fprintf(out, "entry _start\n");
+    fprintf(out, "segment readable executable\n");
     fprintf(out, "dump:\n");
     fprintf(out, "        mov  r8, -3689348814741910323\n");
     fprintf(out, "        sub     rsp, 40\n");
@@ -79,7 +81,6 @@ void compiler_emit_base(Compiler* compiler)
     fprintf(out, "	syscall\n");
     fprintf(out, "	ret\n");
 
-    fprintf(out, "\nglobal _start\n");
     fprintf(out, "_start:\n");
     if (compiler->has_entry) {
 	fprintf(out, "	mov byte [call_flag], 1\n");
@@ -141,12 +142,7 @@ void compiler_emit_func(Compiler* compiler)
 void compiler_emit_return(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    size_t ptr = compiler->tok_ptr;
-
-    Token val = compiler->tokens[ptr + 1];
-    if (val.type == TOK_NUMBER) {
-	fprintf(out, "	mov rax, %s\n", val.token);
-    }
+    fprintf(out, "	pop rax\n");
     fprintf(out, "	ret\n");
 }
 
@@ -233,21 +229,20 @@ void compiler_emit_binaryop(Compiler* compiler)
 void compiler_emit_segments(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    fprintf(out, "segment .text\n");
+    fprintf(out, "segment readable writeable\n");
 
     for (size_t i = 0; i < compiler->var_count; i++) {
 	Variable var = compiler->vars[i];
-	fprintf(out, "%s: db %s\n", var.name, var.value);
+	fprintf(out, "%s db %s\n", var.name, var.value);
     }
 
-    fprintf(out, "segment .data\n");
     fprintf(out, "call_flag db 0\n");
     for (size_t i = 0; i < compiler->literal_count; i++) {
 	char* literal = compiler->literals[i];
 	size_t lit_len = strlen(literal) - 2;
 	
-	fprintf(out, "str%d: db %s, 0xA\n", i, literal);
-	fprintf(out, "str%d_len: equ $ - str%d\n", i, i);
+	fprintf(out, "str%d db %s, 0xA\n", i, literal);
+	fprintf(out, "str%d_len = $ - str%d\n", i, i);
     }
 }
 
@@ -330,7 +325,7 @@ void compiler_emit(Compiler* compiler)
 
 void compiler_assemble(Compiler* compiler, bool remove_tmp)
 {
-    system("nasm -felf64 hello.asm && ld -o hello hello.o");
+    system("fasm hello.asm");
 
     if (remove_tmp) {
 	system("rm -r hello.asm hello.o");

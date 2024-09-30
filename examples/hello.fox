@@ -1,4 +1,12 @@
 func main
     "Hello, World!" print
+    5 5 +
+    @sum
+    "Return value" print
+end
+
+func sum
+    10 10 +
+    return
 end
 

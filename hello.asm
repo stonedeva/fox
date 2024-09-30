@@ -1,4 +1,6 @@
-BITS 64
+format ELF64 executable 0
+entry _start
+segment readable executable
 dump:
         mov  r8, -3689348814741910323
         sub     rsp, 40
@@ -32,8 +34,6 @@ puts:
 	mov rdi, 1
 	syscall
 	ret
-
-global _start
 _start:
 	mov byte [call_flag], 1
 	call main
@@ -45,10 +45,21 @@ addr_1:
 	mov rsi, str0
 	mov rdx, str0_len
 	call puts
+addr_2:
+	mov rax, 5
+	push rax
+addr_3:
+	mov rax, 5
+	push rax
+addr_4:
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
 	mov byte [call_flag], 1
 	call sum
-addr_2:
-addr_3:
+addr_5:
+addr_6:
 	mov rsi, str1
 	mov rdx, str1_len
 	call puts
@@ -57,22 +68,27 @@ sum:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_1
-addr_5:
-	mov rsi, str2
-	mov rdx, str2_len
-	call puts
+addr_8:
+	mov rax, 10
+	push rax
+addr_9:
+	mov rax, 10
+	push rax
+addr_10:
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
 	ret
 block_addr_1:
-addr_6:
+addr_11:
 	mov rax, 60
 	mov rdi, 0
 	syscall
-segment .text
-segment .data
+segment readable writeable
 call_flag db 0
-str0: db "Hello, World!", 0xA
-str0_len: equ $ - str0
-str1: db "They were summed up!", 0xA
-str1_len: equ $ - str1
-str2: db "Sum them up!", 0xA
-str2_len: equ $ - str2
+str0 db "Hello, World!", 0xA
+str0_len = $ - str0
+str1 db "Return value", 0xA
+str1_len = $ - str1
