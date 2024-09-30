@@ -142,6 +142,7 @@ void compiler_emit_func(Compiler* compiler)
 void compiler_emit_return(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    fprintf(out, "addr_%d:\n", addr_counter);
     fprintf(out, "	pop rax\n");
     fprintf(out, "	ret\n");
 }
@@ -270,6 +271,7 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_RETURN:
 	    compiler_emit_return(compiler);
+	    addr_counter++;
 	    break;
 	case TOK_DEF_VAR:
 	    compiler_emit_variable(compiler);

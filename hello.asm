@@ -79,10 +79,11 @@ addr_10:
 	pop rbx
 	add rax, rbx
         push rax
+addr_11:
 	pop rax
 	ret
 block_addr_1:
-addr_11:
+addr_12:
 	mov rax, 60
 	mov rdi, 0
 	syscall

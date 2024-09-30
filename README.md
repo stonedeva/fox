@@ -1,5 +1,6 @@
 # Fox Compiler
-This is the repository for the fox programming language
+A stack based concatenative programming language inspired by porth
+written in C
 
 ## Installation Guide
 ### Dependencies
@@ -18,11 +19,15 @@ chmod +x build.sh && ./build.sh
 - [x] String literals
 - [x] Variables
 - [x] Conditions
+- [x] Functions
 - [ ] Implement functions
 - [ ] Else-conditions
 - [ ] Comments
 - [ ] Self hosted
 - [ ] Static types
+
+## Bugs
+When adding a value before return the problem segfaults
 
 ## Getting Started
 ### Hello World!
