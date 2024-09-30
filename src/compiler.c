@@ -144,9 +144,9 @@ void compiler_emit_return(Compiler* compiler)
     size_t ptr = compiler->tok_ptr;
 
     Token val = compiler->tokens[ptr + 1];
-    char* val_cstr = val.token;
-
-    fprintf(out, "	mov rax, %s\n", val_cstr);
+    if (val.type == TOK_NUMBER) {
+	fprintf(out, "	mov rax, %s\n", val.token);
+    }
     fprintf(out, "	ret\n");
 }
 
