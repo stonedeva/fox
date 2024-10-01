@@ -352,7 +352,7 @@ void compiler_emit(Compiler* compiler)
 
 void compiler_assemble(Compiler* compiler, bool remove_tmp)
 {
-    system("fasm hello.asm");
+    system("fasm output.asm");
 
     if (remove_tmp) {
 	system("rm -r hello.asm hello.o");

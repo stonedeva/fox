@@ -1,6 +1,5 @@
 #include "lib/utils.h"
 #include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
 
 char* utils_ascii_to_hex(const char* ascii) 
@@ -57,9 +56,14 @@ bool utils_is_operator(char* str)
     return false;
 }
 
-void utils_execute_command(char* command) 
+char* utils_replace_filetype(char* cstr)
 {
-    printf("[CMD] %s\n", command);
-    system(command);
-}
+    size_t len = strlen(cstr);
+    cstr[len - 1] = 'm';
+    cstr[len - 2] = 's';
+    cstr[len - 3] = 'a';
+    
+    printf("STRING: %s\n", cstr);
 
+    return cstr;
+}

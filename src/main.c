@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "lexer.h"
 #include "compiler.h"
+#include "lib/utils.h"
 
 #define DEBUG
 
@@ -27,7 +28,6 @@ static int fox_init(int argc, char* argv[])
 {
     char* program_path = argv[0];
     char* input_path = argv[1];
-    char* output_path;
     bool has_entry = true;
 
     size_t i = 2;
@@ -42,14 +42,6 @@ static int fox_init(int argc, char* argv[])
 	switch (option) {
 	case 'h':
 	    fox_print_help(0);
-	    break;
-	case 'o':
-	    if (i + 1 > argc) {
-		fprintf(stderr, "%s: No output file provided!\n", program_path);
-		exit(1);
-	    }
-
-	    output_path = argv[i + 1];
 	    break;
 	case 'v':
 	    printf("v0.01\n");
@@ -69,7 +61,7 @@ static int fox_init(int argc, char* argv[])
     Lexer* lexer = lexer_init(input_path);
     lexer_proc(lexer);
 
-    Compiler* compiler = compiler_init("hello.asm", lexer, has_entry);
+    Compiler* compiler = compiler_init("output.asm", lexer, has_entry);
     compiler_emit(compiler);
 
     return 0;
