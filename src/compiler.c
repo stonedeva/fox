@@ -278,10 +278,9 @@ void compiler_emit(Compiler* compiler)
     compiler_emit_base(compiler);
 
     fprintf(out, "addr_%d:\n", addr_counter);
-    fprintf(out, "	pop rdi\n");
+    fprintf(out, "	mov rdi, rax\n");
     fprintf(out, "	mov rax, 60\n");
     fprintf(out, "	syscall\n");
-    addr_counter++;
 
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	Token tok = compiler->tokens[i];
