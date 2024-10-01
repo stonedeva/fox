@@ -324,15 +324,6 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_reference(compiler);
 	    addr_counter++;
 	    break;
-	case TOK_DROP:
-	    fprintf(out, "addr_%d:\n", addr_counter);
-	    fprintf(out, "	pop rdi\n");
-	    addr_counter++;
-	    break;
-	case TOK_IMPORT:
-	    fprintf(out, "include %s\n", compiler->tokens[compiler->tok_ptr + 1].token);
-	    compiler->tok_ptr++;
-	    break;
 	default:
 	    fprintf(out, "; Unhandled token: %s\n", tok.token);
 	    break;
@@ -344,7 +335,7 @@ void compiler_emit(Compiler* compiler)
 
     fprintf(out, "addr_%d:\n", addr_counter);
     fprintf(out, "	mov rax, 60\n");
-    fprintf(out, "	mov rdi, 0\n");
+    fprintf(out, "	pop rdi\n");
     fprintf(out, "	syscall\n");
 
     compiler_emit_segments(compiler);

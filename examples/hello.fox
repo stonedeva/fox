@@ -1,11 +1,5 @@
 func main
     "Hello the World" print
-    @sum
-    "Go back!" print
-end
-
-func sum
-    "Go here!" print
-    return
+    0
 end
 

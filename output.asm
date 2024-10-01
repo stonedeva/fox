@@ -51,44 +51,14 @@ addr_2:
 	pop rsi
 	call puts
 addr_3:
-	mov byte [call_flag], 1
-	jmp sum
-addr_4:
-	mov rax, str1
+	mov rax, 6
 	push rax
-	mov rax, str1_len
-	push rax
-addr_5:
-	pop rdx
-	pop rsi
-	call puts
 block_addr_0:
-sum:
-	cmp byte [call_flag], 1
-	mov byte [call_flag], 0
-	jne block_addr_1
-addr_7:
-	mov rax, str2
-	push rax
-	mov rax, str2_len
-	push rax
-addr_8:
-	pop rdx
-	pop rsi
-	call puts
-addr_9:
-	pop rax
-	jmp addr_4
-block_addr_1:
-addr_10:
+addr_4:
 	mov rax, 60
-	mov rdi, 0
+	pop rdi
 	syscall
 segment readable writeable
 call_flag db 0
 str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x20, 0x74, 0x68, 0x65, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x00, 0xA
 str0_len = $ - str0
-str1 db 0x47, 0x6f, 0x20, 0x62, 0x61, 0x63, 0x6b, 0x21, 0x00, 0xA
-str1_len = $ - str1
-str2 db 0x47, 0x6f, 0x20, 0x68, 0x65, 0x72, 0x65, 0x21, 0x00, 0xA
-str2_len = $ - str2
