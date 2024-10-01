@@ -5,6 +5,7 @@
 
 static int addr_counter = 0;
 static int block_counter = 0;
+static int return_addr = 0;
 
 Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry)
 {
@@ -144,7 +145,7 @@ void compiler_emit_return(Compiler* compiler)
     FILE* out = compiler->output;
     fprintf(out, "addr_%d:\n", addr_counter);
     fprintf(out, "	pop rax\n");
-    fprintf(out, "	ret\n");
+    fprintf(out, "	jmp addr_%d\n", return_addr);
 }
 
 void compiler_emit_condition(Compiler* compiler)
@@ -162,11 +163,13 @@ void compiler_emit_func_call(Compiler* compiler)
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
 
+    return_addr = addr_counter + 1;
+
     Token name_tok = compiler->tokens[ptr];
     name_tok.token++;
-    fprintf(out, "	mov byte [call_flag], 1\n");
-    fprintf(out, "	call %s\n", name_tok.token);
     fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "	mov byte [call_flag], 1\n");
+    fprintf(out, "	jmp %s\n", name_tok.token);
 }
 
 void compiler_emit_push(Compiler* compiler)
