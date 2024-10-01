@@ -34,6 +34,7 @@ When adding a value before return the problem segfaults
 ```code
 func main
     "Hello, World!" print
+    0 return
 end
 ```
 Output:

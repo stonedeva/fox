@@ -1,5 +1,5 @@
 func main
-    "Hello, World" print
+    "Hello World!" print
     0 return
 end
 
