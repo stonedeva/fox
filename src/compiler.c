@@ -254,9 +254,16 @@ void compiler_emit_segments(Compiler* compiler)
     fprintf(out, "call_flag db 0\n");
     for (size_t i = 0; i < compiler->literal_count; i++) {
 	char* literal = compiler->literals[i];
-	size_t lit_len = strlen(literal) - 2;
+	size_t lit_len = strlen(literal) - 1;
+
+	literal++;
+	literal[lit_len - 1] = '\0';
 	
-	fprintf(out, "str%d db %s, 0xA\n", i, literal);
+	fprintf(out, "str%d db ", i);
+	for (size_t i = 0; i < lit_len; i++) {
+	    fprintf(out, "0x%02x, ", (unsigned int)literal[i]);
+	}
+	fprintf(out, "0xA\n");
 	fprintf(out, "str%d_len = $ - str%d\n", i, i);
     }
 }
