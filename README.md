@@ -15,18 +15,19 @@ chmod +x build.sh && ./build.sh
 ```
 
 ## TODO
+- [x] Stack based
+- [x] Native
 - [x] Basic operations
 - [x] String literals
 - [x] Variables
 - [x] Conditions
 - [x] Functions
+- [ ] Structures
+- [ ] Including files
 - [ ] Else-conditions
 - [ ] Comments
 - [ ] Self hosted
 - [ ] Static types
-
-## Bugs
-When adding a value before return the problem segfaults
 
 ## Getting Started
 ### Hello World!
