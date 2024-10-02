@@ -20,7 +20,6 @@ chmod +x build.sh && ./build.sh
 - [x] Variables
 - [x] Conditions
 - [x] Functions
-- [ ] Implement functions
 - [ ] Else-conditions
 - [ ] Comments
 - [ ] Self hosted
