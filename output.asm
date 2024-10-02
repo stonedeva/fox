@@ -49,82 +49,80 @@ addr_2:
 	syscall
 addr_3:
 	mov byte [call_flag], 1
-	call sum
+	call make
+addr_4:
+	mov rax, 0
+	push rax
+addr_5:
+	pop rax
+	ret
 block_addr_0:
-sum:
+make:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_1
-addr_5:
+addr_7:
 	mov rax, str1
 	push rax
 	mov rax, str1_len
 	push rax
-addr_6:
+addr_8:
 	pop rdx
 	pop rsi
 	mov rax, 1
 	mov rdi, 1
 	syscall
-addr_7:
-	mov rax, 200
-	push rax
-addr_8:
-	mov rax, 200
-	push rax
 addr_9:
+	mov rax, 200
+	push rax
+addr_10:
+	mov rax, 200
+	push rax
+addr_11:
 	pop rax
 	pop rbx
 	cmp rax, rbx
 	sete al
 	movzx rax, al
         push rax
-addr_10:
+addr_12:
 	pop rax
 	cmp rax, 1
-	je addr_11
-	jne endif_addr_1
-addr_11:
+	je addr_13
+	jne endif_addr_0
+addr_13:
 	mov rax, str2
 	push rax
 	mov rax, str2_len
 	push rax
-addr_12:
-	pop rdx
-	pop rsi
-	mov rax, 1
-	mov rdi, 1
-	syscall
-endif_addr_1:
-addr_13:
-	mov byte [call_flag], 1
-	call multiply
 addr_14:
-	mov rax, str3
-	push rax
-	mov rax, str3_len
-	push rax
-addr_15:
 	pop rdx
 	pop rsi
 	mov rax, 1
 	mov rdi, 1
 	syscall
+addr_15:
+	mov rax, 300
+	push rax
 addr_16:
-	mov rax, 0
+	mov rax, 350
 	push rax
 addr_17:
 	pop rax
-	ret
-block_addr_1:
-multiply:
-	cmp byte [call_flag], 1
-	mov byte [call_flag], 0
-	jne block_addr_2
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+        push rax
+addr_18:
+	pop rax
+	cmp rax, 1
+	je addr_19
+	jne endif_addr_0
 addr_19:
-	mov rax, str4
+	mov rax, str3
 	push rax
-	mov rax, str4_len
+	mov rax, str3_len
 	push rax
 addr_20:
 	pop rdx
@@ -132,14 +130,27 @@ addr_20:
 	mov rax, 1
 	mov rdi, 1
 	syscall
+endif_addr_0:
+endif_addr_1:
 addr_21:
-	mov rax, 0
+	mov rax, str4
+	push rax
+	mov rax, str4_len
 	push rax
 addr_22:
+	pop rdx
+	pop rsi
+	mov rax, 1
+	mov rdi, 1
+	syscall
+addr_23:
+	mov rax, 0
+	push rax
+addr_24:
 	pop rax
 	ret
-block_addr_2:
-addr_23:
+block_addr_1:
+addr_25:
 	mov rdi, rax
 	mov rax, 60
 	syscall
@@ -151,7 +162,7 @@ str1 db 0x31, 0x00, 0xA
 str1_len = $ - str1
 str2 db 0x32, 0x00, 0xA
 str2_len = $ - str2
-str3 db 0x34, 0x00, 0xA
+str3 db 0x33, 0x00, 0xA
 str3_len = $ - str3
-str4 db 0x33, 0x00, 0xA
+str4 db 0x34, 0x00, 0xA
 str4_len = $ - str4

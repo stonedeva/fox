@@ -1,4 +1,4 @@
 func main
-    "Hello" print
+    "Hello, World!" print
+    0 return 
 end
-

@@ -10,6 +10,12 @@ Context* context_init()
 	exit(1);
     }
 
+    context->if_count = 0;
+    context->literal_count = 0;
+    context->addr_counter = 0;
+    context->block_counter = 0;
+    context->var_count = 0;
+    context->literal_count = 0;
     context->stack_count = 0;
 }
 

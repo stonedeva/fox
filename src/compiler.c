@@ -3,10 +3,6 @@
 #include <errno.h>
 #include <string.h>
 
-static int addr_counter = 0;
-static int block_counter = 0;
-static int return_addr = 0;
-
 Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry)
 {
     Compiler* compiler = (Compiler*)malloc(sizeof(Compiler));
@@ -27,8 +23,6 @@ Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry)
     compiler->tokens = lexer->tokens;
     compiler->tok_sz = lexer->tok_sz;
     compiler->tok_ptr = 0;
-    compiler->var_count = 0;
-    compiler->literal_count = 0;
 
     return compiler;
 }
@@ -88,8 +82,10 @@ void compiler_emit_base(Compiler* compiler)
 void compiler_emit_puts(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    size_t lit_count = compiler->literal_count;
-    fprintf(out, "addr_%d:\n", addr_counter);
+    Context* context = compiler->context;
+
+    size_t lit_count = context->literal_count;
+    fprintf(out, "addr_%d:\n", context->addr_counter);
     fprintf(out, "	pop rdx\n");
     fprintf(out, "	pop rsi\n");
     fprintf(out, "	mov rax, 1\n");
@@ -100,15 +96,17 @@ void compiler_emit_puts(Compiler* compiler)
 void compiler_emit_variable(Compiler* compiler)
 {
     size_t ptr = compiler->tok_ptr;
+    Context* context = compiler->context;
+
     Token name = compiler->tokens[ptr + 1];
     Token value = compiler->tokens[ptr + 3];
 
-    compiler->vars[compiler->var_count] = (Variable) {
+    context->vars[context->var_count] = (Variable) {
 	.name = name.token,
 	.value = value.token
     };
 
-    compiler->var_count++;
+    context->var_count++;
     compiler->tok_ptr += 3;
 }
 
@@ -118,7 +116,7 @@ void compiler_emit_reference(Compiler* compiler)
     char* name = compiler->tokens[compiler->tok_ptr].token;
     name++;
 
-    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "addr_%d:\n", compiler->context->addr_counter);
     fprintf(out, "	mov rax, %s\n", name);
     fprintf(out, "	push rax\n");
 }
@@ -134,29 +132,28 @@ void compiler_emit_func(Compiler* compiler)
     fprintf(out, "%s:\n", name);
     fprintf(out, "	cmp byte [call_flag], 1\n");
     fprintf(out, "	mov byte [call_flag], 0\n");
-    fprintf(out, "	jne block_addr_%d\n", block_counter);
+    fprintf(out, "	jne block_addr_%d\n", compiler->context->block_counter);
     compiler->tok_ptr++;
 }
 
 void compiler_emit_return(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "addr_%d:\n", compiler->context->addr_counter);
     fprintf(out, "	pop rax\n");
-    //fprintf(out, "	jmp addr_%d\n", return_addr);
     fprintf(out, "	ret\n");
 }
 
 void compiler_emit_condition(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    compiler->context->if_count++;
+    Context* context = compiler->context;
 
-    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "addr_%d:\n", context->addr_counter);
     fprintf(out, "	pop rax\n");
     fprintf(out, "	cmp rax, 1\n");
-    fprintf(out, "	je addr_%d\n", addr_counter + 1);
-    fprintf(out, "	jne endif_addr_%d\n", compiler->context->if_count);
+    fprintf(out, "	je addr_%d\n", context->addr_counter + 1);
+    fprintf(out, "	jne endif_addr_%d\n", context->if_count);
 }
 
 void compiler_emit_func_call(Compiler* compiler)
@@ -164,11 +161,9 @@ void compiler_emit_func_call(Compiler* compiler)
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
 
-    return_addr = addr_counter + 1;
-
     Token name_tok = compiler->tokens[ptr];
     name_tok.token++;
-    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "addr_%d:\n", compiler->context->addr_counter);
     fprintf(out, "	mov byte [call_flag], 1\n");
     fprintf(out, "	call %s\n", name_tok.token);
 }
@@ -181,7 +176,7 @@ void compiler_emit_push(Compiler* compiler)
     Token tok = compiler->tokens[ptr];
     char* val = tok.token;
 
-    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "addr_%d:\n", compiler->context->addr_counter);
     fprintf(out, "	mov rax, %s\n", val);
     fprintf(out, "	push rax\n");
 }
@@ -189,15 +184,17 @@ void compiler_emit_push(Compiler* compiler)
 void compiler_emit_cstr(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    Token cstr = compiler->tokens[compiler->tok_ptr];
-    compiler->literals[compiler->literal_count] = cstr.token;
+    Context* context = compiler->context;
 
-    fprintf(out, "addr_%d:\n", addr_counter);
-    fprintf(out, "	mov rax, str%d\n", compiler->literal_count);
+    Token cstr = compiler->tokens[compiler->tok_ptr];
+    context->literals[context->literal_count] = cstr.token;
+
+    fprintf(out, "addr_%d:\n", context->addr_counter);
+    fprintf(out, "	mov rax, str%d\n", context->literal_count);
     fprintf(out, "	push rax\n");
-    fprintf(out, "	mov rax, str%d_len\n", compiler->literal_count);
+    fprintf(out, "	mov rax, str%d_len\n", context->literal_count);
     fprintf(out, "	push rax\n");
-    compiler->literal_count++;
+    context->literal_count++;
 }
 
 void compiler_emit_binaryop(Compiler* compiler)
@@ -208,7 +205,7 @@ void compiler_emit_binaryop(Compiler* compiler)
     Token tok = compiler->tokens[ptr];
     char op = tok.token[0];
 
-    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "addr_%d:\n", compiler->context->addr_counter);
     fprintf(out, "	pop rax\n");
     fprintf(out, "	pop rbx\n");
 
@@ -248,16 +245,18 @@ void compiler_emit_binaryop(Compiler* compiler)
 void compiler_emit_segments(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    Context* context = compiler->context;
+
     fprintf(out, "segment readable writeable\n");
 
-    for (size_t i = 0; i < compiler->var_count; i++) {
-	Variable var = compiler->vars[i];
+    for (size_t i = 0; i < context->var_count; i++) {
+	Variable var = context->vars[i];
 	fprintf(out, "%s = %s\n", var.name, var.value);
     }
 
     fprintf(out, "call_flag db 0\n");
-    for (size_t i = 0; i < compiler->literal_count; i++) {
-	char* literal = compiler->literals[i];
+    for (size_t i = 0; i < context->literal_count; i++) {
+	char* literal = context->literals[i];
 	size_t lit_len = strlen(literal) - 1;
 
 	literal++;
@@ -286,52 +285,53 @@ void compiler_emit(Compiler* compiler)
 	case TOK_DEF_FUNC:
 	    context_push(context, TOK_DEF_FUNC);
 	    compiler_emit_func(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	case TOK_END:
 	    TokenType type = context_pop(context);
 	    if (type == TOK_CONDITION) {
 		fprintf(out, "endif_addr_%d:\n", context->if_count);
+		context->if_count++;
 	    } else {
-		fprintf(out, "block_addr_%d:\n", block_counter);
-		block_counter++;
+		fprintf(out, "block_addr_%d:\n", context->block_counter);
+		context->block_counter++;
 	    }
 	    break;
 	case TOK_CONDITION:
 	    context_push(context, TOK_CONDITION);
 	    compiler_emit_condition(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	case TOK_RETURN:
 	    compiler_emit_return(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	case TOK_DEF_VAR:
 	    compiler_emit_variable(compiler);
 	    break;
 	case TOK_PRINT:
 	    compiler_emit_puts(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	case TOK_NUMBER:
 	    compiler_emit_push(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	case TOK_BINARYOP:
 	    compiler_emit_binaryop(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	case TOK_STRING_LITERAL:
 	    compiler_emit_cstr(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	case TOK_FUNC_CALL:
 	    compiler_emit_func_call(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	case TOK_VAR_REF:
 	    compiler_emit_reference(compiler);
-	    addr_counter++;
+	    compiler->context->addr_counter++;
 	    break;
 	default:
 	    fprintf(out, "; Unhandled token: %s\n", tok.token);
@@ -342,7 +342,7 @@ void compiler_emit(Compiler* compiler)
 	compiler->tok_ptr++;
     }
 
-    fprintf(out, "addr_%d:\n", addr_counter);
+    fprintf(out, "addr_%d:\n", compiler->context->addr_counter);
     fprintf(out, "	mov rdi, rax\n");
     fprintf(out, "	mov rax, 60\n");
     fprintf(out, "	syscall\n");
