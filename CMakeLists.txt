@@ -20,6 +20,7 @@ add_executable(foxc
     src/lexer.c 
     src/context.c
     src/compiler.c
+    src/error.c
     src/lib/vector.c 
     src/lib/utils.c
 )

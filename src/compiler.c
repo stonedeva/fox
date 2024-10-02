@@ -18,6 +18,7 @@ Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry)
     }
 
     compiler->context = context_init();
+    compiler->error = error_init(lexer->filename);
     compiler->has_entry = has_entry;
     compiler->output = output;
     compiler->tokens = lexer->tokens;
@@ -93,7 +94,7 @@ void compiler_emit_puts(Compiler* compiler)
     fprintf(out, "	syscall\n");
 }
 
-void compiler_emit_variable(Compiler* compiler)
+void compiler_emit_var(Compiler* compiler)
 {
     size_t ptr = compiler->tok_ptr;
     Context* context = compiler->context;
@@ -108,6 +109,20 @@ void compiler_emit_variable(Compiler* compiler)
 
     context->var_count++;
     compiler->tok_ptr += 3;
+}
+
+void compiler_emit_redef_var(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t ptr = compiler->tok_ptr;
+    char* name = compiler->tokens[ptr].token;
+    name++;
+
+    Context* context = compiler->context;
+
+    fprintf(out, "addr_%d:\n", compiler->context->addr_counter);
+    fprintf(out, "	pop rax\n");
+    fprintf(out, "	mov [%s], rax\n", name);
 }
 
 void compiler_emit_reference(Compiler* compiler)
@@ -264,7 +279,7 @@ void compiler_emit_segments(Compiler* compiler)
 
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
-	fprintf(out, "%s = %s\n", var.name, var.value);
+	fprintf(out, "%s dq %s\n", var.name, var.value);
     }
 
     fprintf(out, "call_flag db 0\n");
@@ -323,46 +338,51 @@ void compiler_emit(Compiler* compiler)
 	case TOK_CONDITION:
 	    context_push(context, TOK_CONDITION);
 	    compiler_emit_condition(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	case TOK_LOOP:
 	    context_push(context, TOK_LOOP);
 	    compiler_emit_loop(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	case TOK_RETURN:
 	    compiler_emit_return(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	case TOK_DEF_VAR:
-	    compiler_emit_variable(compiler);
+	    compiler_emit_var(compiler);
+	    break;
+	case TOK_REDEF_VAR:
+	    compiler_emit_redef_var(compiler);
+	    context->addr_counter++;
 	    break;
 	case TOK_PRINT:
 	    compiler_emit_puts(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	case TOK_NUMBER:
 	    compiler_emit_push(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	case TOK_BINARYOP:
 	    compiler_emit_binaryop(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	case TOK_STRING_LITERAL:
 	    compiler_emit_cstr(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	case TOK_FUNC_CALL:
 	    compiler_emit_func_call(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	case TOK_VAR_REF:
 	    compiler_emit_reference(compiler);
-	    compiler->context->addr_counter++;
+	    context->addr_counter++;
 	    break;
 	default:
-	    fprintf(out, "; Unhandled token: %s\n", tok.token);
+	    printf("%d\n", i);
+	    error_throw(compiler->error, FATAL, "Unknown token!", tok.token);
 	    break;
 	}
 

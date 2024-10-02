@@ -39,9 +39,8 @@ void lexer_proc(Lexer* lexer)
 */
 static bool _lexer_is_delimiter(const char ch)
 {
-    return isspace(ch) || ch == '#' || ch == ',' || ch == '.' || ch == ':' 
-	    || ch == '!' || ch == '?' || ch == '"'
-	    || ch == '(' || ch == ')' || ch == ';';
+    return isspace(ch) || ch == ',' || ch == '.' || ch == ':' 
+	    || ch == '!' || ch == '?' || ch == '(' || ch == ')' || ch == ';';
 }
 
 static void _lexer_tokenize(Lexer* lexer) 
@@ -61,10 +60,6 @@ static void _lexer_tokenize(Lexer* lexer)
             token[token_index++] = ch;
             continue;
         }
-
-	// Skip comments
-	if (ch == '#')
-	    continue;
 
         if (!inside_string && _lexer_is_delimiter(ch)) {
             if (token_index > 0) {
@@ -189,5 +184,7 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_FUNC_CALL;
     } else if (cstr[0] == '%') {
 	return TOK_VAR_REF;
+    } else if (cstr[0] == '#') {
+	return TOK_REDEF_VAR;
     }
 }

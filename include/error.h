@@ -1,9 +1,10 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#include <stdlib.h>
+
 typedef struct {
-    Compiler* compiler;
-    char* file_path;
+    char* input_path;
     size_t line;
 } ErrorHandler;
 
@@ -13,6 +14,13 @@ typedef enum {
     INFO
 } ErrorLevel;
 
-void error_throw(ErrorHandler handler, ErrorLevel lvl, char* err);
+ErrorHandler* error_init(char* input_path);
+void error_free(ErrorHandler* handler);
+void error_throw(ErrorHandler* handler, ErrorLevel lvl, char* err, char* token);
+
+/*
+ * Private
+*/
+static const char* _error_cstr_from_level(ErrorLevel lvl);
 
 #endif // ERROR_H

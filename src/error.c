@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-ErrorHandler error_init(Compiler* compiler, char* file_path)
+ErrorHandler* error_init(char* input_path)
 {
     ErrorHandler* handler = (ErrorHandler*)malloc(sizeof(ErrorHandler));
     if (!handler) {
@@ -10,8 +10,7 @@ ErrorHandler error_init(Compiler* compiler, char* file_path)
 	exit(1);
     }
 
-    handler->compiler = compiler;
-    handler->file_path = file_path;
+    handler->input_path = input_path;
 
     return handler;
 }
@@ -21,12 +20,12 @@ void error_free(ErrorHandler* handler)
     free(handler);
 }
 
-void error_throw(ErrorHandler handler, ErrorLevel lvl, char* err)
+void error_throw(ErrorHandler* handler, ErrorLevel lvl, char* err, char* token)
 {
-    char* file_path = handler->file_path;
+    char* input_path = handler->input_path;
     char* lvl_cstr = _error_cstr_from_level(lvl);
 
-    fprintf(stderr, "%s: %s: %s\n", file_path, lvl_cstr, err);
+    fprintf(stderr, "%s: %s: %s '%s'\n", input_path, lvl_cstr, err, token);
     exit(1);
 }
 

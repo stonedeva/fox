@@ -37,26 +37,19 @@ main:
 	mov byte [call_flag], 0
 	jne block_addr_0
 addr_1:
-	mov rax, flag
+	mov rax, 20
 	push rax
 addr_2:
-	pop rax
-	cmp rax, 1
-	je addr_3
-	jne endloop_addr_0
+	mov rax, 20
+	push rax
 addr_3:
-	mov rax, str0
-	push rax
-	mov rax, str0_len
-	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
 addr_4:
-	pop rdx
-	pop rsi
-	mov rax, 1
-	mov rdi, 1
-	syscall
-	jmp addr_3
-endloop_addr_0:
+	pop rax
+	mov [temp], rax
 addr_5:
 	mov rax, 0
 	push rax
@@ -69,7 +62,5 @@ addr_7:
 	mov rax, 60
 	syscall
 segment readable writeable
-flag = 1
+temp dq 25
 call_flag db 0
-str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x00, 0xA
-str0_len = $ - str0

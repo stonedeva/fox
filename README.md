@@ -43,3 +43,33 @@ Output:
 Hello World
 ```
 
+### Variables
+```code
+func main
+    var count = 95
+    105 25 + #count
+    0 return
+end
+```
+
+### If-Conditions
+```code
+func main
+    var a = 250
+    var b = 250
+    %a %b = if
+	"A and B are equals" print
+    end
+    0 return
+end
+```
+
+### Loops
+```code
+func main
+    1 while
+	"Forever!" print
+    end
+    0 return
+end
+```

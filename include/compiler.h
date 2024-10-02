@@ -6,9 +6,11 @@
 #include <stdbool.h>
 #include "lexer.h"
 #include "context.h"
+#include "error.h"
 
 typedef struct {
     Context* context;
+    ErrorHandler* error;
     FILE* output;
     size_t tok_sz;
     size_t tok_ptr;
