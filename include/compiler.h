@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "lexer.h"
+#include "context.h"
 
 #define MAX_VARIABLES 20
-#define MAX_LITERALS 20
+#define MAX_LITERALS 50
+#define MAX_RETURN_STACK 50
 
 typedef struct {
     char* name;
@@ -15,15 +17,18 @@ typedef struct {
 } Variable;
 
 typedef struct {
+    Context* context;
     FILE* output;
     size_t tok_sz;
     size_t tok_ptr;
     size_t var_count;
     size_t literal_count;
+    size_t return_stack_count;
     Token* tokens;
     Variable vars[MAX_VARIABLES];
     char* literals[MAX_LITERALS];
     bool has_entry;
+    int return_stack[MAX_RETURN_STACK];
 } Compiler;
 
 

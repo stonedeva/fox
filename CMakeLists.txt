@@ -18,6 +18,7 @@ add_definitions(${LLVM_DEFINITIONS})
 add_executable(foxc 
     src/main.c 
     src/lexer.c 
+    src/context.c
     src/compiler.c
     src/lib/vector.c 
     src/lib/utils.c

@@ -29,28 +29,129 @@ dump:
         syscall
         add     rsp, 40
         ret
-puts:
-	mov rax, 1
-	mov rdi, 1
-	syscall
-	ret
 _start:
 	mov byte [call_flag], 1
 	call main
-addr_0:
-	mov rdi, rax
-	mov rax, 60
-	syscall
 main:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_0
 addr_1:
-	mov rax, 0
+	mov rax, str0
+	push rax
+	mov rax, str0_len
 	push rax
 addr_2:
-	pop rax
-	jmp addr_0
+	pop rdx
+	pop rsi
+	mov rax, 1
+	mov rdi, 1
+	syscall
+addr_3:
+	mov byte [call_flag], 1
+	call sum
 block_addr_0:
+sum:
+	cmp byte [call_flag], 1
+	mov byte [call_flag], 0
+	jne block_addr_1
+addr_5:
+	mov rax, str1
+	push rax
+	mov rax, str1_len
+	push rax
+addr_6:
+	pop rdx
+	pop rsi
+	mov rax, 1
+	mov rdi, 1
+	syscall
+addr_7:
+	mov rax, 200
+	push rax
+addr_8:
+	mov rax, 200
+	push rax
+addr_9:
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+        push rax
+addr_10:
+	pop rax
+	cmp rax, 1
+	je addr_11
+	jne endif_addr_1
+addr_11:
+	mov rax, str2
+	push rax
+	mov rax, str2_len
+	push rax
+addr_12:
+	pop rdx
+	pop rsi
+	mov rax, 1
+	mov rdi, 1
+	syscall
+endif_addr_1:
+addr_13:
+	mov byte [call_flag], 1
+	call multiply
+addr_14:
+	mov rax, str3
+	push rax
+	mov rax, str3_len
+	push rax
+addr_15:
+	pop rdx
+	pop rsi
+	mov rax, 1
+	mov rdi, 1
+	syscall
+addr_16:
+	mov rax, 0
+	push rax
+addr_17:
+	pop rax
+	ret
+block_addr_1:
+multiply:
+	cmp byte [call_flag], 1
+	mov byte [call_flag], 0
+	jne block_addr_2
+addr_19:
+	mov rax, str4
+	push rax
+	mov rax, str4_len
+	push rax
+addr_20:
+	pop rdx
+	pop rsi
+	mov rax, 1
+	mov rdi, 1
+	syscall
+addr_21:
+	mov rax, 0
+	push rax
+addr_22:
+	pop rax
+	ret
+block_addr_2:
+addr_23:
+	mov rdi, rax
+	mov rax, 60
+	syscall
 segment readable writeable
 call_flag db 0
+str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x00, 0xA
+str0_len = $ - str0
+str1 db 0x31, 0x00, 0xA
+str1_len = $ - str1
+str2 db 0x32, 0x00, 0xA
+str2_len = $ - str2
+str3 db 0x34, 0x00, 0xA
+str3_len = $ - str3
+str4 db 0x33, 0x00, 0xA
+str4_len = $ - str4
