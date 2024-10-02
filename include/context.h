@@ -15,11 +15,13 @@ typedef struct {
 typedef struct {
     size_t stack_count;
     size_t if_count;
+    size_t loop_count;
     size_t literal_count;
     size_t var_count;
     TokenType stack[MAX_STACK_SIZE];
     size_t addr_counter;
     size_t block_counter;
+    size_t temp_addr;
     Variable vars[MAX_VARIABLES];
     char* literals[MAX_LITERALS];
 } Context;

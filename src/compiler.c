@@ -156,6 +156,19 @@ void compiler_emit_condition(Compiler* compiler)
     fprintf(out, "	jne endif_addr_%d\n", context->if_count);
 }
 
+void compiler_emit_loop(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    context->temp_addr = context->addr_counter + 1;
+    fprintf(out, "addr_%d:\n", context->addr_counter);
+    fprintf(out, "	pop rax\n");
+    fprintf(out, "	cmp rax, 1\n");
+    fprintf(out, "	je addr_%d\n", context->addr_counter + 1);
+    fprintf(out, "	jne endloop_addr_%d\n", context->loop_count);
+}
+
 void compiler_emit_func_call(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -292,14 +305,29 @@ void compiler_emit(Compiler* compiler)
 	    if (type == TOK_CONDITION) {
 		fprintf(out, "endif_addr_%d:\n", context->if_count);
 		context->if_count++;
-	    } else {
+		break;
+	    }
+	    if (type == TOK_DEF_FUNC) {
 		fprintf(out, "block_addr_%d:\n", context->block_counter);
 		context->block_counter++;
+		break;
 	    }
+	    if (type == TOK_LOOP) {
+		fprintf(out, "	jmp addr_%d\n", context->temp_addr);
+		fprintf(out, "endloop_addr_%d:\n", context->loop_count);
+		context->loop_count++;
+		break;
+	    }
+
 	    break;
 	case TOK_CONDITION:
 	    context_push(context, TOK_CONDITION);
 	    compiler_emit_condition(compiler);
+	    compiler->context->addr_counter++;
+	    break;
+	case TOK_LOOP:
+	    context_push(context, TOK_LOOP);
+	    compiler_emit_loop(compiler);
 	    compiler->context->addr_counter++;
 	    break;
 	case TOK_RETURN:

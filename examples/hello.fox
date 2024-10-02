@@ -1,4 +1,7 @@
 func main
-    "Hello, World!" print
+    var flag = 1
+    %flag while
+	"Hello, World!" print
+    end
     0 return 
 end
