@@ -306,10 +306,20 @@ void compiler_emit_segments(Compiler* compiler)
 	literal[lit_len - 1] = '\0';
 	
 	fprintf(out, "str%d db ", i);
-	for (size_t i = 0; i < lit_len; i++) {
-	    fprintf(out, "0x%02x, ", (unsigned int)literal[i]);
+	for (size_t i = 0; i < lit_len - 1; i++) {
+	    if (literal[i] == '\\' && i + 1 <= lit_len) {
+		char escaped = literal[i + 1];
+		switch (escaped) {
+		case 'n':
+		    fprintf(out, "0x%02x, ", (unsigned int)0xA);
+		    break;
+		}
+		i++;
+	    } else {
+		fprintf(out, "0x%02x, ", (unsigned int)literal[i]);
+	    }    
 	}
-	fprintf(out, "0xA\n");
+	fprintf(out, "0x%02x\n", (unsigned int)0x00);
 	fprintf(out, "str%d_len = %d\n", i, strlen(literal) + 2);
     }
 }
