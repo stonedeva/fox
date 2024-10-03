@@ -68,7 +68,7 @@ end
 ### Loops
 ```code
 func main
-    1 while
+    while 1 do
 	"Forever!" print
     end
     0 return
