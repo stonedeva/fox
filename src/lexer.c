@@ -172,8 +172,6 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_ELSE;
     } else if (strcmp("while", cstr) == 0) {
 	return TOK_LOOP;
-    } else if (strcmp("import", cstr) == 0) {
-	return TOK_IMPORT;
     } else if (strcmp("drop", cstr) == 0) {
 	return TOK_DROP;
     } else if (strcmp("do", cstr) == 0) {

@@ -35,8 +35,7 @@ typedef enum {
     TOK_END,
     TOK_NEW_LINE,
     TOK_STRING_LITERAL,
-    TOK_DEF_ARRAY,
-    TOK_IMPORT
+    TOK_DEF_ARRAY
 } TokenType;
 
 typedef struct {

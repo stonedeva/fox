@@ -263,7 +263,9 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	mul rax\n");
 	break;
     case '/':
-	fprintf(out, "	div rax\n");
+	fprintf(out, "	mov rcx, rbx\n");
+	fprintf(out, "	xor rdx, rdx\n");
+	fprintf(out, "	div rcx\n");
 	break;
     case '=':
 	fprintf(out, "	cmp rax, rbx\n");
@@ -279,6 +281,11 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	setg al\n");
 	fprintf(out, "	movzx rax, al\n");
+	break;
+    case '%':
+	fprintf(out, "	xor rdx, rdx\n");
+	fprintf(out, "	div rbx\n");
+	fprintf(out, "	mov rax, rdx\n");
 	break;
     }
 
