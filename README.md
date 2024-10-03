@@ -23,6 +23,7 @@ chmod +x build.sh && ./build.sh
 - [x] Conditions
 - [x] Functions
 - [x] Loops
+- [ ] Arrays
 - [ ] Structures
 - [ ] Including files
 - [ ] Else-conditions

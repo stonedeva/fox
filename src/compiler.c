@@ -111,6 +111,12 @@ void compiler_emit_var(Compiler* compiler)
     compiler->tok_ptr += 3;
 }
 
+void compiler_emit_array(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t ptr = compiler->tok_ptr;
+}
+
 void compiler_emit_redef_var(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -175,8 +181,14 @@ void compiler_emit_loop(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+    fprintf(out, "loopaddr_%d:\n", context->loop_count);
+}
 
-    context->temp_addr = context->addr_counter + 1;
+void compiler_emit_do(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
     fprintf(out, "addr_%d:\n", context->addr_counter);
     fprintf(out, "	pop rax\n");
     fprintf(out, "	cmp rax, 1\n");
@@ -295,7 +307,7 @@ void compiler_emit_segments(Compiler* compiler)
 	    fprintf(out, "0x%02x, ", (unsigned int)literal[i]);
 	}
 	fprintf(out, "0xA\n");
-	fprintf(out, "str%d_len = $ - str%d\n", i, i);
+	fprintf(out, "str%d_len = %d\n", i, strlen(literal) + 2);
     }
 }
 
@@ -328,7 +340,7 @@ void compiler_emit(Compiler* compiler)
 		break;
 	    }
 	    if (type == TOK_LOOP) {
-		fprintf(out, "	jmp addr_%d\n", context->temp_addr);
+		fprintf(out, "	jmp loopaddr_%d\n", context->loop_count);
 		fprintf(out, "endloop_addr_%d:\n", context->loop_count);
 		context->loop_count++;
 		break;
@@ -343,6 +355,10 @@ void compiler_emit(Compiler* compiler)
 	case TOK_LOOP:
 	    context_push(context, TOK_LOOP);
 	    compiler_emit_loop(compiler);
+	    context->addr_counter++;
+	    break;
+	case TOK_DO:
+	    compiler_emit_do(compiler);
 	    context->addr_counter++;
 	    break;
 	case TOK_RETURN:

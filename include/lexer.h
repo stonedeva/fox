@@ -22,6 +22,7 @@ typedef enum {
     TOK_CONDITION,
     TOK_ELSE,
     TOK_LOOP,
+    TOK_DO,
     TOK_PRINT,
     TOK_PUTS,
     TOK_DEF_FUNC,
@@ -34,6 +35,7 @@ typedef enum {
     TOK_END,
     TOK_NEW_LINE,
     TOK_STRING_LITERAL,
+    TOK_DEF_ARRAY,
     TOK_IMPORT
 } TokenType;
 

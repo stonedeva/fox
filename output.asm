@@ -36,31 +36,40 @@ main:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_0
-addr_1:
-	mov rax, 20
-	push rax
+loopaddr_0:
 addr_2:
-	mov rax, 20
+	mov rax, 1
 	push rax
 addr_3:
 	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
+	cmp rax, 1
+	je addr_4
+	jne endloop_addr_0
 addr_4:
-	pop rax
-	mov [temp], rax
+	mov rax, str0
+	push rax
+	mov rax, str0_len
+	push rax
 addr_5:
+	pop rdx
+	pop rsi
+	mov rax, 1
+	mov rdi, 1
+	syscall
+	jmp loopaddr_0
+endloop_addr_0:
+addr_6:
 	mov rax, 0
 	push rax
-addr_6:
+addr_7:
 	pop rax
 	ret
 block_addr_0:
-addr_7:
+addr_8:
 	mov rdi, rax
 	mov rax, 60
 	syscall
 segment readable writeable
-temp dq 25
 call_flag db 0
+str0 db 0x48, 0x61, 0x6c, 0x6c, 0x6f, 0x00, 0xA
+str0_len = 7

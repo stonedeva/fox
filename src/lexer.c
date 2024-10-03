@@ -174,6 +174,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_IMPORT;
     } else if (strcmp("drop", cstr) == 0) {
 	return TOK_DROP;
+    } else if (strcmp("do", cstr) == 0) {
+	return TOK_DO;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {
@@ -186,5 +188,7 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_VAR_REF;
     } else if (cstr[0] == '#') {
 	return TOK_REDEF_VAR;
+    } else if (cstr[0] == '[') {
+	return TOK_DEF_ARRAY;
     }
 }
