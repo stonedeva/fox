@@ -85,13 +85,22 @@ void compiler_emit_puts(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
-    size_t lit_count = context->literal_count;
     fprintf(out, "addr_%d:\n", context->addr_counter);
     fprintf(out, "	pop rdx\n");
     fprintf(out, "	pop rsi\n");
     fprintf(out, "	mov rax, 1\n");
     fprintf(out, "	mov rdi, 1\n");
     fprintf(out, "	syscall\n");
+}
+
+void compiler_emit_dump(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    fprintf(out, "addr_%d:\n", context->addr_counter);
+    fprintf(out, "	pop rdi\n");
+    fprintf(out, "	call dump\n");
 }
 
 void compiler_emit_var(Compiler* compiler)
@@ -109,12 +118,6 @@ void compiler_emit_var(Compiler* compiler)
 
     context->var_count++;
     compiler->tok_ptr += 3;
-}
-
-void compiler_emit_array(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    size_t ptr = compiler->tok_ptr;
 }
 
 void compiler_emit_redef_var(Compiler* compiler)
@@ -138,7 +141,7 @@ void compiler_emit_reference(Compiler* compiler)
     name++;
 
     fprintf(out, "addr_%d:\n", compiler->context->addr_counter);
-    fprintf(out, "	mov rax, %s\n", name);
+    fprintf(out, "	mov rax, [%s]\n", name);
     fprintf(out, "	push rax\n");
 }
 
@@ -396,10 +399,13 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_reference(compiler);
 	    context->addr_counter++;
 	    break;
+	case TOK_DUMP:
+	    compiler_emit_dump(compiler);
+	    context->addr_counter++;
+	    break;
 	default:
 	    printf("%d\n", i);
 	    error_throw(compiler->error, FATAL, "Unknown token!", tok.token);
-	    break;
 	}
 
 	i = compiler->tok_ptr;

@@ -1,4 +1,9 @@
 func main
+    var count = 0
+    while %count 500 > do
+	%count 1 + #count
+	%count dump
+    end
     0 return
 end
 
