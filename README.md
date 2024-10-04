@@ -35,7 +35,7 @@ chmod +x build.sh && ./build.sh
 ### Hello World!
 ```code
 func main
-    "Hello, World!" print
+    "Hello, World!\n" print
     0 return
 end
 ```
@@ -47,7 +47,7 @@ Hello World
 ### Variables
 ```code
 func main
-    95 var count
+    var count 95 end
     105 25 + #count
     0 return
 end
@@ -56,10 +56,12 @@ end
 ### If-Conditions
 ```code
 func main
-    250 var a
-    250 var b
-    %a %b = if
-	"A and B are equals" print
+    var a 250 end
+    var b 250 end
+    a b = if
+	"A and B are equals\n" print
+    else
+	"A and B are not equals\n" print
     end
     0 return
 end
