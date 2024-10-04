@@ -1,5 +1,14 @@
 func main
-    "Hello, World!\n" print
+    0 var index
+    while index 10 > do
+	index 1 + #index
+	2 index % if
+	    "Yes\n" print
+	    index dump
+	else
+	    "No\n" print
+	    index dump
+	end
+    end
     0 return
 end
-

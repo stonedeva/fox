@@ -213,7 +213,7 @@ void compiler_emit_else(Compiler* compiler)
     Context* context = compiler->context;
     fprintf(out, "endif_addr_%d:\n", context->if_count);
     fprintf(out, "	cmp [cond_flag], 1\n");
-    fprintf(out, "	je block_addr_%d\n", context->block_count);
+    fprintf(out, "	je endif_addr_%d\n", context->if_count + 1);
 }
 
 void compiler_emit_loop(Compiler* compiler)
