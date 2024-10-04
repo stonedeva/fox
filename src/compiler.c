@@ -118,19 +118,21 @@ void compiler_emit_dump(Compiler* compiler)
 
 void compiler_emit_var(Compiler* compiler)
 {
+    FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
     Context* context = compiler->context;
 
     Token name = compiler->tokens[ptr + 1];
-    Token value = compiler->tokens[ptr + 3];
+
+    fprintf(out, "	pop [%s]\n", name.token);
 
     context->vars[context->var_count] = (Variable) {
 	.name = name.token,
-	.value = value.token
+	.value = NULL
     };
 
     context->var_count++;
-    compiler->tok_ptr += 3;
+    compiler->tok_ptr++;
 }
 
 void compiler_emit_redef_var(Compiler* compiler)
@@ -335,7 +337,7 @@ void compiler_emit_segments(Compiler* compiler)
 
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
-	fprintf(out, "%s dq %s\n", var.name, var.value);
+	fprintf(out, "%s dq 0\n", var.name);
     }
 
     fprintf(out, "call_flag db 0\n");

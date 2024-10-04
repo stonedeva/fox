@@ -37,35 +37,35 @@ main:
 	mov byte [call_flag], 0
 	jne block_addr_0
 addr_1:
-	mov rax, 1
+	mov rax, 95
 	push rax
 addr_2:
-	mov rax, 1
+	mov rax, 101
 	push rax
 addr_3:
-	mov rax, str0
-	push rax
-	mov rax, str0_len
-	push rax
-addr_4:
-	pop rdx
-	pop rsi
-	pop rdi
 	pop rax
-	syscall
+	pop rbx
+	add rax, rbx
+        push rax
+	pop [count]
+addr_4:
+	mov rax, [count]
+	push rax
 addr_5:
+	pop rdi
+	call dump
+addr_6:
 	mov rax, 0
 	push rax
-addr_6:
+addr_7:
 	pop rax
 	ret
 block_addr_0:
-addr_7:
+addr_8:
 	mov rdi, rax
 	mov rax, 60
 	syscall
 segment readable writeable
+count dq 0
 call_flag db 0
 cond_flag db 0
-str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x0a, 0x00
-str0_len = 7

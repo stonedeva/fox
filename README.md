@@ -51,7 +51,7 @@ Hello World
 ### Variables
 ```code
 func main
-    var count = 95
+    95 var count
     105 25 + #count
     0 return
 end
@@ -60,8 +60,8 @@ end
 ### If-Conditions
 ```code
 func main
-    var a = 250
-    var b = 250
+    250 var a
+    250 var b
     %a %b = if
 	"A and B are equals" print
     end
