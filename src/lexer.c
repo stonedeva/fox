@@ -186,6 +186,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_FUNC_CALL;
     } else if (cstr[0] == '#') {
 	return TOK_REDEF_VAR;
+    } else if (cstr[0] == '.') {
+	return TOK_PREPROC_STMT;
     } else {
 	return TOK_VAR_REF;
     }

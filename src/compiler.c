@@ -2,6 +2,7 @@
 #include "lib/utils.h"
 #include <errno.h>
 #include <string.h>
+#include <assert.h>
 
 Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry)
 {
@@ -74,10 +75,8 @@ void compiler_emit_base(Compiler* compiler)
     fprintf(out, "        ret\n");
 
     fprintf(out, "_start:\n");
-    if (compiler->has_entry) {
-	fprintf(out, "	mov byte [call_flag], 1\n");
-	fprintf(out, "	call main\n");
-    }
+    fprintf(out, "	mov byte [call_flag], 1\n");
+    fprintf(out, "	call main\n");
 }
 
 void compiler_emit_puts(Compiler* compiler)
@@ -123,8 +122,6 @@ void compiler_emit_var(Compiler* compiler)
     Context* context = compiler->context;
 
     Token name = compiler->tokens[ptr + 1];
-
-    fprintf(out, "	pop [%s]\n", name.token);
 
     context->vars[context->var_count] = (Variable) {
 	.name = name.token,
@@ -369,6 +366,14 @@ void compiler_emit_segments(Compiler* compiler)
     }
 }
 
+void compiler_emit_preproc_stmt(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t ptr = compiler->tok_ptr;
+
+    assert(0 && "TODO: compiler_emit_preproc_stmt() not implemented yet!");
+}
+
 void compiler_emit(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -404,6 +409,12 @@ void compiler_emit(Compiler* compiler)
 		break;
 	    }
 
+	    if (type == TOK_DEF_VAR) {
+		char* var_name = context->vars[context->var_count - 1].name;
+		fprintf(out, "	pop [%s]\n", var_name);
+		break;
+	    }
+
 	    break;
 	case TOK_CONDITION:
 	    context_push(context, TOK_CONDITION);
@@ -428,6 +439,7 @@ void compiler_emit(Compiler* compiler)
 	    context->addr_count++;
 	    break;
 	case TOK_DEF_VAR:
+	    context_push(context, TOK_DEF_VAR);
 	    compiler_emit_var(compiler);
 	    break;
 	case TOK_REDEF_VAR:
@@ -465,6 +477,9 @@ void compiler_emit(Compiler* compiler)
 	case TOK_SYSCALL:
 	    compiler_emit_syscall(compiler);
 	    context->addr_count++;
+	    break;
+	case TOK_PREPROC_STMT:
+	    compiler_emit_preproc_stmt(compiler);
 	    break;
 	default:
 	    error_throw(compiler->error, FATAL, "Unknown token!", tok.token);

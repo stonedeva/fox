@@ -26,14 +26,10 @@ chmod +x build.sh && ./build.sh
 - [ ] Arrays
 - [ ] Structures
 - [ ] Including files
-- [ ] Else-conditions
+- [x] Else-conditions
 - [ ] Comments
 - [ ] Self hosted
 - [ ] Static types
-
-## Bugs
-Referencing a variable (i.E: %count) begins with the character
-of a modulo operation which causes problems!
 
 ## Getting Started
 ### Hello World!
