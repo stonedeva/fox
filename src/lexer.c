@@ -172,10 +172,10 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_ELSE;
     } else if (strcmp("while", cstr) == 0) {
 	return TOK_LOOP;
-    } else if (strcmp("drop", cstr) == 0) {
-	return TOK_DROP;
     } else if (strcmp("do", cstr) == 0) {
 	return TOK_DO;
+    } else if (strcmp("syscall", cstr) == 0) {
+	return TOK_SYSCALL;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {
@@ -184,11 +184,9 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_STRING_LITERAL;
     } else if (cstr[0] == '@') {
 	return TOK_FUNC_CALL;
-    } else if (cstr[0] == '%') {
-	return TOK_VAR_REF;
     } else if (cstr[0] == '#') {
 	return TOK_REDEF_VAR;
-    } else if (cstr[0] == '[') {
-	return TOK_DEF_ARRAY;
+    } else {
+	return TOK_VAR_REF;
     }
 }

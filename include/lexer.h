@@ -30,12 +30,11 @@ typedef enum {
     TOK_VAR_REF,
     TOK_DEF_VAR,
     TOK_REDEF_VAR,
-    TOK_DROP,
+    TOK_SYSCALL,
     TOK_RETURN,
     TOK_END,
     TOK_NEW_LINE,
     TOK_STRING_LITERAL,
-    TOK_DEF_ARRAY
 } TokenType;
 
 typedef struct {

@@ -93,6 +93,19 @@ void compiler_emit_puts(Compiler* compiler)
     fprintf(out, "	syscall\n");
 }
 
+void compiler_emit_syscall(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    fprintf(out, "addr_%d:\n", context->addr_count);
+    fprintf(out, "	pop rdx\n");
+    fprintf(out, "	pop rsi\n");
+    fprintf(out, "	pop rdi\n");
+    fprintf(out, "	pop rax\n");
+    fprintf(out, "	syscall\n");
+}
+
 void compiler_emit_dump(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -137,8 +150,19 @@ void compiler_emit_redef_var(Compiler* compiler)
 void compiler_emit_reference(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    Context* context = compiler->context;
     char* name = compiler->tokens[compiler->tok_ptr].token;
-    name++;
+
+    bool exists = true;
+    for (size_t i = 0; i < context->var_count; i++) {
+	if (strcmp(name, context->vars[i].name)) {
+	    exists = true;
+	}
+    }
+
+    if (!exists) {
+	error_throw(compiler->error, FATAL, "Unknown typename!", name);
+    }
 
     fprintf(out, "addr_%d:\n", compiler->context->addr_count);
     fprintf(out, "	mov rax, [%s]\n", name);
@@ -436,8 +460,11 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_dump(compiler);
 	    context->addr_count++;
 	    break;
+	case TOK_SYSCALL:
+	    compiler_emit_syscall(compiler);
+	    context->addr_count++;
+	    break;
 	default:
-	    printf("%d\n", i);
 	    error_throw(compiler->error, FATAL, "Unknown token!", tok.token);
 	}
 

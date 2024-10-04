@@ -1,9 +1,4 @@
 func main
-    "Hello, World!\n" print
-    50 20 = if
-	99 dump
-    else
-	105 dump
-    end
     0 return
 end
+
