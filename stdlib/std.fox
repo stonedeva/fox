@@ -1,4 +1,5 @@
-func puts len cstr do
+func print len cstr do
     1 1 cstr len syscall
     0 return
 end
+

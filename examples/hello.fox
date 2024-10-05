@@ -1,7 +1,7 @@
 import "stdlib/std.fox"
 
 func main do
-    "Hello, World\n" @puts
+    "Hello, World!\n" @print
     0 return
 end
 

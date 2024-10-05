@@ -160,8 +160,6 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_DEF_VAR;
     } else if (strcmp("end", cstr) == 0) {
 	return TOK_END;
-    } else if (strcmp("print", cstr) == 0) {
-	return TOK_PRINT;
     } else if (strcmp("dump", cstr) == 0) {
 	return TOK_DUMP;
     } else if (strcmp("return", cstr) == 0) {

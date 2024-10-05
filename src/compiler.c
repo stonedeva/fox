@@ -89,19 +89,6 @@ void compiler_emit_base(char* out_path)
     fclose(out);
 }
 
-void compiler_emit_puts(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    Context* context = compiler->context;
-
-    fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	pop rdx\n");
-    fprintf(out, "	pop rsi\n");
-    fprintf(out, "	mov rax, 1\n");
-    fprintf(out, "	mov rdi, 1\n");
-    fprintf(out, "	syscall\n");
-}
-
 void compiler_emit_syscall(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -508,10 +495,6 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_REDEF_VAR:
 	    compiler_emit_redef_var(compiler);
-	    context->addr_count++;
-	    break;
-	case TOK_PRINT:
-	    compiler_emit_puts(compiler);
 	    context->addr_count++;
 	    break;
 	case TOK_NUMBER:

@@ -1,0 +1,11 @@
+func isprime num do
+    var index 1 end
+    while index num 1 - > do
+	num index % 0 = if
+	    1 return
+	end
+	index 1 + #index
+    end
+    0 return
+end
+
