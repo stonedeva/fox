@@ -1,0 +1,14 @@
+func main
+    var index 0 end
+    var result 0 end
+
+    while index 1000 > do
+	3 index % 0 = 5 index % 0 = | if
+	    result index + #result
+	end
+	index 1 + #index
+    end
+
+    result dump
+    0 return
+end

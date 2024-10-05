@@ -320,6 +320,15 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	div rbx\n");
 	fprintf(out, "	mov rax, rdx\n");
 	break;
+    case '&':
+	fprintf(out, "	and rax, rbx\n");
+	break;
+    case '|':
+	fprintf(out, "	or rax, rbx\n");
+	break;
+    case '^':
+	fprintf(out, "	xor rax, rbx\n");
+	break;
     }
 
     fprintf(out, "        push rax\n");
