@@ -13,6 +13,7 @@ Context* context_init()
     context->if_count = 0;
     context->loop_count = 0;
     context->literal_count = 0;
+    context->func_count = 0;
     context->addr_count = 0;
     context->block_count = 0;
     context->var_count = 0;
@@ -36,4 +37,16 @@ TokenType context_pop(Context* context)
     TokenType type = context->stack[context->stack_count - 1];
     context->stack_count--;
     return type;
+}
+
+Function context_func_by_name(Context* context, char* name)
+{
+    for (size_t i = 0; i < context->func_count; i++) {
+	Function func = context->funcs[i];
+	if (strcmp(name, func.name) == 0) {
+	    return func;
+	}
+    }
+
+    return (Function) {};
 }

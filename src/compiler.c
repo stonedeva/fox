@@ -124,7 +124,7 @@ void compiler_emit_var(Compiler* compiler)
     Token name = compiler->tokens[ptr + 1];
 
     context->vars[context->var_count] = (Variable) {
-	.name = name.token,
+	.name = strdup(name.token),
 	.value = NULL
     };
 
@@ -171,16 +171,39 @@ void compiler_emit_reference(Compiler* compiler)
 void compiler_emit_func(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    Context* context = compiler->context;
     size_t ptr = compiler->tok_ptr;
     
     Token name_tok = compiler->tokens[ptr + 1];
     char* name = name_tok.token;
 
+    Function func = {
+	.name = strdup(name)
+    };
+
+    ptr += 2;
+
+    while (strcmp("do", compiler->tokens[ptr].token) != 0) {
+	char* arg_name = compiler->tokens[ptr].token;
+	func.args[func.arg_count] = arg_name;
+	context->vars[context->var_count] = (Variable) {
+	    .name = arg_name,
+	    .value = NULL
+	};
+	context->var_count++;
+	func.arg_count++;
+	ptr++;
+    }
+
+    context->funcs[context->func_count] = func;
+    context->func_count++;
+
     fprintf(out, "%s:\n", name);
     fprintf(out, "	cmp byte [call_flag], 1\n");
     fprintf(out, "	mov byte [call_flag], 0\n");
-    fprintf(out, "	jne block_addr_%d\n", compiler->context->block_count);
-    compiler->tok_ptr++;
+    fprintf(out, "	jne block_addr_%d\n", context->block_count);
+    
+    compiler->tok_ptr = ptr;
 }
 
 void compiler_emit_return(Compiler* compiler)
@@ -235,13 +258,22 @@ void compiler_emit_do(Compiler* compiler)
 void compiler_emit_func_call(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    Context* context = compiler->context;
     size_t ptr = compiler->tok_ptr;
 
-    Token name_tok = compiler->tokens[ptr];
-    name_tok.token++;
-    fprintf(out, "addr_%d:\n", compiler->context->addr_count);
+    char* name = compiler->tokens[ptr].token;
+    name++;
+    
+    Function func = context_func_by_name(context, name);
+
+    fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	mov byte [call_flag], 1\n");
-    fprintf(out, "	call %s\n", name_tok.token);
+
+    for (size_t i = 0; i < func.arg_count; i++) {
+	fprintf(out, "	pop [%s]\n", func.args[i]);
+    }
+
+    fprintf(out, "	call %s\n", name);
 }
 
 void compiler_emit_push(Compiler* compiler)
@@ -498,12 +530,10 @@ void compiler_emit(Compiler* compiler)
 	compiler->tok_ptr++;
     }
 
-    fprintf(out, "addr_%d:\n", compiler->context->addr_count);
+    fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	mov rdi, rax\n");
     fprintf(out, "	mov rax, 60\n");
     fprintf(out, "	syscall\n");
-
-
 
     compiler_emit_segments(compiler);
     fflush(compiler->output);

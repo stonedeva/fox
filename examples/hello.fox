@@ -1,5 +1,4 @@
-func main
-    "Hello, World!\n" print
+func main do
     0 return
 end
 
