@@ -1,4 +1,7 @@
+import "stdlib/std.fox"
+
 func main do
+    "Hello, World\n" @puts
     0 return
 end
 

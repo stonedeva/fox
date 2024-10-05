@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry)
+Compiler* compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry)
 {
     Compiler* compiler = (Compiler*)malloc(sizeof(Compiler));
     if (!compiler) {
@@ -12,13 +12,18 @@ Compiler* compiler_init(char* output_path, Lexer* lexer, bool has_entry)
 	exit(1);
     }
 
-    FILE* output = fopen(output_path, "w");
+    FILE* output = fopen(output_path, "a");
+
     if (!output) {
 	perror(output_path);
 	exit(1);
     }
 
-    compiler->context = context_init();
+    if (context == NULL) {
+	compiler->context = context_init();
+    } else {
+	compiler->context = context;
+    }
     compiler->error = error_init(lexer->filename);
     compiler->has_entry = has_entry;
     compiler->output = output;
@@ -38,9 +43,13 @@ void compiler_free(Compiler* compiler)
     free(compiler);
 }
 
-void compiler_emit_base(Compiler* compiler)
+void compiler_emit_base(char* out_path)
 {
-    FILE* out = compiler->output;
+    FILE* out = fopen(out_path, "w");
+    if (!out) {
+	perror(out_path);
+	exit(1);
+    }
 
     fprintf(out, "format ELF64 executable 0\n");
     fprintf(out, "entry _start\n");
@@ -73,10 +82,11 @@ void compiler_emit_base(Compiler* compiler)
     fprintf(out, "        syscall\n");
     fprintf(out, "        add     rsp, 40\n");
     fprintf(out, "        ret\n");
-
     fprintf(out, "_start:\n");
     fprintf(out, "	mov byte [call_flag], 1\n");
     fprintf(out, "	call main\n");
+
+    fclose(out);
 }
 
 void compiler_emit_puts(Compiler* compiler)
@@ -371,6 +381,10 @@ void compiler_emit_segments(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
+    if (!compiler->has_entry) {
+	return;
+    }
+
     fprintf(out, "segment readable writeable\n");
 
     for (size_t i = 0; i < context->var_count; i++) {
@@ -407,20 +421,29 @@ void compiler_emit_segments(Compiler* compiler)
     }
 }
 
-void compiler_emit_preproc_stmt(Compiler* compiler)
+void compiler_emit_import(Compiler* compiler)
 {
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
 
-    assert(0 && "TODO: compiler_emit_preproc_stmt() not implemented yet!");
+    char* path = compiler->tokens[ptr + 1].token;
+    size_t path_len = strlen(path) - 1;
+    path++;
+    path[path_len - 1] = '\0';
+
+    Lexer* sub_lexer = lexer_init(path);
+    lexer_proc(sub_lexer);
+
+    Compiler* sub_compiler = compiler_init(compiler->context, "output.asm", sub_lexer, false);
+    compiler_emit(sub_compiler);
+
+    compiler->tok_ptr++;
 }
 
 void compiler_emit(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
-
-    compiler_emit_base(compiler);
 
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	Token tok = compiler->tokens[i];
@@ -519,8 +542,8 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_syscall(compiler);
 	    context->addr_count++;
 	    break;
-	case TOK_PREPROC_STMT:
-	    compiler_emit_preproc_stmt(compiler);
+	case TOK_IMPORT:
+	    compiler_emit_import(compiler);
 	    break;
 	default:
 	    error_throw(compiler->error, FATAL, "Unknown token!", tok.token);
@@ -530,15 +553,19 @@ void compiler_emit(Compiler* compiler)
 	compiler->tok_ptr++;
     }
 
-    fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	mov rdi, rax\n");
-    fprintf(out, "	mov rax, 60\n");
-    fprintf(out, "	syscall\n");
+    if (compiler->has_entry) {
+	fprintf(out, "addr_%d:\n", context->addr_count);
+	fprintf(out, "	mov rdi, rax\n");
+	fprintf(out, "	mov rax, 60\n");
+	fprintf(out, "	syscall\n");
+    }
 
     compiler_emit_segments(compiler);
     fflush(compiler->output);
 
-    compiler_assemble(compiler, false);
+    if (compiler->has_entry) {
+	compiler_assemble(compiler, false);
+    }
 }
 
 void compiler_assemble(Compiler* compiler, bool remove_tmp)

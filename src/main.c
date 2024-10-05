@@ -61,7 +61,8 @@ static int fox_init(int argc, char* argv[])
     Lexer* lexer = lexer_init(input_path);
     lexer_proc(lexer);
 
-    Compiler* compiler = compiler_init("output.asm", lexer, has_entry);
+    compiler_emit_base("output.asm");
+    Compiler* compiler = compiler_init(NULL, "output.asm", lexer, has_entry);
     compiler_emit(compiler);
 
     return 0;
