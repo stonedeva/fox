@@ -26,7 +26,10 @@ void error_throw(ErrorHandler* handler, ErrorLevel lvl, char* err, char* token)
     char* lvl_cstr = _error_cstr_from_level(lvl);
 
     fprintf(stderr, "%s: %s: %s '%s'\n", input_path, lvl_cstr, err, token);
-    exit(1);
+
+    if (lvl == FATAL) {
+	exit(1);
+    }
 }
 
 /*

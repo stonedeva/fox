@@ -17,20 +17,10 @@ chmod +x build.sh && ./build.sh
 ## TODO
 - [x] Stack based
 - [x] Native
-- [x] Basic operations
-- [x] String literals
-- [x] Variables
-- [x] Conditions
-- [x] Functions
-- [x] Loops
-- [ ] Arrays
-- [ ] Structures
-- [x] Including files
-- [x] Else-conditions
-- [ ] Comments
-- [ ] Error handling
+- [x] Turing-Complete
 - [ ] Self hosted
 - [ ] Static types
+- [ ] Compile to Native Code
 
 ## Getting Started
 ### Hello World!

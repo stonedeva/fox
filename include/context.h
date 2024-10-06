@@ -10,6 +10,8 @@
 typedef struct {
     char* name;
     char* value;
+    bool is_array;
+    int arr_len;
 } Variable;
 
 typedef struct {

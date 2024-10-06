@@ -148,6 +148,36 @@ void compiler_emit_var(Compiler* compiler)
     compiler->tok_ptr++;
 }
 
+void compiler_emit_array(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    char* name = compiler_prev_tok(compiler);
+    char* len_cstr = compiler_next_tok(compiler);
+
+    if (!utils_is_number(len_cstr)) {
+	error_throw(compiler->error, FATAL, "Array size is not a number", len_cstr);
+	return;
+    }
+
+    int len = utils_cstr_as_number(len_cstr);
+    if (len == 0) {
+	error_throw(compiler->error, WARNING, "Array size is set to 0", NULL);
+	return;
+    }
+
+    context->vars[context->var_count] = (Variable) {
+	.name = name,
+	.value = NULL,
+	.is_array = true,
+	.arr_len = len
+    };
+
+    context->var_count++;
+    compiler->tok_ptr += 2;
+}
+
 void compiler_emit_redef_var(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -490,6 +520,16 @@ void compiler_emit(Compiler* compiler)
 		break;
 	    }
 
+	    if (type == TOK_DEF_ARRAY) {
+		Variable array = context->vars[context->var_count - 1];
+		fprintf(out, "addr_%d:\n", context->addr_count);
+		for (int i = 0; i < array.arr_len; i++) {
+		    fprintf(out, "	pop [%s + %d]\n", array.name, i);
+		}
+		context->addr_count++;
+		break;
+	    }
+
 	    break;
 	case TOK_CONDITION:
 	    context_push(context, TOK_CONDITION);
@@ -516,6 +556,10 @@ void compiler_emit(Compiler* compiler)
 	case TOK_DEF_VAR:
 	    context_push(context, TOK_DEF_VAR);
 	    compiler_emit_var(compiler);
+	    break;
+	case TOK_DEF_ARRAY:
+	    context_push(context, TOK_DEF_ARRAY);
+	    compiler_emit_array(compiler);
 	    break;
 	case TOK_REDEF_VAR:
 	    compiler_emit_redef_var(compiler);

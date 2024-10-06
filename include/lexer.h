@@ -29,10 +29,11 @@ typedef enum {
     TOK_VAR_REF,
     TOK_DEF_VAR,
     TOK_REDEF_VAR,
+    TOK_DEF_ARRAY,
     TOK_SYSCALL,
     TOK_RETURN,
     TOK_END,
-    TOK_NEW_LINE,
+    TOK_CHARACTER,
     TOK_STRING_LITERAL,
     TOK_IMPORT
 } TokenType;
@@ -60,16 +61,6 @@ void lexer_proc(Lexer* lexer);
 static bool _lexer_is_delimiter(const char ch);
 static void _lexer_tokenize(Lexer* lexer);
 static TokenType _lexer_type_from_cstr(char* cstr);
-
-/*
- * Public
-*/
-char* token_next(const Vector* tokens, const size_t offset);
-char* token_prev(const Vector* tokens, const size_t offset);
-void token_skip(Vector* tokens, const size_t offset);
-bool lexer_compare(char* token1, char* token2);
-bool lexer_contains(char ch, char* token);
-char* lexer_cut(char ch, char* token);
 
 #ifdef __cplusplus
 }

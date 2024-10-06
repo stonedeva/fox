@@ -29,9 +29,6 @@ void lexer_proc(Lexer* lexer)
 	_lexer_tokenize(lexer);
 	lexer->line_count++;
     }
-
-    Token* tokens = lexer->tokens;
-    size_t tok_sz = lexer->tok_sz;
 }
 
 /*
@@ -72,14 +69,6 @@ static void _lexer_tokenize(Lexer* lexer)
 		token_index = 0;
 	    }
 
-	    if (ch == ';') {
-		lexer->tokens[lexer->tok_sz] = (Token) {
-		    .type = TOK_NEW_LINE,
-		    .token = strdup(token)
-		};
-		lexer->tok_sz++;
-	    }
-
 	    continue;
 	}
 	token[token_index++] = ch;
@@ -93,60 +82,6 @@ static void _lexer_tokenize(Lexer* lexer)
 	};
 	lexer->tok_sz++;
     }
-}
-
-/*
- * Public
-*/
-
-char* token_prev(const Vector* tokens, const size_t offset) 
-{
-    if (tokens->pointer + offset > tokens->size)
-	return NULL;
-
-    return tokens->data[tokens->pointer + offset];
-}
-
-char* token_next(const Vector* tokens, const size_t offset) 
-{
-    if (tokens->pointer - offset < 0)
-	return NULL;
-    return tokens->data[tokens->pointer - offset];
-}
-
-void token_skip(Vector* tokens, const size_t offset) 
-{
-    tokens->pointer += offset;
-}
-
-bool lexer_compare(char* token1, char* token2) 
-{
-    if (token1 == NULL)
-	return false;
-    if (token2 == NULL)
-	return false;
-
-    while (*token1++ != '\0') {
-	*token2++;
-	if (*token1 != *token2) return false;
-    }
-
-    return true;
-}
-
-bool lexer_contains(char ch, char* token) 
-{
-    while (*token++ != '\0') {
-	if (*token == ch) return true;
-    }
-    return false;
-}
-
-char* lexer_cut(char ch, char* token) 
-{
-    while (*token++ != '\0')
-	if (*token == ch) *token = '\0';
-    return token;
 }
 
 /*
@@ -176,6 +111,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_SYSCALL;
     } else if (strcmp("import", cstr) == 0) {
 	return TOK_IMPORT;
+    } else if (strcmp("array", cstr) == 0) {
+	return TOK_DEF_ARRAY;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {
