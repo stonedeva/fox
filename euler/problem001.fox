@@ -1,4 +1,4 @@
-func main
+func main in
     var index 0 end
     var result 0 end
 

@@ -42,6 +42,25 @@ void compiler_free(Compiler* compiler)
 	fclose(compiler->output);
     }
     free(compiler);
+    compiler = NULL;
+}
+
+char* compiler_next_tok(Compiler* compiler)
+{
+    size_t ptr = compiler->tok_ptr;
+    return compiler->tokens[ptr + 1].token;
+}
+
+char* compiler_prev_tok(Compiler* compiler)
+{
+    size_t ptr = compiler->tok_ptr;
+    return compiler->tokens[ptr - 1].token;
+}
+
+char* compiler_curr_tok(Compiler* compiler)
+{
+    size_t ptr = compiler->tok_ptr;
+    return compiler->tokens[ptr].token;
 }
 
 void compiler_emit_base(char* out_path)
@@ -116,13 +135,12 @@ void compiler_emit_dump(Compiler* compiler)
 void compiler_emit_var(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    size_t ptr = compiler->tok_ptr;
     Context* context = compiler->context;
 
-    Token name = compiler->tokens[ptr + 1];
+    char* name = compiler_next_tok(compiler);
 
     context->vars[context->var_count] = (Variable) {
-	.name = strdup(name.token),
+	.name = strdup(name),
 	.value = NULL
     };
 
@@ -134,12 +152,12 @@ void compiler_emit_redef_var(Compiler* compiler)
 {
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
-    char* name = compiler->tokens[ptr].token;
+    char* name = compiler_curr_tok(compiler);
     name++;
 
     Context* context = compiler->context;
 
-    fprintf(out, "addr_%d:\n", compiler->context->addr_count);
+    fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	pop rax\n");
     fprintf(out, "	mov [%s], rax\n", name);
 }
@@ -148,7 +166,7 @@ void compiler_emit_reference(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
-    char* name = compiler->tokens[compiler->tok_ptr].token;
+    char* name = compiler_curr_tok(compiler);
 
     bool exists = true;
     for (size_t i = 0; i < context->var_count; i++) {
@@ -161,7 +179,7 @@ void compiler_emit_reference(Compiler* compiler)
 	error_throw(compiler->error, FATAL, "Unknown typename!", name);
     }
 
-    fprintf(out, "addr_%d:\n", compiler->context->addr_count);
+    fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	mov rax, [%s]\n", name);
     fprintf(out, "	push rax\n");
 }
@@ -169,11 +187,10 @@ void compiler_emit_reference(Compiler* compiler)
 void compiler_emit_func(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    Context* context = compiler->context;
     size_t ptr = compiler->tok_ptr;
+    Context* context = compiler->context;
     
-    Token name_tok = compiler->tokens[ptr + 1];
-    char* name = name_tok.token;
+    char* name = compiler_next_tok(compiler);
 
     Function func = {
 	.name = strdup(name)
@@ -257,9 +274,8 @@ void compiler_emit_func_call(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
-    size_t ptr = compiler->tok_ptr;
 
-    char* name = compiler->tokens[ptr].token;
+    char* name = compiler_curr_tok(compiler);
     name++;
     
     Function func = context_func_by_name(context, name);
@@ -279,8 +295,7 @@ void compiler_emit_push(Compiler* compiler)
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
 
-    Token tok = compiler->tokens[ptr];
-    char* val = tok.token;
+    char* val = compiler_curr_tok(compiler);
 
     fprintf(out, "addr_%d:\n", compiler->context->addr_count);
     fprintf(out, "	mov rax, %s\n", val);
@@ -292,8 +307,8 @@ void compiler_emit_cstr(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
-    Token cstr = compiler->tokens[compiler->tok_ptr];
-    context->literals[context->literal_count] = cstr.token;
+    char* cstr = compiler_curr_tok(compiler);
+    context->literals[context->literal_count] = cstr;
 
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	mov rax, str%d\n", context->literal_count);
@@ -308,8 +323,7 @@ void compiler_emit_binaryop(Compiler* compiler)
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
 
-    Token tok = compiler->tokens[ptr];
-    char op = tok.token[0];
+    char op = compiler_curr_tok(compiler)[0];
 
     fprintf(out, "addr_%d:\n", compiler->context->addr_count);
     fprintf(out, "	pop rax\n");
@@ -414,7 +428,7 @@ void compiler_emit_import(Compiler* compiler)
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
 
-    char* path = compiler->tokens[ptr + 1].token;
+    char* path = compiler_next_tok(compiler);
     size_t path_len = strlen(path) - 1;
     path++;
     path[path_len - 1] = '\0';

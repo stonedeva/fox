@@ -25,9 +25,10 @@ chmod +x build.sh && ./build.sh
 - [x] Loops
 - [ ] Arrays
 - [ ] Structures
-- [ ] Including files
+- [x] Including files
 - [x] Else-conditions
 - [ ] Comments
+- [ ] Error handling
 - [ ] Self hosted
 - [ ] Static types
 

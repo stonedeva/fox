@@ -1,4 +1,4 @@
-func isprime num do
+func isprime num in
     var index 1 end
     while index num 1 - > do
 	num index % 0 = if
