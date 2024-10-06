@@ -1,5 +1,16 @@
-func print len cstr do
-    1 1 cstr len syscall
+var SYS_read 0 end
+var SYS_write 1 end
+var SYS_open 2 end
+var SYS_close 3 end
+var SYS_exit 60 end
+
+var stdin 0 end
+var stdout 1 end
+var stderr 2 end
+
+func print len cstr in
+    1 1 cstr len 
+    syscall
     0 return
 end
 

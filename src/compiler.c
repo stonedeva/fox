@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/stat.h>
 
 Compiler* compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry)
 {
@@ -180,7 +181,7 @@ void compiler_emit_func(Compiler* compiler)
 
     ptr += 2;
 
-    while (strcmp("do", compiler->tokens[ptr].token) != 0) {
+    while (strcmp("in", compiler->tokens[ptr].token) != 0) {
 	char* arg_name = compiler->tokens[ptr].token;
 	func.args[func.arg_count] = arg_name;
 	context->vars[context->var_count] = (Variable) {
@@ -418,7 +419,16 @@ void compiler_emit_import(Compiler* compiler)
     path++;
     path[path_len - 1] = '\0';
 
-    Lexer* sub_lexer = lexer_init(path);
+    char full_path[1024];
+    snprintf(full_path, sizeof(full_path), "stdlib/%s", path);
+
+    struct stat buffer;
+    if (stat(full_path, &buffer) != 0) {
+	error_throw(compiler->error, FATAL, "Import path not found!", path);
+	return;
+    }
+
+    Lexer* sub_lexer = lexer_init(full_path);
     lexer_proc(sub_lexer);
 
     Compiler* sub_compiler = compiler_init(compiler->context, "output.asm", sub_lexer, false);

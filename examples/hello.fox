@@ -1,6 +1,6 @@
-import "stdlib/std.fox"
+import "std.fox"
 
-func main do
+func main in
     "Hello, World!\n" @print
     0 return
 end
