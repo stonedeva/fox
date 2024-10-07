@@ -6,8 +6,6 @@ extern "C" {
 
 #include <stdio.h>
 #include <stdbool.h>
-#include "lib/vector.h"
-
 
 #define MAX_TOKENS 255
 #define SEMICOLON ';'
@@ -24,6 +22,9 @@ typedef enum {
     TOK_LOOP,
     TOK_DO,
     TOK_DUMP,
+    TOK_DUP,
+    TOK_SWAP,
+    TOK_DROP,
     TOK_DEF_FUNC,
     TOK_FUNC_CALL,
     TOK_VAR_REF,

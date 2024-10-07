@@ -1,6 +1,7 @@
 #include "context.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 Context* context_init()
 {

@@ -32,144 +32,110 @@ dump:
 _start:
 	mov byte [call_flag], 1
 	call main
-main:
+addr_0:
+	mov rax, 0
+	push rax
+	pop [SYS_read]
+addr_1:
+	mov rax, 1
+	push rax
+	pop [SYS_write]
+addr_2:
+	mov rax, 2
+	push rax
+	pop [SYS_open]
+addr_3:
+	mov rax, 3
+	push rax
+	pop [SYS_close]
+addr_4:
+	mov rax, 60
+	push rax
+	pop [SYS_exit]
+addr_5:
+	mov rax, 0
+	push rax
+	pop [stdin]
+addr_6:
+	mov rax, 1
+	push rax
+	pop [stdout]
+addr_7:
+	mov rax, 2
+	push rax
+	pop [stderr]
+print:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_0
-addr_1:
-	mov rax, 0
-	push rax
-	pop [index]
-addr_2:
-	mov rax, 0
-	push rax
-	pop [result]
-loopaddr_0:
-addr_4:
-	mov rax, [index]
-	push rax
-addr_5:
-	mov rax, 1000
-	push rax
-addr_6:
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	setg al
-	movzx rax, al
-        push rax
-addr_7:
-	pop rax
-	cmp rax, 1
-	je addr_8
-	jne endloop_addr_0
-addr_8:
-	mov rax, 3
-	push rax
 addr_9:
-	mov rax, [index]
+	mov rax, 1
 	push rax
 addr_10:
-	pop rax
-	pop rbx
-	xor rdx, rdx
-	div rbx
-	mov rax, rdx
-        push rax
+	mov rax, 1
+	push rax
 addr_11:
-	mov rax, 0
+	mov rax, [cstr]
 	push rax
 addr_12:
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-        push rax
-addr_13:
-	mov rax, 5
+	mov rax, [len]
 	push rax
+addr_13:
+	pop rdx
+	pop rsi
+	pop rdi
+	pop rax
+	syscall
 addr_14:
-	mov rax, [index]
+	mov rax, 0
 	push rax
 addr_15:
 	pop rax
-	pop rbx
-	xor rdx, rdx
-	div rbx
-	mov rax, rdx
-        push rax
-addr_16:
-	mov rax, 0
-	push rax
-addr_17:
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-        push rax
-addr_18:
-	pop rax
-	pop rbx
-	or rax, rbx
-        push rax
-addr_19:
-	pop rax
-	cmp rax, 1
-	mov byte [cond_flag], al
-	je addr_20
-	jne endif_addr_0
-addr_20:
-	mov rax, [result]
-	push rax
-addr_21:
-	mov rax, [index]
-	push rax
-addr_22:
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-addr_23:
-	pop rax
-	mov [result], rax
-endif_addr_0:
-addr_24:
-	mov rax, [index]
-	push rax
-addr_25:
-	mov rax, 1
-	push rax
-addr_26:
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-addr_27:
-	pop rax
-	mov [index], rax
-	jmp loopaddr_0
-endloop_addr_0:
-addr_28:
-	mov rax, [result]
-	push rax
-addr_29:
-	pop rdi
-	call dump
-addr_30:
-	mov rax, 0
-	push rax
-addr_31:
-	pop rax
 	ret
 block_addr_0:
-addr_32:
+main:
+	cmp byte [call_flag], 1
+	mov byte [call_flag], 0
+	jne block_addr_1
+addr_17:
+	mov rax, 95
+	push rax
+addr_18:
+	mov rax, [rsp]
+	push rax
+addr_19:
+	pop rdi
+	call dump
+addr_20:
+	pop rdi
+	call dump
+addr_21:
+	mov rax, str0
+	push rax
+	mov rax, str0_len
+	push rax
+addr_22:
+	mov byte [call_flag], 1
+	pop [len]
+	pop [cstr]
+	call print
+block_addr_1:
+addr_23:
 	mov rdi, rax
 	mov rax, 60
 	syscall
 segment readable writeable
-index dq 0
-result dq 0
+SYS_read dq 0
+SYS_write dq 0
+SYS_open dq 0
+SYS_close dq 0
+SYS_exit dq 0
+stdin dq 0
+stdout dq 0
+stderr dq 0
+len dq 0
+cstr dq 0
 call_flag db 0
 cond_flag db 0
+str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x0a, 0x00
+str0_len = 15

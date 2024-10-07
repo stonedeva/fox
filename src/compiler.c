@@ -132,6 +132,37 @@ void compiler_emit_dump(Compiler* compiler)
     fprintf(out, "	call dump\n");
 }
 
+void compiler_emit_dup(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    fprintf(out, "addr_%d:\n", context->addr_count);
+    fprintf(out, "	mov rax, [rsp]\n");
+    fprintf(out, "	push rax\n");
+}
+
+void compiler_emit_swap(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    fprintf(out, "addr_%d:\n", context->addr_count);
+    fprintf(out, "	pop rax\n");
+    fprintf(out, "	pop rbx\n");
+    fprintf(out, "	push rax\n");
+    fprintf(out, "	push rbx\n");
+}
+
+void compiler_emit_drop(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    fprintf(out, "addr_%d:\n", context->addr_count);
+    fprintf(out, "	pop rax\n");
+}
+
 void compiler_emit_var(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -493,7 +524,7 @@ void compiler_emit(Compiler* compiler)
 	case TOK_DEF_FUNC:
 	    context_push(context, TOK_DEF_FUNC);
 	    compiler_emit_func(compiler);
-	    compiler->context->addr_count++;
+	    context->addr_count++;
 	    break;
 	case TOK_END:
 	    TokenType type = context_pop(context);
@@ -587,6 +618,18 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_DUMP:
 	    compiler_emit_dump(compiler);
+	    context->addr_count++;
+	    break;
+	case TOK_DUP:
+	    compiler_emit_dup(compiler);
+	    context->addr_count++;
+	    break;
+	case TOK_SWAP:
+	    compiler_emit_swap(compiler);
+	    context->addr_count++;
+	    break;
+	case TOK_DROP:
+	    compiler_emit_drop(compiler);
 	    context->addr_count++;
 	    break;
 	case TOK_SYSCALL:
