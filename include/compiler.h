@@ -10,6 +10,7 @@
 typedef struct {
     Context* context;
     FILE* output;
+    size_t stack_count;
     size_t tok_sz;
     size_t tok_ptr;
     size_t var_count;

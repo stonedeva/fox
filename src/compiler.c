@@ -26,6 +26,7 @@ Compiler* compiler_init(Context* context, char* output_path, Lexer* lexer, bool 
     } else {
 	compiler->context = context;
     }
+    compiler->stack_count = 0;
     compiler->input_name = lexer->filename;
     compiler->has_entry = has_entry;
     compiler->output = output;
@@ -115,6 +116,11 @@ void compiler_emit_syscall(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
+    if (compiler->stack_count < 4) {
+	error_throw(compiler, FATAL, "Syscall requires four values");
+	return;
+    }
+
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	pop rdx\n");
     fprintf(out, "	pop rsi\n");
@@ -128,6 +134,10 @@ void compiler_emit_dump(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
+    if (compiler->stack_count == 0) {
+	error_throw(compiler, WARNING, "Stack is empty");
+    }
+    
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	pop rdi\n");
     fprintf(out, "	call dump\n");
@@ -138,6 +148,10 @@ void compiler_emit_dup(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
+    if (compiler->stack_count == 0) {
+	error_throw(compiler, WARNING, "Stack is empty");
+    }
+
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	mov rax, [rsp]\n");
     fprintf(out, "	push rax\n");
@@ -147,6 +161,10 @@ void compiler_emit_swap(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+
+    if (compiler->stack_count < 2) {
+	error_throw(compiler, WARNING, "Operation requires two values");
+    }
 
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	pop rax\n");
@@ -159,6 +177,10 @@ void compiler_emit_drop(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+
+    if (compiler->stack_count == 0) {
+	error_throw(compiler, WARNING, "Stack is empty");
+    }
 
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	pop rax\n");
@@ -318,7 +340,12 @@ void compiler_emit_func_call(Compiler* compiler)
     fprintf(out, "	mov byte [call_flag], 1\n");
 
     for (size_t i = 0; i < func.arg_count; i++) {
+	if (compiler->stack_count == 0) {
+	    error_throw(compiler, WARNING, "Stack is empty!");
+	    break;
+	}
 	fprintf(out, "	pop [%s]\n", func.args[i]);
+	compiler->stack_count--;
     }
 
     fprintf(out, "	call %s\n", name);
@@ -328,8 +355,10 @@ void compiler_emit_push(Compiler* compiler)
 {
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
-
+    
     char* val = compiler_curr_tok(compiler);
+
+    compiler->stack_count++;
 
     fprintf(out, "addr_%d:\n", compiler->context->addr_count);
     fprintf(out, "	mov rax, %s\n", val);
@@ -356,6 +385,8 @@ void compiler_emit_cstr(Compiler* compiler)
     fprintf(out, "	mov rax, str%d_len\n", context->literal_count);
     fprintf(out, "	push rax\n");
     context->literal_count++;
+
+    compiler->stack_count += 2;
 }
 
 void compiler_emit_binaryop(Compiler* compiler)
@@ -364,6 +395,10 @@ void compiler_emit_binaryop(Compiler* compiler)
     size_t ptr = compiler->tok_ptr;
 
     char op = compiler_curr_tok(compiler)[0];
+
+    if (compiler->stack_count < 2) {
+	error_throw(compiler, WARNING, "Operation requires two values");
+    }
 
     fprintf(out, "addr_%d:\n", compiler->context->addr_count);
     fprintf(out, "	pop rax\n");
@@ -416,6 +451,8 @@ void compiler_emit_binaryop(Compiler* compiler)
     }
 
     fprintf(out, "        push rax\n");
+
+    compiler->stack_count--;
 }
 
 void compiler_emit_segments(Compiler* compiler)
