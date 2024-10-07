@@ -2,11 +2,8 @@
 #define ERROR_H
 
 #include <stdlib.h>
-
-typedef struct {
-    char* input_path;
-    size_t line;
-} ErrorHandler;
+#include "lexer.h"
+#include "compiler.h"
 
 typedef enum {
     FATAL,
@@ -14,9 +11,7 @@ typedef enum {
     INFO
 } ErrorLevel;
 
-ErrorHandler* error_init(char* input_path);
-void error_free(ErrorHandler* handler);
-void error_throw(ErrorHandler* handler, ErrorLevel lvl, char* err, char* token);
+void error_throw(Compiler* compiler, ErrorLevel lvl, char* err);
 
 /*
  * Private

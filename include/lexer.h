@@ -42,6 +42,8 @@ typedef enum {
 typedef struct {
     TokenType type;
     char* token;
+    size_t line;
+    size_t row;
 } Token;
 
 typedef struct {

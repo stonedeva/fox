@@ -12,7 +12,7 @@ Lexer* lexer_init(char* filename)
 {
     Lexer* lexer = (Lexer*)malloc(sizeof(Lexer));;
     lexer->file = fopen(filename, "r");
-    lexer->line_count = 0;
+    lexer->line_count = 1;
     if (lexer->file == NULL) {
 	perror(filename);
 	exit(1);
@@ -42,6 +42,8 @@ static bool _lexer_is_delimiter(const char ch)
 
 static void _lexer_tokenize(Lexer* lexer) 
 {
+    size_t row = 1;
+
     const char *line = lexer->line;
     size_t len = strlen(line);
     char token[MAX_TOKENS]; 
@@ -63,9 +65,12 @@ static void _lexer_tokenize(Lexer* lexer)
                 token[token_index] = '\0';
 		lexer->tokens[lexer->tok_sz] = (Token) {
 		    .type = _lexer_type_from_cstr(token),
-		    .token = strdup(token)
+		    .token = strdup(token),
+		    .line = lexer->line_count,
+		    .row = row
 		};
 		lexer->tok_sz++;
+		row++;
 		token_index = 0;
 	    }
 
@@ -78,9 +83,12 @@ static void _lexer_tokenize(Lexer* lexer)
         token[token_index] = '\0';
 	lexer->tokens[lexer->tok_sz] = (Token) {
 	    .type = _lexer_type_from_cstr(token),
-	    .token = strdup(token)
+	    .token = strdup(token),
+	    .line = lexer->line_count,
+	    .row = row
 	};
 	lexer->tok_sz++;
+	row++;
     }
 }
 

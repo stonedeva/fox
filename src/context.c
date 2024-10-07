@@ -19,7 +19,7 @@ Context* context_init()
     context->block_count = 0;
     context->var_count = 0;
     context->literal_count = 0;
-    context->stack_count = 0;
+    context->stmt_count = 0;
 }
 
 void context_free(Context* context)
@@ -29,14 +29,14 @@ void context_free(Context* context)
 
 void context_push(Context* context, TokenType type)
 {
-    context->stack[context->stack_count] = type;
-    context->stack_count++;
+    context->stmts[context->stmt_count] = type;
+    context->stmt_count++;
 }
 
 TokenType context_pop(Context* context)
 {
-    TokenType type = context->stack[context->stack_count - 1];
-    context->stack_count--;
+    TokenType type = context->stmts[context->stmt_count - 1];
+    context->stmt_count--;
     return type;
 }
 

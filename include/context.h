@@ -11,7 +11,7 @@ typedef struct {
     char* name;
     char* value;
     bool is_array;
-    int arr_len;
+    size_t arr_len;
 } Variable;
 
 typedef struct {
@@ -21,19 +21,20 @@ typedef struct {
 } Function;
 
 typedef struct {
-    size_t stack_count;
+    size_t stmt_count;
     size_t if_count;
     size_t loop_count;
     size_t literal_count;
     size_t var_count;
     size_t func_count;
-    TokenType stack[MAX_STACK_SIZE];
+    TokenType stmts[MAX_STACK_SIZE];
     size_t addr_count;
     size_t block_count;
     size_t temp_addr;
     Variable vars[MAX_INSTANCES];
     Function funcs[MAX_INSTANCES];
     char* literals[MAX_INSTANCES];
+    char* cw_func;
 } Context;
 
 Context* context_init();

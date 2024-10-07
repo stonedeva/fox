@@ -1,4 +1,5 @@
 #include "compiler.h"
+#include "error.h"
 #include "lib/utils.h"
 #include <errno.h>
 #include <string.h>
@@ -25,7 +26,7 @@ Compiler* compiler_init(Context* context, char* output_path, Lexer* lexer, bool 
     } else {
 	compiler->context = context;
     }
-    compiler->error = error_init(lexer->filename);
+    compiler->input_name = lexer->filename;
     compiler->has_entry = has_entry;
     compiler->output = output;
     compiler->tokens = lexer->tokens;
@@ -179,36 +180,6 @@ void compiler_emit_var(Compiler* compiler)
     compiler->tok_ptr++;
 }
 
-void compiler_emit_array(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    Context* context = compiler->context;
-
-    char* name = compiler_prev_tok(compiler);
-    char* len_cstr = compiler_next_tok(compiler);
-
-    if (!utils_is_number(len_cstr)) {
-	error_throw(compiler->error, FATAL, "Array size is not a number", len_cstr);
-	return;
-    }
-
-    int len = utils_cstr_as_number(len_cstr);
-    if (len == 0) {
-	error_throw(compiler->error, WARNING, "Array size is set to 0", NULL);
-	return;
-    }
-
-    context->vars[context->var_count] = (Variable) {
-	.name = name,
-	.value = NULL,
-	.is_array = true,
-	.arr_len = len
-    };
-
-    context->var_count++;
-    compiler->tok_ptr += 2;
-}
-
 void compiler_emit_redef_var(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -228,6 +199,7 @@ void compiler_emit_reference(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
     char* name = compiler_curr_tok(compiler);
+    size_t ptr = compiler->tok_ptr;
 
     bool exists = true;
     for (size_t i = 0; i < context->var_count; i++) {
@@ -237,7 +209,7 @@ void compiler_emit_reference(Compiler* compiler)
     }
 
     if (!exists) {
-	error_throw(compiler->error, FATAL, "Unknown typename!", name);
+	error_throw(compiler, FATAL, "Unknown typename!");
     }
 
     fprintf(out, "addr_%d:\n", context->addr_count);
@@ -256,7 +228,8 @@ void compiler_emit_func(Compiler* compiler)
     Function func = {
 	.name = strdup(name)
     };
-
+    
+    context->cw_func = name;
     ptr += 2;
 
     while (strcmp("in", compiler->tokens[ptr].token) != 0) {
@@ -367,8 +340,14 @@ void compiler_emit_cstr(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+    size_t ptr = compiler->tok_ptr;
 
     char* cstr = compiler_curr_tok(compiler);
+    if (context->cw_func == NULL) {
+	error_throw(compiler, FATAL, "Strings are not allowed at top-level");
+	return;
+    }
+
     context->literals[context->literal_count] = cstr;
 
     fprintf(out, "addr_%d:\n", context->addr_count);
@@ -499,7 +478,7 @@ void compiler_emit_import(Compiler* compiler)
 
     struct stat buffer;
     if (stat(full_path, &buffer) != 0) {
-	error_throw(compiler->error, FATAL, "Import path not found!", path);
+	error_throw(compiler, FATAL, "Import path not found!");
 	return;
     }
 
@@ -527,6 +506,11 @@ void compiler_emit(Compiler* compiler)
 	    context->addr_count++;
 	    break;
 	case TOK_END:
+	    if (context->stmt_count == 0) {
+		error_throw(compiler, FATAL, "Uncorresponding 'end' statement");
+		break;
+	    }
+
 	    TokenType type = context_pop(context);
 	    if (type == TOK_CONDITION) {
 		fprintf(out, "endif_addr_%d:\n", context->if_count);
@@ -536,6 +520,7 @@ void compiler_emit(Compiler* compiler)
 	    if (type == TOK_DEF_FUNC) {
 		fprintf(out, "block_addr_%d:\n", context->block_count);
 		context->block_count++;
+		context->cw_func = NULL;
 		break;
 	    }
 	    if (type == TOK_LOOP) {
@@ -588,10 +573,6 @@ void compiler_emit(Compiler* compiler)
 	    context_push(context, TOK_DEF_VAR);
 	    compiler_emit_var(compiler);
 	    break;
-	case TOK_DEF_ARRAY:
-	    context_push(context, TOK_DEF_ARRAY);
-	    compiler_emit_array(compiler);
-	    break;
 	case TOK_REDEF_VAR:
 	    compiler_emit_redef_var(compiler);
 	    context->addr_count++;
@@ -640,7 +621,7 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_import(compiler);
 	    break;
 	default:
-	    error_throw(compiler->error, FATAL, "Unknown token!", tok.token);
+	    error_throw(compiler, FATAL, "Unknown token!");
 	}
 
 	i = compiler->tok_ptr;
