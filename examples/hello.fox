@@ -1,5 +1,6 @@
 import "std.fox"
 
 func main in
-    "Hello!\n" @print
+    "Hello, World!\n" @print
 end
+

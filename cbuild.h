@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 
 #define MAX_BUILD_TARGETS 30
 
@@ -59,9 +58,6 @@ void cb_add_target(Builder* builder, char* path)
 
 void cb_build(Builder* builder)
 {
-    struct timeval tv;
-    long start_time = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-
     printf("[BUILD] Targets:\n");
     for (size_t i = 0; i < builder->path_count; i++) {
 	printf(" - %s\n", builder->paths[i]);
@@ -76,11 +72,7 @@ void cb_build(Builder* builder)
     char* command = _cb_construct(builder);
     system(command);
 
-    long end_time = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-    long compile_time = start_time - end_time;
-
     printf("[BUILD] %s\n", command);
-    printf("[BUILD] Finish compilation (%ld)\n", compile_time);
 }
 
 void cb_set_cflags(Builder* builder, char* cflags)

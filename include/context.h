@@ -1,17 +1,17 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-#include "lexer.h"
+#include <stdlib.h>
+#include "type.h"
 
 #define MAX_STACK_SIZE 200
 #define MAX_INSTANCES 100
 #define MAX_ARGS 20
 
 typedef struct {
+    VarType type;
     char* name;
     char* value;
-    bool is_array;
-    size_t arr_len;
 } Variable;
 
 typedef struct {

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "lexer.h"
+#include "type.h"
 #include "compiler.h"
 #include "lib/utils.h"
 
@@ -60,6 +61,9 @@ static int fox_init(int argc, char* argv[])
 
     Lexer* lexer = lexer_init(input_path);
     lexer_proc(lexer);
+
+    TypeStack* type = typestack_init(lexer);
+    typestack_evaluate(type);
 
     compiler_emit_base("output.asm");
     Compiler* compiler = compiler_init(NULL, "output.asm", lexer, has_entry);

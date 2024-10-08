@@ -179,7 +179,7 @@ void compiler_emit_drop(Compiler* compiler)
     Context* context = compiler->context;
 
     if (compiler->stack_count == 0) {
-	error_throw(compiler, WARNING, "Stack is empty");
+	error_throw(compiler, WARNING, "Drop from empty stack");
     }
 
     fprintf(out, "addr_%d:\n", context->addr_count);
@@ -193,12 +193,20 @@ void compiler_emit_var(Compiler* compiler)
 
     char* name = compiler_next_tok(compiler);
 
-    context->vars[context->var_count] = (Variable) {
+    Variable var = {
 	.name = strdup(name),
 	.value = NULL
     };
 
+    if (!utils_is_number(name)) {
+	var.type = STRING;
+    } else {
+	var.type = INTEGER;
+    }
+
+    context->vars[context->var_count] = var;
     context->var_count++;
+
     compiler->tok_ptr++;
 }
 
@@ -335,6 +343,10 @@ void compiler_emit_func_call(Compiler* compiler)
     name++;
     
     Function func = context_func_by_name(context, name);
+    if (func.name == NULL) {
+	error_throw(compiler, FATAL, "Function does not exist");
+	return;
+    }
 
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	mov byte [call_flag], 1\n");
@@ -535,7 +547,7 @@ void compiler_emit(Compiler* compiler)
 
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	Token tok = compiler->tokens[i];
-
+	
 	switch (tok.type) {
 	case TOK_DEF_FUNC:
 	    context_push(context, TOK_DEF_FUNC);
@@ -570,16 +582,6 @@ void compiler_emit(Compiler* compiler)
 	    if (type == TOK_DEF_VAR) {
 		char* var_name = context->vars[context->var_count - 1].name;
 		fprintf(out, "	pop [%s]\n", var_name);
-		break;
-	    }
-
-	    if (type == TOK_DEF_ARRAY) {
-		Variable array = context->vars[context->var_count - 1];
-		fprintf(out, "addr_%d:\n", context->addr_count);
-		for (int i = 0; i < array.arr_len; i++) {
-		    fprintf(out, "	pop [%s + %d]\n", array.name, i);
-		}
-		context->addr_count++;
 		break;
 	    }
 
@@ -627,6 +629,10 @@ void compiler_emit(Compiler* compiler)
 	    context->addr_count++;
 	    break;
 	case TOK_FUNC_CALL:
+	    if (context->cw_func == NULL) {
+		error_throw(compiler, FATAL, "Words are not allowed at top-level");
+		return;
+	    }
 	    compiler_emit_func_call(compiler);
 	    context->addr_count++;
 	    break;
@@ -659,6 +665,7 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	default:
 	    error_throw(compiler, FATAL, "Unknown token!");
+	    break;
 	}
 
 	i = compiler->tok_ptr;
