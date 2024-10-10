@@ -231,9 +231,9 @@ void compiler_emit_reference(Compiler* compiler)
     char* name = compiler_curr_tok(compiler);
     size_t ptr = compiler->tok_ptr;
 
-    bool exists = true;
+    bool exists = false;
     for (size_t i = 0; i < context->var_count; i++) {
-	if (strcmp(name, context->vars[i].name)) {
+	if (strcmp(name, context->vars[i].name) == 0) {
 	    exists = true;
 	}
     }

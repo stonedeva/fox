@@ -47,6 +47,10 @@ void typestack_evaluate(TypeStack* stack)
 	    case '=':
 	    case '<':
 	    case '>':
+	    case '|':
+	    case '&':
+	    case '^':
+	    case '!':
 		typestack_push(stack, BOOLEAN);
 		break;
 	    default:
