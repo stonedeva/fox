@@ -4,14 +4,14 @@ written in C
 
 ## Installation Guide
 ### Dependencies
-- GCC / CC / CLANG
+- C Compiler
 - FASM
-- CMake
 
 ```console
 git clone https://github.com/stonedeva/fox.git
 mkdir -p build
-chmod +x build.sh && ./build.sh
+cc -o cbuild cbuild.c
+./cbuild
 ```
 
 ## TODO

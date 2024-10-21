@@ -37,6 +37,16 @@ main:
 	mov byte [call_flag], 0
 	jne block_addr_0
 addr_1:
+	mov rax, 0
+	push rax
+addr_2:
 	pop rax
-	cmp rax, 1
-	je addr_2
+	ret
+block_addr_0:
+addr_3:
+	mov rdi, rax
+	mov rax, 60
+	syscall
+segment readable writeable
+call_flag db 0
+cond_flag db 0
