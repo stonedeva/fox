@@ -53,7 +53,7 @@ import "std.fox"
 func main in
     var a 250 end
     var b 250 end
-    a b = if
+    if a b == do
 	"A and B are equals\n" @print
     else
 	"A and B are not equals\n" @print

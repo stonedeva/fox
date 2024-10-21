@@ -247,6 +247,19 @@ void compiler_emit_reference(Compiler* compiler)
     fprintf(out, "	push rax\n");
 }
 
+void compiler_emit_ptr_ref(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    char* name = compiler_curr_tok(compiler);
+    name++;
+
+    fprintf(out, "addr_%d:\n", context->addr_count);
+    fprintf(out, "	mov rax, %s\n", name);
+    fprintf(out, "	push rax\n");
+}
+
 void compiler_emit_func(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -293,19 +306,6 @@ void compiler_emit_return(Compiler* compiler)
     fprintf(out, "	ret\n");
 }
 
-void compiler_emit_condition(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    Context* context = compiler->context;
-
-    fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	pop rax\n");
-    fprintf(out, "	cmp rax, 1\n");
-    fprintf(out, "	mov byte [cond_flag], al\n");
-    fprintf(out, "	je addr_%d\n", context->addr_count + 1);
-    fprintf(out, "	jne endif_addr_%d\n", context->if_count);
-}
-
 void compiler_emit_else(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -331,7 +331,20 @@ void compiler_emit_do(Compiler* compiler)
     fprintf(out, "	pop rax\n");
     fprintf(out, "	cmp rax, 1\n");
     fprintf(out, "	je addr_%d\n", context->addr_count + 1);
-    fprintf(out, "	jne endloop_addr_%d\n", context->loop_count);
+
+    TokenType type = context->stmts[context->stmt_count - 1];
+
+    switch (type) {
+    case TOK_LOOP:
+	fprintf(out, "	jne endloop_addr_%d\n", context->loop_count);
+	break;
+    case TOK_CONDITION:
+	fprintf(out, "	jne endif_addr_%d\n", context->if_count);
+	break;
+    default:
+	error_throw(compiler, FATAL, "Trying to perform 'do' without context");
+	break;
+    }
 }
 
 void compiler_emit_func_call(Compiler* compiler)
@@ -406,7 +419,7 @@ void compiler_emit_binaryop(Compiler* compiler)
     FILE* out = compiler->output;
     size_t ptr = compiler->tok_ptr;
 
-    char op = compiler_curr_tok(compiler)[0];
+    char* op = compiler_curr_tok(compiler);
 
     if (compiler->stack_count < 2) {
 	error_throw(compiler, WARNING, "Operation requires two values");
@@ -416,7 +429,17 @@ void compiler_emit_binaryop(Compiler* compiler)
     fprintf(out, "	pop rax\n");
     fprintf(out, "	pop rbx\n");
 
-    switch (op) {
+    if (strcmp(op, "==") == 0) {
+	fprintf(out, "	cmp rax, rbx\n");
+	fprintf(out, "	sete al\n");
+	fprintf(out, "	movzx rax, al\n");
+    } else if (strcmp(op, "&&") == 0) {
+	fprintf(out, "	and rax, rbx\n");
+    } else if (strcmp(op, "||") == 0) {
+	fprintf(out, "	or rax, rbx\n");
+    }
+
+    switch (op[0]) {
     case '+':
 	fprintf(out, "	add rax, rbx\n");
 	break;
@@ -430,11 +453,6 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	mov rcx, rbx\n");
 	fprintf(out, "	xor rdx, rdx\n");
 	fprintf(out, "	div rcx\n");
-	break;
-    case '=':
-	fprintf(out, "	cmp rax, rbx\n");
-	fprintf(out, "	sete al\n");
-	fprintf(out, "	movzx rax, al\n");
 	break;
     case '<':
 	fprintf(out, "	cmp rax, rbx\n");
@@ -450,12 +468,6 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	xor rdx, rdx\n");
 	fprintf(out, "	div rbx\n");
 	fprintf(out, "	mov rax, rdx\n");
-	break;
-    case '&':
-	fprintf(out, "	and rax, rbx\n");
-	break;
-    case '|':
-	fprintf(out, "	or rax, rbx\n");
 	break;
     case '^':
 	fprintf(out, "	xor rax, rbx\n");
@@ -588,8 +600,7 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_CONDITION:
 	    context_push(context, TOK_CONDITION);
-	    compiler_emit_condition(compiler);
-	    context->addr_count++;
+	    //context->addr_count++;
 	    break;
 	case TOK_ELSE:
 	    compiler_emit_else(compiler);
@@ -638,6 +649,10 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_VAR_REF:
 	    compiler_emit_reference(compiler);
+	    context->addr_count++;
+	    break;
+	case TOK_PTR_REF:
+	    compiler_emit_ptr_ref(compiler);
 	    context->addr_count++;
 	    break;
 	case TOK_DUMP:

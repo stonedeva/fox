@@ -28,6 +28,7 @@ typedef enum {
     TOK_DEF_FUNC,
     TOK_FUNC_CALL,
     TOK_VAR_REF,
+    TOK_PTR_REF,
     TOK_DEF_VAR,
     TOK_REDEF_VAR,
     TOK_DEF_ARRAY,

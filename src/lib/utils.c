@@ -2,23 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-char* utils_ascii_to_hex(const char* ascii) 
-{
-    size_t len = strlen(ascii);
-    char* hex_str = (char*)malloc((len * 3 + 1) * sizeof(char));
-    if (hex_str == NULL)
-	return NULL;
-
-    char* pointer = hex_str;
-    for (size_t i = 0; i < len; i++)
-	pointer += sprintf(pointer, "%02x", (unsigned char)ascii[i]);
-
-    if (pointer > hex_str)
-	*(pointer - 1) = '\0';
-
-    return hex_str;
-}
-
 bool utils_is_number(char* str) 
 {
     while (*str != '\0') {
@@ -42,6 +25,13 @@ int utils_cstr_as_number(char* str)
 
 bool utils_is_operator(char* str) 
 {
+    if (strcmp(str, "==") == 0 ||
+	strcmp(str, "!=") == 0 ||
+	strcmp(str, "&&") == 0 ||
+	strcmp(str, "||") == 0) {
+	return true;
+    }
+
     switch (str[0]) {
     case '+':
     case '-':
@@ -51,9 +41,6 @@ bool utils_is_operator(char* str)
     case '<':
     case '>':
     case '%':
-    case '&':
-    case '|':
-    case '^':
 	return true;
     }
 

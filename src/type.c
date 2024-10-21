@@ -42,20 +42,10 @@ void typestack_evaluate(TypeStack* stack)
 	    (void) typestack_pop(stack);
 	    (void) typestack_pop(stack);
 
-	    char op = tok.token[0];
-	    switch (op) {
-	    case '=':
-	    case '<':
-	    case '>':
-	    case '|':
-	    case '&':
-	    case '^':
-	    case '!':
+	    if (utils_is_operator(tok.token)) {
 		typestack_push(stack, BOOLEAN);
-		break;
-	    default:
+	    } else {
 		typestack_push(stack, INTEGER);
-		break;
 	    }
 
 	    break;
@@ -63,7 +53,6 @@ void typestack_evaluate(TypeStack* stack)
 	    typestack_push(stack, STRING);
 	    typestack_push(stack, INTEGER);
 	    break;
-	case TOK_CONDITION:
 	case TOK_DO:
 	    VarType type = typestack_pop(stack);
 	    if (type != BOOLEAN) {
