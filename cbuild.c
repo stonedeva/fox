@@ -4,7 +4,7 @@
 int main(void)
 {
     Builder* builder = cb_init("build/foxc");
-    cb_set_cflags(builder, "-I include");
+    cb_set_cflags(builder, "-I include -g");
 
     cb_add_target(builder, "src/main.c");
     cb_add_target(builder, "src/lexer.c");

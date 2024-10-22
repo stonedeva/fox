@@ -37,13 +37,19 @@ main:
 	mov byte [call_flag], 0
 	jne block_addr_0
 addr_1:
-	mov rax, 0
+	mov rax, 205
 	push rax
 addr_2:
+	pop rdi
+	call dump
+addr_3:
+	mov rax, 0
+	push rax
+addr_4:
 	pop rax
 	ret
 block_addr_0:
-addr_3:
+addr_5:
 	mov rdi, rax
 	mov rax, 60
 	syscall

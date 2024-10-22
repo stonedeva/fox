@@ -8,7 +8,6 @@
 typedef enum {
     INTEGER,
     BYTE,
-    STRING,
     POINTER,
     BOOLEAN
 } VarType;
