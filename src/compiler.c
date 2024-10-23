@@ -176,12 +176,6 @@ void compiler_emit_var(Compiler* compiler)
 	.value = NULL
     };
 
-    if (!utils_is_number(name)) {
-	var.type = POINTER;
-    } else {
-	var.type = INTEGER;
-    }
-
     context->vars[context->var_count] = var;
     context->var_count++;
 
@@ -307,6 +301,7 @@ void compiler_emit_do(Compiler* compiler)
 
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	pop rax\n");
+    fprintf(out, "	mov [cond_flag], al\n");
     fprintf(out, "	cmp rax, 1\n");
     fprintf(out, "	je addr_%d\n", context->addr_count + 1);
 
@@ -542,7 +537,11 @@ void compiler_emit(Compiler* compiler)
 		break;
 	    }
 	    if (type == TOK_DEF_FUNC) {
+		fprintf(out, "addr_%d:\n", context->addr_count);
+		fprintf(out, "	mov rax, 0\n");
+		fprintf(out, "	ret\n");
 		fprintf(out, "block_addr_%d:\n", context->block_count);
+		context->addr_count++;
 		context->block_count++;
 		context->cw_func = NULL;
 		break;
