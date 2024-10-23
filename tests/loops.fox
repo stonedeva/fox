@@ -1,0 +1,9 @@
+func main in
+    var i 0 end
+    while i 20 > do
+	i dump
+	i 1 + #i
+    end
+
+    0 return
+end

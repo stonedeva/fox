@@ -1,8 +1,6 @@
+import "std.fox"
+
 func main in
-    var index 0 end
-    while 0 256 > do
-	99 dump
-	index 1 + #index
-    end
+    "Hello, World!\n" @print
     0 return
 end

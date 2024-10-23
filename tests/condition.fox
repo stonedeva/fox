@@ -1,0 +1,9 @@
+func main in
+    if 500 500 == do
+	99 dump
+    else
+	205 dump
+    end
+
+    0 return
+end
