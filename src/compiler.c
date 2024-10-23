@@ -393,6 +393,10 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	sete al\n");
 	fprintf(out, "	movzx rax, al\n");
+    } else if (strcmp(op, "!=") == 0) {
+	fprintf(out, "	cmp rax, rbx\n");
+	fprintf(out, "	setne al\n");
+	fprintf(out, "	movzx rax, al\n");
     } else if (strcmp(op, "&&") == 0) {
 	fprintf(out, "	and rax, rbx\n");
     } else if (strcmp(op, "||") == 0) {

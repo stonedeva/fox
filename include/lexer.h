@@ -62,7 +62,6 @@ void lexer_proc(Lexer* lexer);
 /*
  * Private
 */
-static bool _lexer_is_delimiter(const char ch);
 static void _lexer_tokenize(Lexer* lexer);
 static TokenType _lexer_type_from_cstr(char* cstr);
 

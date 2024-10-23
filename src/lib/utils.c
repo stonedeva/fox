@@ -27,8 +27,10 @@ bool utils_is_operator(char* str)
 {
     if (strcmp(str, "==") == 0 ||
 	strcmp(str, "!=") == 0 ||
+	strcmp(str, "!=") == 0 ||
 	strcmp(str, "&&") == 0 ||
 	strcmp(str, "||") == 0) {
+
 	return true;
     }
 
@@ -44,16 +46,4 @@ bool utils_is_operator(char* str)
     }
 
     return false;
-}
-
-char* utils_replace_filetype(char* cstr)
-{
-    size_t len = strlen(cstr);
-    cstr[len - 1] = 'm';
-    cstr[len - 2] = 's';
-    cstr[len - 3] = 'a';
-    
-    printf("STRING: %s\n", cstr);
-
-    return cstr;
 }

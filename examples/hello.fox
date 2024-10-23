@@ -1,4 +1,8 @@
 func main in
-    91 dump
+    var index 0 end
+    while 0 256 > do
+	99 dump
+	index 1 + #index
+    end
     0 return
 end

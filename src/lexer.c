@@ -31,9 +31,6 @@ void lexer_proc(Lexer* lexer)
     }
 }
 
-/*
- * Private functions
-*/
 static bool _lexer_is_delimiter(const char ch)
 {
     return isspace(ch) || ch == ',' || ch == '.' || ch == ':' 
