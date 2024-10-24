@@ -22,6 +22,14 @@ cc -o cbuild cbuild.c
 - [ ] Static types
 - [ ] Compile to Native Code
 
+## Intrinsic
+| Intrinsic     | Function                                   | Showcase  |
+|---------------|--------------------------------------------|-----------|
+| ```dup```     | Duplicate top of the stack                 | ```a -> a a```  |
+| ```swap```     | Swap top two elements of the stack        |  ```a b -> b a``` |
+| ```drop```     | Drop the element on top of the stack      |	```a b -> a```	|
+| ```dump```	| Print the element on top of the stack	     |	```a -> a (printed)``` |
+
 ## Getting Started
 ### Hello World!
 ```code

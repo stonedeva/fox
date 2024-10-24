@@ -1,11 +1,11 @@
-func main
+func main in
     var a 1 end
     var b 2 end
     var sum 0 end
     var next_fib 0 end
 
-    while a 4000000 = a < 4000000 | do
-	a 2 % 0 = if
+    while a 4000000 == a < 4000000 || do
+	if a 2 % 0 == do
 	    sum a + #sum
 	end
 

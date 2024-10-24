@@ -149,10 +149,10 @@ void compiler_emit_swap(Compiler* compiler)
     Context* context = compiler->context;
 
     fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	pop rax\n");
-    fprintf(out, "	pop rbx\n");
-    fprintf(out, "	push rax\n");
-    fprintf(out, "	push rbx\n");
+    fprintf(out, "	mov rax, [rsp]\n");
+    fprintf(out, "	mov rbx, [rsp+8]\n");
+    fprintf(out, "	mov [rsp], rbx\n");
+    fprintf(out, "	mov [rsp+8], rax\n");
 }
 
 void compiler_emit_drop(Compiler* compiler)
