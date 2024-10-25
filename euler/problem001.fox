@@ -3,7 +3,7 @@ func main in
     var result 0 end
 
     while index 1000 > do
-	if 3 index % 0 == 5 index % 0 == || do
+	if index 3 % 0 == index 5 % 0 == || do
 	    result index + #result
 	end
 	index 1 + #index

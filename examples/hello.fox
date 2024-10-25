@@ -1,4 +1,6 @@
 func main in
+    500 5 
+    dump dump
     0 return
 end
 

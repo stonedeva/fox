@@ -149,10 +149,10 @@ void compiler_emit_swap(Compiler* compiler)
     Context* context = compiler->context;
 
     fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	mov rax, [rsp]\n");
-    fprintf(out, "	mov rbx, [rsp+8]\n");
-    fprintf(out, "	mov [rsp], rbx\n");
-    fprintf(out, "	mov [rsp+8], rax\n");
+    fprintf(out, "	pop rax\n");
+    fprintf(out, "	pop rbx\n");
+    fprintf(out, "	push rax\n");
+    fprintf(out, "	push rbx\n");
 }
 
 void compiler_emit_drop(Compiler* compiler)
@@ -414,9 +414,9 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	mul rax\n");
 	break;
     case '/':
-	fprintf(out, "	mov rcx, rbx\n");
+	fprintf(out, "	xchg rax, rbx\n");
 	fprintf(out, "	xor rdx, rdx\n");
-	fprintf(out, "	div rcx\n");
+	fprintf(out, "	div rbx\n");
 	break;
     case '<':
 	fprintf(out, "	cmp rax, rbx\n");
@@ -429,6 +429,7 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	movzx rax, al\n");
 	break;
     case '%':
+	fprintf(out, "	xchg rax, rbx\n");
 	fprintf(out, "	xor rdx, rdx\n");
 	fprintf(out, "	div rbx\n");
 	fprintf(out, "	mov rax, rdx\n");
