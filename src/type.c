@@ -38,6 +38,9 @@ void typestack_evaluate(TypeStack* stack)
 	    break;
 	
 	case TOK_BINARYOP:
+	    VarType top_operand = typestack_pop(stack);
+	    VarType sec_operand = typestack_pop(stack);
+
 	    if (stack->type_count < 2) {
 		error_from_parts(filename, FATAL, "Operation requires two values", tok);
 	    }
@@ -52,6 +55,14 @@ void typestack_evaluate(TypeStack* stack)
 	    }
 
 	    switch (tok.token[0]) {
+	    case '+':
+	    case '-':
+		if (top_operand == POINTER || 
+		    sec_operand == POINTER) {
+
+		    typestack_push(stack, POINTER);
+		    continue;
+		}
 	    case '<':
 	    case '>':
 		typestack_push(stack, BOOLEAN);
@@ -87,11 +98,10 @@ void typestack_evaluate(TypeStack* stack)
 	    break;
 	
 	case TOK_SWAP:
-	    VarType top = typestack_pop(stack);
+    	    VarType top = typestack_pop(stack);
 	    VarType second = typestack_pop(stack);
-	    if (!(top == INTEGER && second == INTEGER)) {
-		error_from_parts(filename, WARNING, "Trying to swap a non-integer", tok);
-	    }
+	    typestack_push(stack, second);
+	    typestack_push(stack, top);
 	    break;
 	
 	case TOK_DUP:
@@ -99,9 +109,22 @@ void typestack_evaluate(TypeStack* stack)
 	    break;
 	
 	case TOK_DROP:
-	    top = typestack_pop(stack);
-	    if (top != INTEGER) {
-		error_from_parts(filename, WARNING, "Trying to drop a non-integer", tok);
+	    (void) typestack_pop(stack);
+	    break;
+	
+	case TOK_PTR_SET:
+	    if (typestack_pop(stack) != INTEGER) {
+		error_from_parts(filename, WARNING, "Trying to set a non-integer", tok);
+	    }
+
+	    if (typestack_pop(stack) != POINTER) {
+		error_from_parts(filename, FATAL, "Memory address is not a pointer", tok);
+	    }
+	    break;
+	
+	case TOK_PTR_GET:
+	    if (typestack_pop(stack) != POINTER) {
+		error_from_parts(filename, FATAL, "Memory address is not a pointer", tok);
 	    }
 	    break;
 	

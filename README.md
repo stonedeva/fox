@@ -22,13 +22,19 @@ cc -o cbuild cbuild.c
 - [ ] Static types
 - [ ] Compile to Native Code
 
+## Bugs
+Referencing random memory from pointer causes every value
+before new memory address to store addresses
+
 ## Intrinsic
 | Intrinsic     | Function                                   | Showcase  |
 |---------------|--------------------------------------------|-----------|
 | ```dup```     | Duplicate top of the stack                 | ```a -> a a```  |
 | ```swap```     | Swap top two elements of the stack        |  ```a b -> b a``` |
 | ```drop```     | Drop the element on top of the stack      |	```a b -> a```	|
-| ```dump```	| Print the element on top of the stack	     |	```a -> a (printed)``` |
+| ```dump```	| Print the element on top of the stack	     |	```Maintained``` |
+| ```set```     | Set the value of address on top of the stack      |	```Maintained```	|
+| ```get```	| Get the value of address on top of the stack	     |	```a (pointer) -> a (pointer) a (value)``` |
 
 ## Getting Started
 ### Hello World!
@@ -81,3 +87,13 @@ func main in
     0 return
 end
 ```
+
+### Pointers
+```code
+func main in
+    var x 550 end
+    &x 99 set
+    &x get dump
+
+    0 return
+end

@@ -1,5 +1,7 @@
 func main in
-    205 dump
+    var x 550 end
+    &x 1 + 99 set
+    &x 1 + get dump
     0 return
 end
 

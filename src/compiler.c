@@ -193,7 +193,7 @@ void compiler_emit_redef_var(Compiler* compiler)
 
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	pop rax\n");
-    fprintf(out, "	mov [%s], rax\n", name);
+    fprintf(out, "	mov [var_%s], rax\n", name);
 }
 
 void compiler_emit_reference(Compiler* compiler)
@@ -215,7 +215,7 @@ void compiler_emit_reference(Compiler* compiler)
     }
 
     fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	mov rax, [%s]\n", name);
+    fprintf(out, "	mov rax, [var_%s]\n", name);
     fprintf(out, "	push rax\n");
 }
 
@@ -228,7 +228,32 @@ void compiler_emit_ptr_ref(Compiler* compiler)
     name++;
 
     fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	mov rax, %s\n", name);
+    fprintf(out, "	mov rax, var_%s\n", name);
+    fprintf(out, "	push rax\n");
+}
+
+void compiler_emit_ptr_set(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    char* name = compiler_curr_tok(compiler);
+    name++;
+
+    fprintf(out, "addr_%d:\n", context->addr_count);
+    fprintf(out, "	pop rax\n");
+    fprintf(out, "	pop rbx\n");
+    fprintf(out, "	mov [rbx], rax\n");
+}
+
+void compiler_emit_ptr_get(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    fprintf(out, "addr_%d:\n", context->addr_count);
+    fprintf(out, "	pop rbx\n");
+    fprintf(out, "	mov rax, [rbx]\n");
     fprintf(out, "	push rax\n");
 }
 
@@ -338,7 +363,7 @@ void compiler_emit_func_call(Compiler* compiler)
     fprintf(out, "	mov byte [call_flag], 1\n");
 
     for (size_t i = 0; i < func.arg_count; i++) {
-	fprintf(out, "	pop [%s]\n", func.args[i]);
+	fprintf(out, "	pop [var_%s]\n", func.args[i]);
     }
 
     fprintf(out, "	call %s\n", name);
@@ -455,7 +480,7 @@ void compiler_emit_segments(Compiler* compiler)
 
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
-	fprintf(out, "%s dq 0\n", var.name);
+	fprintf(out, "var_%s dq 0\n", var.name);
     }
 
     fprintf(out, "call_flag db 0\n");
@@ -560,7 +585,7 @@ void compiler_emit(Compiler* compiler)
 
 	    if (type == TOK_DEF_VAR) {
 		char* var_name = context->vars[context->var_count - 1].name;
-		fprintf(out, "	pop [%s]\n", var_name);
+		fprintf(out, "	pop [var_%s]\n", var_name);
 		break;
 	    }
 
@@ -619,6 +644,14 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_PTR_REF:
 	    compiler_emit_ptr_ref(compiler);
+	    context->addr_count++;
+	    break;
+	case TOK_PTR_SET:
+	    compiler_emit_ptr_set(compiler);
+	    context->addr_count++;
+	    break;
+	case TOK_PTR_GET:
+	    compiler_emit_ptr_get(compiler);
 	    context->addr_count++;
 	    break;
 	case TOK_DUMP:
