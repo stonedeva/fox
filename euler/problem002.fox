@@ -4,8 +4,8 @@ func main in
     var sum 0 end
     var next_fib 0 end
 
-    while a 4000000 == a < 4000000 || do
-	if a 2 % 0 == do
+    while a 4000000 == a 4000000 > || do
+	if 2 a % 0 == do
 	    sum a + #sum
 	end
 
