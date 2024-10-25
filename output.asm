@@ -32,117 +32,30 @@ dump:
 _start:
 	mov byte [call_flag], 1
 	call main
-addr_0:
-	mov rax, 0
-	push rax
-	pop [SYS_read]
-addr_1:
-	mov rax, 1
-	push rax
-	pop [SYS_write]
-addr_2:
-	mov rax, 2
-	push rax
-	pop [SYS_open]
-addr_3:
-	mov rax, 3
-	push rax
-	pop [SYS_close]
-addr_4:
-	mov rax, 60
-	push rax
-	pop [SYS_exit]
-addr_5:
-	mov rax, 0
-	push rax
-	pop [stdin]
-addr_6:
-	mov rax, 1
-	push rax
-	pop [stdout]
-addr_7:
-	mov rax, 2
-	push rax
-	pop [stderr]
-print:
-	cmp byte [call_flag], 1
-	mov byte [call_flag], 0
-	jne block_addr_0
-addr_9:
-	mov rax, 1
-	push rax
-addr_10:
-	mov rax, 1
-	push rax
-addr_11:
-	mov rax, [cstr]
-	push rax
-addr_12:
-	mov rax, [len]
-	push rax
-addr_13:
-	pop rdx
-	pop rsi
-	pop rdi
-	pop rax
-	syscall
-addr_14:
-	pop rax
-addr_15:
-	mov rax, 0
-	push rax
-addr_16:
-	pop rax
-	ret
-addr_17:
-	mov rax, 0
-	ret
-block_addr_0:
 main:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
-	jne block_addr_1
-addr_19:
-	mov rax, str0
+	jne block_addr_0
+addr_1:
+	mov rax, 205
 	push rax
-	mov rax, str0_len
-	push rax
-	pop [msg]
-addr_20:
-	mov rax, [msg]
-	push rax
-addr_21:
-	mov byte [call_flag], 1
-	pop [len]
-	pop [cstr]
-	call print
-addr_22:
+addr_2:
+	pop rdi
+	call dump
+addr_3:
 	mov rax, 0
 	push rax
-addr_23:
+addr_4:
 	pop rax
 	ret
-addr_24:
+addr_5:
 	mov rax, 0
 	ret
-block_addr_1:
-addr_25:
+block_addr_0:
+addr_6:
 	mov rdi, rax
 	mov rax, 60
 	syscall
 segment readable writeable
-SYS_read dq 0
-SYS_write dq 0
-SYS_open dq 0
-SYS_close dq 0
-SYS_exit dq 0
-stdin dq 0
-stdout dq 0
-stderr dq 0
-len dq 0
-cstr dq 0
-msg dq 0
 call_flag db 0
 cond_flag db 0
-str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x00
-str0_len = 13

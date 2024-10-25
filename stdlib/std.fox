@@ -8,7 +8,7 @@ var stdin 0 end
 var stdout 1 end
 var stderr 2 end
 
-func print len cstr in
+func print cstr len in
     1 1 cstr len syscall
     drop
     0 return
