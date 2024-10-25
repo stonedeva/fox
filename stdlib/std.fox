@@ -9,9 +9,8 @@ var stdout 1 end
 var stderr 2 end
 
 func print len cstr in
-    1 1 cstr len 
-    syscall
-    drop drop
+    1 1 cstr len syscall
+    drop
     0 return
 end
 

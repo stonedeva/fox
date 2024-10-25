@@ -1,0 +1,8 @@
+import "std.fox"
+
+func main in
+    var msg "Hello, World!" end
+    msg @print
+
+    0 return
+end

@@ -371,9 +371,9 @@ void compiler_emit_cstr(Compiler* compiler)
     context->literals[context->literal_count] = cstr;
 
     fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	mov rax, str%d\n", context->literal_count);
-    fprintf(out, "	push rax\n");
     fprintf(out, "	mov rax, str%d_len\n", context->literal_count);
+    fprintf(out, "	push rax\n");
+    fprintf(out, "	mov rax, str%d\n", context->literal_count);
     fprintf(out, "	push rax\n");
     context->literal_count++;
 }
