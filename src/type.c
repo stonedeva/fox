@@ -70,8 +70,8 @@ void typestack_evaluate(TypeStack* stack)
 	    break;
 	
 	case TOK_STRING_LITERAL:
-	    typestack_push(stack, POINTER);
 	    typestack_push(stack, INTEGER);
+	    typestack_push(stack, POINTER);
 	    break;
 	
 	case TOK_DO:
