@@ -1,0 +1,14 @@
+func main in
+    var num 600851475143 end
+    var div 2 end
+
+    while div num > do
+	if num div % 0 == do
+	    num div / #num
+	else
+	    div 1 + #div
+	end
+    end
+
+    num dump
+end
