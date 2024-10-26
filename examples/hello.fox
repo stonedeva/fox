@@ -1,4 +1,8 @@
 func main in
+    var i 10 end
+    i 1 - #i
+    i dump
+
     0 return
 end
 

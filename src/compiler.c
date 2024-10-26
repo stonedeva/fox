@@ -331,7 +331,7 @@ void compiler_emit_do(Compiler* compiler)
     fprintf(out, "	je addr_%d\n", context->addr_count + 1);
 
     TokenType type = context->stmts[context->stmt_count - 1];
-
+    
     switch (type) {
     case TOK_LOOP:
 	fprintf(out, "	jne endloop_addr_%d\n", context->loop_count);
@@ -433,7 +433,8 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	add rax, rbx\n");
 	break;
     case '-':
-	fprintf(out, "	sub rax, rbx\n");
+	fprintf(out, "	sub rbx, rax\n");
+	fprintf(out, "	mov rax, rbx\n");
 	break;
     case '*':
 	fprintf(out, "	mul rax\n");

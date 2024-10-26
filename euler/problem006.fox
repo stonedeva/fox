@@ -1,0 +1,19 @@
+func main in
+    var count 0 end
+
+    var res1 0 end
+    var res2 0 end
+
+    while count 100 > do
+	count 1 + #count
+	res1 count count * + #res1
+    end
+
+    while 0 count > do
+	res2 count + #res2
+	count 1 - #count
+    end
+    res2 res2 * #res2
+
+    res2 res1 - dump
+end

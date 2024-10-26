@@ -37,11 +37,11 @@ main:
 	mov byte [call_flag], 0
 	jne block_addr_0
 addr_1:
-	mov rax, 550
+	mov rax, 10
 	push rax
-	pop [var_x]
+	pop [var_i]
 addr_2:
-	mov rax, var_x
+	mov rax, [var_i]
 	push rax
 addr_3:
 	mov rax, 1
@@ -49,48 +49,33 @@ addr_3:
 addr_4:
 	pop rax
 	pop rbx
-	add rax, rbx
+	sub rbx, rax
+	mov rax, rbx
         push rax
 addr_5:
-	mov rax, 99
-	push rax
-addr_6:
 	pop rax
-	pop rbx
-	mov [rbx], rax
-addr_7:
-	mov rax, var_x
+	mov [var_i], rax
+addr_6:
+	mov rax, [var_i]
 	push rax
+addr_7:
+	pop rdi
+	call dump
 addr_8:
-	mov rax, 1
+	mov rax, 0
 	push rax
 addr_9:
 	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-addr_10:
-	pop rbx
-	mov rax, [rbx]
-	push rax
-addr_11:
-	pop rdi
-	call dump
-addr_12:
-	mov rax, 0
-	push rax
-addr_13:
-	pop rax
 	ret
-addr_14:
+addr_10:
 	mov rax, 0
 	ret
 block_addr_0:
-addr_15:
+addr_11:
 	mov rdi, rax
 	mov rax, 60
 	syscall
 segment readable writeable
-var_x dq 0
+var_i dq 0
 call_flag db 0
 cond_flag db 0
