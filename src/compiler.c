@@ -367,6 +367,7 @@ void compiler_emit_func_call(Compiler* compiler)
     }
 
     fprintf(out, "	call %s\n", name);
+    fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_push(Compiler* compiler)

@@ -92,8 +92,9 @@ end
 ```code
 func main in
     var x 550 end
-    &x 99 set
+    &x 8 + 99 set
     &x get dump
+    &x 8 + get dump
 
     0 return
 end

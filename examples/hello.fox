@@ -1,8 +1,9 @@
-func main in
-    var i 10 end
-    i 1 - #i
-    i dump
+func sum x y in
+    x y + return
+end
 
+func main in
+    95 95 @sum dump
     0 return
 end
 
