@@ -32,25 +32,69 @@ dump:
 _start:
 	mov byte [call_flag], 1
 	call main
-sum:
+addr_0:
+	mov rax, 0
+	push rax
+	pop [var_SYS_read]
+addr_1:
+	mov rax, 1
+	push rax
+	pop [var_SYS_write]
+addr_2:
+	mov rax, 2
+	push rax
+	pop [var_SYS_open]
+addr_3:
+	mov rax, 3
+	push rax
+	pop [var_SYS_close]
+addr_4:
+	mov rax, 60
+	push rax
+	pop [var_SYS_exit]
+addr_5:
+	mov rax, 0
+	push rax
+	pop [var_stdin]
+addr_6:
+	mov rax, 1
+	push rax
+	pop [var_stdout]
+addr_7:
+	mov rax, 2
+	push rax
+	pop [var_stderr]
+print:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_0
-addr_1:
-	mov rax, [var_x]
+addr_9:
+	mov rax, 1
 	push rax
-addr_2:
-	mov rax, [var_y]
+addr_10:
+	mov rax, 1
 	push rax
-addr_3:
+addr_11:
+	mov rax, [var_cstr]
+	push rax
+addr_12:
+	mov rax, [var_len]
+	push rax
+addr_13:
+	pop rdx
+	pop rsi
+	pop rdi
 	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-addr_4:
+	syscall
+addr_14:
+	pop rax
+addr_15:
+	mov rax, 0
+	push rax
+addr_16:
 	pop rax
 	ret
-addr_5:
+addr_17:
 	mov rax, 0
 	ret
 block_addr_0:
@@ -58,37 +102,48 @@ main:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_1
-addr_7:
-	mov rax, 95
+addr_19:
+	mov rax, str0_len
 	push rax
-addr_8:
-	mov rax, 95
+	mov rax, str0
 	push rax
-addr_9:
+	pop [var_msg]
+addr_20:
+	mov rax, [var_msg]
+	push rax
+addr_21:
 	mov byte [call_flag], 1
-	pop [var_x]
-	pop [var_y]
-	call sum
+	pop [var_cstr]
+	pop [var_len]
+	call print
 	push rax
-addr_10:
-	pop rdi
-	call dump
-addr_11:
+addr_22:
 	mov rax, 0
 	push rax
-addr_12:
+addr_23:
 	pop rax
 	ret
-addr_13:
+addr_24:
 	mov rax, 0
 	ret
 block_addr_1:
-addr_14:
+addr_25:
 	mov rdi, rax
 	mov rax, 60
 	syscall
 segment readable writeable
-var_x dq 0
-var_y dq 0
+var_SYS_read dq 0
+var_SYS_write dq 0
+var_SYS_open dq 0
+var_SYS_close dq 0
+var_SYS_exit dq 0
+var_stdin dq 0
+var_stdout dq 0
+var_stderr dq 0
+var_cstr dq 0
+var_len dq 0
+var_msg dq 0
 call_flag db 0
 cond_flag db 0
+str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x00
+str0_len = 13
