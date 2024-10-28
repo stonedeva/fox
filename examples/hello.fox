@@ -1,9 +1,5 @@
-func sum x y in
-    x y + return
-end
-
 func main in
-    95 95 @sum dump
+    12 1 >> dump
     0 return
 end
 

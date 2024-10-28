@@ -28,7 +28,9 @@ bool utils_is_operator(char* str)
     if (strcmp(str, "==") == 0 ||
 	strcmp(str, "!=") == 0 ||
 	strcmp(str, "&&") == 0 ||
-	strcmp(str, "||") == 0) {
+	strcmp(str, "||") == 0 ||
+	strcmp(str, "<<") == 0 ||
+	strcmp(str, ">>") == 0) {
 
 	return true;
     }

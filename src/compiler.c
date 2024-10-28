@@ -419,14 +419,32 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	sete al\n");
 	fprintf(out, "	movzx rax, al\n");
+	fprintf(out, "	push rax\n");
+	return;
     } else if (strcmp(op, "!=") == 0) {
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	setne al\n");
 	fprintf(out, "	movzx rax, al\n");
+	fprintf(out, "	push rax\n");
+	return;
     } else if (strcmp(op, "&&") == 0) {
 	fprintf(out, "	and rax, rbx\n");
+	fprintf(out, "	push rax\n");
+	return;
     } else if (strcmp(op, "||") == 0) {
 	fprintf(out, "	or rax, rbx\n");
+	fprintf(out, "	push rax\n");
+	return;
+    } else if (strcmp(op, "<<") == 0) {
+	fprintf(out, "	mov cl, al\n");
+	fprintf(out, "	shl rbx, cl\n");
+	fprintf(out, "	push rbx\n");
+	return;
+    } else if (strcmp(op, ">>") == 0) {
+	fprintf(out, "	mov cl, al\n");
+	fprintf(out, "	shr rbx, cl\n");
+	fprintf(out, "	push rbx\n");
+	return;
     }
 
     switch (op[0]) {
