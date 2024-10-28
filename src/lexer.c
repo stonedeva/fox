@@ -49,6 +49,10 @@ static void _lexer_tokenize(Lexer* lexer)
 
     for (size_t i = 0; i < len; i++) {
         char ch = line[i];
+
+	if (ch == ';') {
+	    return;
+	}
         
 	// Inside String
         if (ch == '"' || ch == '\'') {

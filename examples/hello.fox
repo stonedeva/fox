@@ -1,5 +1,6 @@
+; This is a comment
 func main in
-    12 1 >> dump
+    12 1 << dump
     0 return
 end
 
