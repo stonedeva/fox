@@ -54,6 +54,13 @@ void typestack_evaluate(TypeStack* stack)
 		break;
 	    }
 
+	    if (strcmp("<<", tok.token) == 0 ||
+		strcmp(">>", tok.token) == 0) {
+
+		typestack_push(stack, INTEGER);
+		break;
+	    }
+
 	    switch (tok.token[0]) {
 	    case '+':
 	    case '-':
