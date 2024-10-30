@@ -351,7 +351,7 @@ void compiler_emit_func_call(Compiler* compiler)
     Context* context = compiler->context;
 
     char* name = compiler_curr_tok(compiler);
-    name++;
+    name[strlen(name) - 2] = '\0';
     
     Function func = context_func_by_name(context, name);
     if (func.name == NULL) {

@@ -42,7 +42,7 @@ before new memory address to store addresses
 import "std.fox"
 
 func main in
-    "Hello, World!\n" @print
+    "Hello, World!\n" print()
     0 return
 end
 ```
@@ -68,9 +68,9 @@ func main in
     var a 250 end
     var b 250 end
     if a b == do
-	"A and B are equals\n" @print
+	"A and B are equals\n" print()
     else
-	"A and B are not equals\n" @print
+	"A and B are not equals\n" print()
     end
     0 return
 end
@@ -82,7 +82,7 @@ import "std.fox"
 
 func main in
     while 1 do
-	"Forever!" @print
+	"Forever!" print()
     end
     0 return
 end

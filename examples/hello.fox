@@ -1,4 +1,9 @@
+func sum x y in
+    x y + return
+end
+
 func main in
+    95 205 sum() dump
     0 return
 end
 
