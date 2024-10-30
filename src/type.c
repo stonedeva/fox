@@ -102,11 +102,14 @@ void typestack_evaluate(TypeStack* stack)
 	    if (typestack_pop(stack) != INTEGER) {
 		error_from_parts(filename, WARNING, "Trying to dump a non-integer", tok);
 	    }
+
+	    (void) typestack_pop(stack);
 	    break;
 	
 	case TOK_SWAP:
     	    VarType top = typestack_pop(stack);
 	    VarType second = typestack_pop(stack);
+
 	    typestack_push(stack, second);
 	    typestack_push(stack, top);
 	    break;
@@ -127,22 +130,25 @@ void typestack_evaluate(TypeStack* stack)
 	    if (typestack_pop(stack) != POINTER) {
 		error_from_parts(filename, FATAL, "Memory address is not a pointer", tok);
 	    }
+
 	    break;
 	
 	case TOK_PTR_GET:
 	    if (typestack_pop(stack) != POINTER) {
 		error_from_parts(filename, FATAL, "Memory address is not a pointer", tok);
 	    }
+
 	    break;
-	
+
 	case TOK_RETURN:
 	    (void) typestack_pop(stack);
-
-	    if (stack->type_count != 0) {
-		error_from_parts(filename, INFO, "Unused data on the stack from function", tok);
-	    }
 	    break;
-	}
+    	}
+    }
+
+    if (stack->type_count != 0) {
+	Token tok = stack->tokens[stack->tok_sz - 1];
+	error_from_parts(filename, INFO, "Unused data on the stack", tok);
     }
 }
 
