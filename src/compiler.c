@@ -161,7 +161,7 @@ void compiler_emit_drop(Compiler* compiler)
     Context* context = compiler->context;
 
     fprintf(out, "addr_%d:\n", context->addr_count);
-    fprintf(out, "	pop rax\n");
+    fprintf(out, "	add rsp, 8\n");
 }
 
 void compiler_emit_var(Compiler* compiler)
