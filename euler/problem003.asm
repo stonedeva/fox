@@ -37,19 +37,19 @@ main:
 	mov byte [call_flag], 0
 	jne block_addr_0
 addr_1:
-	mov rax, 0
+	mov rax, 600851475143
 	push rax
-	pop [var_index]
+	pop [var_num]
 addr_2:
-	mov rax, 0
+	mov rax, 2
 	push rax
-	pop [var_result]
+	pop [var_div]
 loopaddr_0:
 addr_4:
-	mov rax, [var_index]
+	mov rax, [var_div]
 	push rax
 addr_5:
-	mov rax, 1000
+	mov rax, [var_num]
 	push rax
 addr_6:
 	pop rax
@@ -65,10 +65,10 @@ addr_7:
 	je addr_8
 	jne endloop_addr_0
 addr_8:
-	mov rax, [var_index]
+	mov rax, [var_num]
 	push rax
 addr_9:
-	mov rax, 3
+	mov rax, [var_div]
 	push rax
 addr_10:
 	pop rax
@@ -89,93 +89,63 @@ addr_12:
 	movzx rax, al
 	push rax
 addr_13:
-	mov rax, [var_index]
-	push rax
+	pop rax
+	mov [cond_flag], al
+	cmp rax, 1
+	je addr_14
+	jne endif_addr_0
 addr_14:
-	mov rax, 5
+	mov rax, [var_num]
 	push rax
 addr_15:
+	mov rax, [var_div]
+	push rax
+addr_16:
 	pop rax
 	pop rbx
 	xchg rax, rbx
 	xor rdx, rdx
 	div rbx
-	mov rax, rdx
         push rax
-addr_16:
-	mov rax, 0
-	push rax
 addr_17:
 	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
+	mov [var_num], rax
+endif_addr_0:
+	cmp [cond_flag], 1
+	je endif_addr_1
 addr_18:
-	pop rax
-	pop rbx
-	or rax, rbx
+	mov rax, [var_div]
 	push rax
 addr_19:
-	pop rax
-	mov [cond_flag], al
-	cmp rax, 1
-	je addr_20
-	jne endif_addr_0
-addr_20:
-	mov rax, [var_result]
-	push rax
-addr_21:
-	mov rax, [var_index]
-	push rax
-addr_22:
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-addr_23:
-	pop rax
-	mov [var_result], rax
-endif_addr_0:
-addr_24:
-	mov rax, [var_index]
-	push rax
-addr_25:
 	mov rax, 1
 	push rax
-addr_26:
+addr_20:
 	pop rax
 	pop rbx
 	add rax, rbx
         push rax
-addr_27:
+addr_21:
 	pop rax
-	mov [var_index], rax
+	mov [var_div], rax
+endif_addr_1:
 	jmp loopaddr_0
 endloop_addr_0:
-addr_28:
-	mov rax, [var_result]
+addr_22:
+	mov rax, [var_num]
 	push rax
-addr_29:
+addr_23:
 	pop rdi
 	call dump
-addr_30:
-	mov rax, 0
-	push rax
-addr_31:
-	pop rax
-	ret
-addr_32:
+addr_24:
 	mov rax, 0
 	ret
 block_addr_0:
-addr_33:
+addr_25:
 	mov rdi, rax
 	mov rax, 60
 	syscall
 segment readable writeable
-var_index dq 0
-var_result dq 0
+var_num dq 0
+var_div dq 0
 call_flag db 0
 cond_flag db 0

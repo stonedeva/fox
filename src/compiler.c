@@ -26,6 +26,7 @@ Compiler* compiler_init(Context* context, char* output_path, Lexer* lexer, bool 
     } else {
 	compiler->context = context;
     }
+    compiler->output_path = output_path;
     compiler->input_name = lexer->filename;
     compiler->has_entry = has_entry;
     compiler->output = output;
@@ -717,15 +718,23 @@ void compiler_emit(Compiler* compiler)
     fflush(compiler->output);
 
     if (compiler->has_entry) {
-	compiler_assemble(compiler, false);
+	compiler_assemble(compiler);
     }
 }
 
-void compiler_assemble(Compiler* compiler, bool remove_tmp)
+void compiler_assemble(Compiler* compiler)
 {
-    system("fasm output.asm");
-
-    if (remove_tmp) {
-	system("rm -r hello.asm");
+    char* command = (char*)malloc(sizeof(strlen(compiler->output_path) + 6));
+    if (command == NULL) {
+	perror("Allocating memory for assembly command");
+	exit(1);
     }
+    
+    strcpy(command, "fasm ");
+    strcat(command, compiler->output_path);
+
+    system(command);
+
+    free(command);
+    command = NULL;
 }

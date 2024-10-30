@@ -5,7 +5,6 @@
 #include "lexer.h"
 #include "type.h"
 #include "compiler.h"
-#include "lib/utils.h"
 
 #define DEBUG
 
@@ -23,6 +22,20 @@ static void fox_print_help(int code)
     fprintf(stream, "-e Set NO entry point\n");
 
     exit(code);
+}
+
+static char* fox_out_path_from_input(char* input_path)
+{
+    size_t mem_size = sizeof(char) * strlen(input_path) + 1;
+    char* out_path = (char*)malloc(mem_size);
+    strcpy(out_path, input_path);
+    size_t out_len = strlen(out_path);
+
+    out_path[out_len - 1] = 'm';
+    out_path[out_len - 2] = 's';
+    out_path[out_len - 3] = 'a';
+
+    return out_path;
 }
 
 static int fox_init(int argc, char* argv[]) 
@@ -65,8 +78,14 @@ static int fox_init(int argc, char* argv[])
     TypeStack* type = typestack_init(lexer);
     typestack_evaluate(type);
 
-    compiler_emit_base("output.asm");
-    Compiler* compiler = compiler_init(NULL, "output.asm", lexer, has_entry);
+#ifndef DEBUG
+    char* output_path = fox_out_path_from_input(input_path);
+#else
+    char* output_path = "output.asm";
+#endif
+
+    compiler_emit_base(output_path);
+    Compiler* compiler = compiler_init(NULL, output_path, lexer, has_entry);
     compiler_emit(compiler);
 
     return 0;

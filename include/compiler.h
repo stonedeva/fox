@@ -10,6 +10,7 @@
 typedef struct {
     Context* context;
     FILE* output;
+    char* output_path;
     size_t tok_sz;
     size_t tok_ptr;
     size_t var_count;
@@ -27,6 +28,6 @@ void compiler_emit_push(Compiler* compiler);
 void compiler_emit_func(Compiler* compiler);
 void compiler_emit_base(char* out_path);
 void compiler_emit(Compiler* compiler);
-void compiler_assemble(Compiler* compiler, bool remove_tmp);
+void compiler_assemble(Compiler* compiler);
 
 #endif // COMPILER_H
