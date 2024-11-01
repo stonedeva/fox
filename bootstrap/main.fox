@@ -1,0 +1,16 @@
+import "std.fox"
+
+func usage in
+    "Usage: ./foxc [options...] <file>\n" @eprint
+    "Options:\n" @eprint
+    "	-v	Show current version\n" @eprint
+    "	-o	Set output path\n" @eprint
+    "	-l	Dump lexical analysis\n" @eprint
+    "	-t	Dump type stack\n" @eprint
+end
+
+func main in
+    &argc dump
+    @usage
+    0 return
+end

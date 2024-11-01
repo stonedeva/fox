@@ -136,8 +136,7 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_BINARYOP;
     } else if (cstr[0] == '"' && cstr[strlen(cstr) - 1] == '"'){
 	return TOK_STRING_LITERAL;
-    } else if (strlen(cstr) > 1 &&
-	       strcmp(cstr + strlen(cstr) - 2, "()") == 0) {
+    } else if (cstr[0] == '@') {
 	return TOK_FUNC_CALL;
     } else if (cstr[0] == '#') {
 	return TOK_REDEF_VAR;

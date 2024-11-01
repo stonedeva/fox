@@ -1,16 +1,8 @@
-var SYS_read 0 end
-var SYS_write 1 end
-var SYS_open 2 end
-var SYS_close 3 end
-var SYS_exit 60 end
-
-var stdin 0 end
-var stdout 1 end
-var stderr 2 end
-
 func print cstr len in
     1 1 cstr len syscall
-    drop
-    0 return
+end
+
+func eprint ecstr elen in
+    1 2 ecstr elen syscall
 end
 

@@ -105,6 +105,10 @@ void compiler_emit_base(char* out_path)
     fprintf(out, "        add     rsp, 40\n");
     fprintf(out, "        ret\n");
     fprintf(out, "_start:\n");
+    fprintf(out, "	mov rax, [rsp]\n");
+    fprintf(out, "	mov [var_argv], rax\n");
+    fprintf(out, "	mov rax, [rsp+8]\n");
+    fprintf(out, "	mov [var_argc], rax\n");
     fprintf(out, "	mov byte [call_flag], 1\n");
     fprintf(out, "	call main\n");
 
@@ -352,7 +356,7 @@ void compiler_emit_func_call(Compiler* compiler)
     Context* context = compiler->context;
 
     char* name = compiler_curr_tok(compiler);
-    name[strlen(name) - 2] = '\0';
+    name++;
     
     Function func = context_func_by_name(context, name);
     if (func.name == NULL) {
@@ -368,7 +372,7 @@ void compiler_emit_func_call(Compiler* compiler)
     }
 
     fprintf(out, "	call %s\n", name);
-    fprintf(out, "	push rax\n");
+    //fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_push(Compiler* compiler)
@@ -503,10 +507,12 @@ void compiler_emit_segments(Compiler* compiler)
 	Variable var = context->vars[i];
 	fprintf(out, "var_%s dq 0\n", var.name);
     }
-
+    
+    fprintf(out, "var_argc dq 0\n");
+    fprintf(out, "var_argv dq 0\n");
     fprintf(out, "call_flag db 0\n");
     fprintf(out, "cond_flag db 0\n");
-
+    
     for (size_t i = 0; i < context->literal_count; i++) {
 	char* literal = context->literals[i];
 	size_t lit_len = strlen(literal) - 1;
@@ -621,7 +627,6 @@ void compiler_emit(Compiler* compiler)
 	case TOK_LOOP:
 	    context_push(context, TOK_LOOP);
 	    compiler_emit_loop(compiler);
-	    context->addr_count++;
 	    break;
 	case TOK_DO:
 	    compiler_emit_do(compiler);
