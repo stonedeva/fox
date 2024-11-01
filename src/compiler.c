@@ -105,10 +105,8 @@ void compiler_emit_base(char* out_path)
     fprintf(out, "        add     rsp, 40\n");
     fprintf(out, "        ret\n");
     fprintf(out, "_start:\n");
-    fprintf(out, "	mov rax, [rsp]\n");
-    fprintf(out, "	mov [var_argv], rax\n");
-    fprintf(out, "	mov rax, [rsp+8]\n");
-    fprintf(out, "	mov [var_argc], rax\n");
+    fprintf(out, "	pop [var_argc]\n");
+    fprintf(out, "	pop [var_argv]\n");
     fprintf(out, "	mov byte [call_flag], 1\n");
     fprintf(out, "	call main\n");
 
@@ -215,9 +213,9 @@ void compiler_emit_reference(Compiler* compiler)
 	}
     }
 
-    if (!exists) {
+    /*if (!exists) {
 	error_throw(compiler, FATAL, "Unknown typename!");
-    }
+    }*/
 
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	mov rax, [var_%s]\n", name);
