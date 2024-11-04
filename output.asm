@@ -94,25 +94,56 @@ addr_15:
 	mov rax, [var_argc]
 	push rax
 addr_16:
-	pop rdi
-	call dump
-addr_17:
-	mov rax, [var_argv]
+	mov rax, 2
 	push rax
+addr_17:
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	setg al
+	movzx rax, al
+        push rax
 addr_18:
-	pop rdi
-	call dump
+	pop rax
+	mov [cond_flag], al
+	cmp rax, 1
+	je addr_19
+	jne endif_addr_0
 addr_19:
-	mov rax, 0
+	mov rax, str0_len
+	push rax
+	mov rax, str0
 	push rax
 addr_20:
+	mov byte [call_flag], 1
+	pop [var_cstr]
+	pop [var_len]
+	call print
+endif_addr_0:
+	cmp [cond_flag], 1
+	je endif_addr_1
+addr_21:
+	mov rax, str1_len
+	push rax
+	mov rax, str1
+	push rax
+addr_22:
+	mov byte [call_flag], 1
+	pop [var_cstr]
+	pop [var_len]
+	call print
+endif_addr_1:
+addr_23:
+	mov rax, 0
+	push rax
+addr_24:
 	pop rax
 	ret
-addr_21:
+addr_25:
 	mov rax, 0
 	ret
 block_addr_2:
-addr_22:
+addr_26:
 	mov rdi, rax
 	mov rax, 60
 	syscall
@@ -125,3 +156,7 @@ var_argc dq 0
 var_argv dq 0
 call_flag db 0
 cond_flag db 0
+str0 db 0x4e, 0x6f, 0x74, 0x20, 0x65, 0x6e, 0x6f, 0x75, 0x67, 0x68, 0x20, 0x61, 0x72, 0x67, 0x73, 0x0a, 0x00
+str0_len = 17
+str1 db 0x45, 0x6e, 0x6f, 0x75, 0x67, 0x68, 0x20, 0x61, 0x72, 0x67, 0x73, 0x0a, 0x00
+str1_len = 13

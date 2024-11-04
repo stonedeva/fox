@@ -1,8 +1,6 @@
 import "std.fox"
 
 func main in
-    argc dump
-    argv dump
     0 return
 end
 

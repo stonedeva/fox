@@ -1,16 +1,20 @@
 import "std.fox"
 
 func usage in
-    "Usage: ./foxc [options...] <file>\n" @eprint
-    "Options:\n" @eprint
-    "	-v	Show current version\n" @eprint
-    "	-o	Set output path\n" @eprint
-    "	-l	Dump lexical analysis\n" @eprint
-    "	-t	Dump type stack\n" @eprint
+    "Options:\n" @print
+    "	-v	Show current version\n" @print
+    "	-o	Set output path\n" @print
+    "	-l	Dump lexical analysis\n" @print
+    "	-t	Dump type stack\n" @print
+    "	-h	Show help map\n" 
 end
 
 func main in
-    &argc dump
-    @usage
+    if argc 2 > do
+	"Usage: ./foxc [options...] <file>\n" @eprint
+	"No input file provided!\n" @eprint
+	1 return
+    end
+
     0 return
 end
