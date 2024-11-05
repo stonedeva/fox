@@ -1,0 +1,16 @@
+func main in
+    var a 0 end
+    var b 1 end
+    var i 0 end
+    var next_fib 0 end
+
+    while i 10 > do
+	a dump
+	a b + #next_fib
+	b #a
+	next_fib #b
+
+	i 1 + #i
+    end
+    0 return
+end
