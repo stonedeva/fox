@@ -22,17 +22,13 @@ cc -o cbuild cbuild.c
 - [ ] Self hosted
 - [ ] Compile to Native Code
 
-## Bugs
-Referencing random memory from pointer causes every value
-before new memory address to store addresses
-
 ## Intrinsic
 | Intrinsic     | Function                                   | Showcase  |
 |---------------|--------------------------------------------|-----------|
 | ```dup```     | Duplicate top of the stack                 | ```a -> a a```  |
 | ```swap```     | Swap top two elements of the stack        |  ```a b -> b a``` |
 | ```drop```     | Drop the element on top of the stack      |	```a b -> a```	|
-| ```dump```	| Print the element on top of the stack	     |	```Maintained``` |
+| ```print```	| Print the element on top of the stack	     |	```Maintained``` |
 | ```set```     | Set the value of address on top of the stack      |	```Maintained```	|
 | ```get```	| Get the value of address on top of the stack	     |	```a (pointer) -> a (pointer) a (value)``` |
 
@@ -42,7 +38,7 @@ before new memory address to store addresses
 import "std.fox"
 
 func main in
-    "Hello, World!\n" @print
+    "Hello, World!\n" @puts
     0 return
 end
 ```
@@ -68,9 +64,9 @@ func main in
     var a 250 end
     var b 250 end
     if a b == do
-	"A and B are equals\n" @print
+	"A and B are equals\n" @puts
     else
-	"A and B are not equals\n" @print
+	"A and B are not equals\n" @puts
     end
     0 return
 end
@@ -82,7 +78,7 @@ import "std.fox"
 
 func main in
     while 1 do
-	"Forever!" @print
+	"Forever!" @puts
     end
     0 return
 end
@@ -93,8 +89,8 @@ end
 func main in
     var x 550 end
     &x 8 + 99 set
-    &x get dump
-    &x 8 + get dump
+    &x get print
+    &x 8 + get print
 
     0 return
 end

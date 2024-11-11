@@ -21,7 +21,7 @@ typedef enum {
     TOK_ELSE,
     TOK_LOOP,
     TOK_DO,
-    TOK_DUMP,
+    TOK_PRINT,
     TOK_DUP,
     TOK_SWAP,
     TOK_DROP,

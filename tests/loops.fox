@@ -1,7 +1,7 @@
 func main in
     var i 0 end
     while i 20 > do
-	i dump
+	i print
 	i 1 + #i
     end
 

@@ -98,9 +98,9 @@ void typestack_evaluate(TypeStack* stack)
 	    }
 	    break;
 	
-	case TOK_DUMP:
+	case TOK_PRINT:
 	    if (typestack_pop(stack) != INTEGER) {
-		error_from_parts(filename, WARNING, "Trying to dump a non-integer", tok);
+		error_from_parts(filename, WARNING, "Trying to print a non-integer", tok);
 	    }
 
 	    (void) typestack_pop(stack);

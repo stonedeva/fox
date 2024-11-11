@@ -1,5 +1,5 @@
 func main in
     var a 15 end
     var b 21 end
-    a b + dump
+    a b + print
 end

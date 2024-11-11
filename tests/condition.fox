@@ -1,8 +1,8 @@
 func main in
     if 500 500 == do
-	99 dump
+	99 print
     else
-	205 dump
+	205 print
     end
 
     0 return

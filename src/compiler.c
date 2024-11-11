@@ -76,7 +76,7 @@ void compiler_emit_base(char* out_path)
     fprintf(out, "format ELF64 executable 0\n");
     fprintf(out, "entry _start\n");
     fprintf(out, "segment readable executable\n");
-    fprintf(out, "dump:\n");
+    fprintf(out, "print:\n");
     fprintf(out, "        mov  r8, -3689348814741910323\n");
     fprintf(out, "        sub     rsp, 40\n");
     fprintf(out, "        mov     BYTE [rsp+31], 10\n");
@@ -126,14 +126,14 @@ void compiler_emit_syscall(Compiler* compiler)
     fprintf(out, "	syscall\n");
 }
 
-void compiler_emit_dump(Compiler* compiler)
+void compiler_emit_print(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
     fprintf(out, "addr_%d:\n", context->addr_count);
     fprintf(out, "	pop rdi\n");
-    fprintf(out, "	call dump\n");
+    fprintf(out, "	call print\n");
 }
 
 void compiler_emit_dup(Compiler* compiler)
@@ -678,8 +678,8 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_ptr_get(compiler);
 	    context->addr_count++;
 	    break;
-	case TOK_DUMP:
-	    compiler_emit_dump(compiler);
+	case TOK_PRINT:
+	    compiler_emit_print(compiler);
 	    context->addr_count++;
 	    break;
 	case TOK_DUP:

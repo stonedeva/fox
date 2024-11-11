@@ -1,8 +1,8 @@
-func print cstr len in
+func puts cstr len in
     1 1 cstr len syscall
 end
 
-func eprint ecstr elen in
+func eputs ecstr elen in
     1 2 ecstr elen syscall
 end
 
