@@ -14,5 +14,5 @@ func main in
 	next_fib #b
     end
 
-    sum dump
+    sum print
 end

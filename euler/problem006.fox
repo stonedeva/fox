@@ -15,5 +15,5 @@ func main in
     end
     res2 res2 * #res2
 
-    res2 res1 - dump
+    res2 res1 - print
 end

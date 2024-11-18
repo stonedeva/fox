@@ -128,14 +128,14 @@ void typestack_evaluate(TypeStack* stack)
 	    }
 
 	    if (typestack_pop(stack) != POINTER) {
-		error_from_parts(filename, FATAL, "Memory address is not a pointer", tok);
+		error_from_parts(filename, WARNING, "Memory address is not a pointer", tok);
 	    }
 
 	    break;
 	
 	case TOK_PTR_GET:
 	    if (typestack_pop(stack) != POINTER) {
-		error_from_parts(filename, FATAL, "Memory address is not a pointer", tok);
+		error_from_parts(filename, WARNING, "Memory address is not a pointer", tok);
 	    }
 
 	    break;

@@ -10,5 +10,5 @@ func main in
 	end
     end
 
-    num dump
+    num print
 end

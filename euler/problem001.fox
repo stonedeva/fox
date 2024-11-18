@@ -9,6 +9,6 @@ func main in
 	index 1 + #index
     end
 
-    result dump
+    result print
     0 return
 end
