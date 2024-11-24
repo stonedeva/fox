@@ -28,117 +28,136 @@ void typestack_evaluate(TypeStack* stack)
 	Token tok = stack->tokens[i];
 
 	switch (tok.type) {
-	case TOK_NUMBER:
-	    typestack_push(stack, INTEGER);
-	    break;
-	
 	case TOK_BINARYOP:
-	    VarType top_operand = typestack_pop(stack);
-	    VarType sec_operand = typestack_pop(stack);
-
 	    if (stack->type_count < 2) {
-		error_from_parts(filename, WARNING, "Operation requires two values", tok);
+		error_from_parts(filename, FATAL, "Binaryop requires two values", tok);
 	    }
-
+	    VarType a = typestack_pop(stack);
+	    VarType b = typestack_pop(stack);
+	    
 	    if (strcmp("==", tok.token) == 0 ||
 		strcmp("!=", tok.token) == 0 ||
 		strcmp("&&", tok.token) == 0 ||
 		strcmp("||", tok.token) == 0) {
-		
+
 		typestack_push(stack, BOOLEAN);
 		break;
 	    }
-
-	    if (strcmp("<<", tok.token) == 0 ||
-		strcmp(">>", tok.token) == 0) {
-
-		typestack_push(stack, INTEGER);
-		break;
-	    }
-
 	    switch (tok.token[0]) {
-	    case '+':
-	    case '-':
-		if (top_operand == POINTER || 
-		    sec_operand == POINTER) {
-
-		    typestack_push(stack, POINTER);
-		    continue;
-		}
 	    case '<':
 	    case '>':
 		typestack_push(stack, BOOLEAN);
-		continue;
+		break;
+	    }
+
+	    if (a == POINTER || b == POINTER) {
+		typestack_push(stack, POINTER);
+		break;
 	    }
 
 	    typestack_push(stack, INTEGER);
 	    break;
+	case TOK_NUMBER:
+	    typestack_push(stack, INTEGER);
+	    break;
+	case TOK_CONDITION:
+	    break;
+	case TOK_ELSE:
+	    break;
+	case TOK_LOOP:
+	    break;
+	case TOK_DO:
+	    if (typestack_pop(stack) != BOOLEAN) {
+		error_from_parts(filename, WARNING, "Trying operation 'do' with non-boolean", tok);
+		break;
+	    }
+	    break;
+	case TOK_PRINT:
+	    if (stack->type_count < 1) {
+		error_from_parts(filename, FATAL, "Trying operation 'print' with empty stack", tok);
+	    }
+	    (void) typestack_pop(stack);
+	    break;
+	case TOK_DUP:
+	    if (stack->type_count < 1) {
+		error_from_parts(filename, FATAL, "Trying operation 'dup' with empty stack", tok);
+	    }
+	    typestack_push(stack, stack->types[stack->type_count - 1]);
+	    break;
+	case TOK_SWAP:
+	    if (stack->type_count < 2) {
+		error_from_parts(filename, FATAL, "Operation 'swap' requires two arguments", tok);
+	    }
 
+	    a = typestack_pop(stack);
+	    b = typestack_pop(stack);
+	    typestack_push(stack, b);
+	    typestack_push(stack, a);
+	    break;
+	case TOK_DROP:
+	    (void) typestack_pop(stack);
+	    break;
+	case TOK_DEF_FUNC:
+	    break;
+	case TOK_FUNC_CALL:
+	    break;
 	case TOK_VAR_REF:
 	    typestack_push(stack, INTEGER);
 	    break;
-	
 	case TOK_PTR_REF:
-	    typestack_push(stack, POINTER);
+	    typestack_push(stack, POINTER); 
 	    break;
-	
+	case TOK_PTR_SET:
+	    if (stack->type_count < 2) {
+		error_from_parts(filename, FATAL, "Operation 'ptr-set' requires two arguments", tok);
+	    }
+
+	    a = typestack_pop(stack);
+	    b = typestack_pop(stack);
+	    if (b != INTEGER) {
+		error_from_parts(filename, WARNING, "Operation 'ptr-set' first argument is non-intger", tok);
+		break;
+	    }
+	    if (b != POINTER) {
+		error_from_parts(filename, WARNING, "Operation 'ptr-set' second argument is non-pointer", tok);
+		break;
+	    }
+	    break;
+	case TOK_PTR_GET:
+	    if (stack->type_count < 1) {
+		error_from_parts(filename, WARNING, "Operation 'ptr-get' requires one argument", tok);
+		break;
+	    }
+
+	    a = typestack_pop(stack);
+	    if (a != POINTER) {
+		error_from_parts(filename, WARNING, "Operation 'ptr-set' second argument is non-pointer", tok);
+	    }
+	    break;
+	case TOK_DEF_VAR:
+	    break;
+	case TOK_REDEF_VAR:
+	    break;
+	case TOK_SYSCALL:
+	    if (stack->type_count < 4) {
+		error_from_parts(filename, FATAL, "Operation 'syscall' requires four arguments", tok);
+	    }
+	    for (size_t i = 0; i < 4; i++) {
+		(void) typestack_pop(stack);
+	    }
+	    break;
+	case TOK_RETURN:
+	    (void) typestack_pop(stack);
+	    break;
+	case TOK_END:
+	    break;
 	case TOK_STRING_LITERAL:
 	    typestack_push(stack, INTEGER);
 	    typestack_push(stack, POINTER);
 	    break;
-	
-	case TOK_DO:
-	    if (typestack_pop(stack) != BOOLEAN) {
-		error_from_parts(filename, WARNING, "Trying condition with a non-boolean", tok);
-	    }
+	case TOK_IMPORT:
 	    break;
-	
-	case TOK_PRINT:
-	    if (typestack_pop(stack) != INTEGER) {
-		error_from_parts(filename, WARNING, "Trying to print a non-integer", tok);
-	    }
-
-	    (void) typestack_pop(stack);
-	    break;
-	
-	case TOK_SWAP:
-    	    VarType top = typestack_pop(stack);
-	    VarType second = typestack_pop(stack);
-
-	    typestack_push(stack, second);
-	    typestack_push(stack, top);
-	    break;
-	
-	case TOK_DUP:
-	    typestack_push(stack, stack->types[stack->type_count - 1]);
-	    break;
-	
-	case TOK_DROP:
-	    (void) typestack_pop(stack);
-	    break;
-	
-	case TOK_PTR_SET:
-	    if (typestack_pop(stack) != INTEGER) {
-		error_from_parts(filename, WARNING, "Trying to set a non-integer", tok);
-	    }
-
-	    if (typestack_pop(stack) != POINTER) {
-		error_from_parts(filename, WARNING, "Memory address is not a pointer", tok);
-	    }
-
-	    break;
-	
-	case TOK_PTR_GET:
-	    if (typestack_pop(stack) != POINTER) {
-		error_from_parts(filename, WARNING, "Memory address is not a pointer", tok);
-	    }
-
-	    break;
-
-	case TOK_RETURN:
-	    (void) typestack_pop(stack);
-	    break;
-    	}
+	}
     }
 
     if (stack->type_count != 0) {
