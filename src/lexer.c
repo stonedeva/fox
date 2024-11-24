@@ -8,21 +8,20 @@
 /*
  * Public functions
 */
-Lexer* lexer_init(char* filename) 
+Lexer lexer_init(char* filename) 
 {
-    Lexer* lexer = (Lexer*)malloc(sizeof(Lexer));;
-    lexer->file = fopen(filename, "r");
-    lexer->line_count = 1;
-    if (lexer->file == NULL) {
+    Lexer lexer = {
+	.file = fopen(filename, "r"),
+	.line_count = 1,
+	.filename = filename
+    };
+    if (lexer.file == NULL) {
 	perror(filename);
 	exit(1);
     }
 
-    lexer->filename = filename;
-
     return lexer;
 }
-
 void lexer_proc(Lexer* lexer) 
 {
     while (fgets(lexer->line, sizeof(lexer->line), lexer->file)) {

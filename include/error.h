@@ -12,10 +12,6 @@ typedef enum {
     INFO
 } ErrorLevel;
 
-TypeStack* typestack_init(Lexer* lexer);
-void typestack_free(TypeStack* stack);
-void typestack_evaluate(TypeStack* stack);
-
 void error_throw(Compiler* compiler, ErrorLevel lvl, char* err);
 void error_from_parts(char* input_path, ErrorLevel lvl, char* err, Token tok);
 

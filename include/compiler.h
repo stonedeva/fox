@@ -20,7 +20,7 @@ typedef struct {
 } Compiler;
 
 
-Compiler* compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry);
+Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry);
 void compiler_free(Compiler* compiler);
 
 void compiler_emit_binaryop(Compiler* compiler);

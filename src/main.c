@@ -72,11 +72,11 @@ static int fox_init(int argc, char* argv[])
 	i++;
     }
 
-    Lexer* lexer = lexer_init(input_path);
-    lexer_proc(lexer);
+    Lexer lexer = lexer_init(input_path);
+    lexer_proc(&lexer);
 
-    TypeStack* type = typestack_init(lexer);
-    typestack_evaluate(type);
+    TypeStack type = typestack_init(&lexer);
+    typestack_evaluate(&type);
 
 #ifndef DEBUG
     char* output_path = fox_out_path_from_input(input_path);
@@ -85,8 +85,8 @@ static int fox_init(int argc, char* argv[])
 #endif
 
     compiler_emit_base(output_path);
-    Compiler* compiler = compiler_init(NULL, output_path, lexer, has_entry);
-    compiler_emit(compiler);
+    Compiler compiler = compiler_init(NULL, output_path, &lexer, has_entry);
+    compiler_emit(&compiler);
 
     return 0;
 }

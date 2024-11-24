@@ -34,173 +34,81 @@ _start:
 	pop [var_argv]
 	mov byte [call_flag], 1
 	call main
-main:
+puts:
 	cmp byte [call_flag], 1
 	mov byte [call_flag], 0
 	jne block_addr_0
-addr_1:
-	mov rax, 0
-	push rax
-	pop [var_count]
-addr_2:
-	mov rax, 0
-	push rax
-	pop [var_res1]
-addr_3:
-	mov rax, 0
-	push rax
-	pop [var_res2]
-loopaddr_0:
-addr_4:
-	mov rax, [var_count]
-	push rax
-addr_5:
-	mov rax, 100
-	push rax
-addr_6:
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	setg al
-	movzx rax, al
-        push rax
-addr_7:
-	pop rax
-	mov [cond_flag], al
-	cmp rax, 1
-	je addr_8
-	jne endloop_addr_0
-addr_8:
-	mov rax, [var_count]
-	push rax
-addr_9:
 	mov rax, 1
 	push rax
-addr_10:
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-addr_11:
-	pop rax
-	mov [var_count], rax
-addr_12:
-	mov rax, [var_res1]
-	push rax
-addr_13:
-	mov rax, [var_count]
-	push rax
-addr_14:
-	mov rax, [var_count]
-	push rax
-addr_15:
-	pop rax
-	pop rbx
-	mul rax
-        push rax
-addr_16:
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-addr_17:
-	pop rax
-	mov [var_res1], rax
-	jmp loopaddr_0
-endloop_addr_0:
-loopaddr_1:
-addr_18:
-	mov rax, 0
-	push rax
-addr_19:
-	mov rax, [var_count]
-	push rax
-addr_20:
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	setg al
-	movzx rax, al
-        push rax
-addr_21:
-	pop rax
-	mov [cond_flag], al
-	cmp rax, 1
-	je addr_22
-	jne endloop_addr_1
-addr_22:
-	mov rax, [var_res2]
-	push rax
-addr_23:
-	mov rax, [var_count]
-	push rax
-addr_24:
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-addr_25:
-	pop rax
-	mov [var_res2], rax
-addr_26:
-	mov rax, [var_count]
-	push rax
-addr_27:
 	mov rax, 1
 	push rax
-addr_28:
-	pop rax
-	pop rbx
-	sub rbx, rax
-	mov rax, rbx
-        push rax
-addr_29:
-	pop rax
-	mov [var_count], rax
-	jmp loopaddr_1
-endloop_addr_1:
-addr_30:
-	mov rax, [var_res2]
+	mov rax, [var_cstr]
 	push rax
-addr_31:
-	mov rax, [var_res2]
+	mov rax, [var_len]
 	push rax
-addr_32:
-	pop rax
-	pop rbx
-	mul rax
-        push rax
-addr_33:
-	pop rax
-	mov [var_res2], rax
-addr_34:
-	mov rax, [var_res2]
-	push rax
-addr_35:
-	mov rax, [var_res1]
-	push rax
-addr_36:
-	pop rax
-	pop rbx
-	sub rbx, rax
-	mov rax, rbx
-        push rax
-addr_37:
+	pop rdx
+	pop rsi
 	pop rdi
-	call print
-addr_38:
+	pop rax
+	syscall
 	mov rax, 0
 	ret
 block_addr_0:
-addr_39:
+eputs:
+	cmp byte [call_flag], 1
+	mov byte [call_flag], 0
+	jne block_addr_1
+	mov rax, 1
+	push rax
+	mov rax, 2
+	push rax
+	mov rax, [var_ecstr]
+	push rax
+	mov rax, [var_elen]
+	push rax
+	pop rdx
+	pop rsi
+	pop rdi
+	pop rax
+	syscall
+	mov rax, 0
+	ret
+block_addr_1:
+main:
+	cmp byte [call_flag], 1
+	mov byte [call_flag], 0
+	jne block_addr_2
+	mov rax, str0_len
+	push rax
+	mov rax, str0
+	push rax
+	pop [var_msg]
+	mov rax, [var_msg]
+	push rax
+	mov byte [call_flag], 1
+	pop [var_cstr]
+	pop [var_len]
+	call puts
+	mov rax, 0
+	push rax
+	pop rax
+	ret
+	mov rax, 0
+	ret
+block_addr_2:
+addr_24:
 	mov rdi, rax
 	mov rax, 60
 	syscall
 segment readable writeable
-var_count dq 0
-var_res1 dq 0
-var_res2 dq 0
+var_cstr dq 0
+var_len dq 0
+var_ecstr dq 0
+var_elen dq 0
+var_msg dq 0
 var_argc dq 0
 var_argv dq 0
 call_flag db 0
 cond_flag db 0
+str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x00
+str0_len = 13

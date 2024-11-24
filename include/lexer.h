@@ -46,6 +46,7 @@ typedef struct {
     char* token;
     size_t line;
     size_t row;
+    size_t operand;
 } Token;
 
 typedef struct {
@@ -57,7 +58,7 @@ typedef struct {
     char* filename;
 } Lexer;
 
-Lexer* lexer_init(char* filename);
+Lexer lexer_init(char* filename);
 void lexer_proc(Lexer* lexer);
 
 /*

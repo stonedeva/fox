@@ -4,19 +4,14 @@
 #include <errno.h>
 #include <string.h>
 
-TypeStack* typestack_init(Lexer* lexer)
+TypeStack typestack_init(Lexer* lexer)
 {
-    TypeStack* stack = (TypeStack*)malloc(sizeof(TypeStack));
-    if (!stack) {
-	perror("Memory allocation failed for TypeStack");
-	exit(1);
-    }
-
-    stack->filename = lexer->filename;
-    stack->tok_sz = lexer->tok_sz;
-    stack->tokens = lexer->tokens;
-    stack->type_count = 0;
-    
+    TypeStack stack = {
+	.filename = lexer->filename,
+	.tok_sz = lexer->tok_sz,
+	.tokens = lexer->tokens,
+	.type_count = 0
+    };
     return stack;
 }
 
@@ -42,7 +37,7 @@ void typestack_evaluate(TypeStack* stack)
 	    VarType sec_operand = typestack_pop(stack);
 
 	    if (stack->type_count < 2) {
-		error_from_parts(filename, FATAL, "Operation requires two values", tok);
+		error_from_parts(filename, WARNING, "Operation requires two values", tok);
 	    }
 
 	    if (strcmp("==", tok.token) == 0 ||

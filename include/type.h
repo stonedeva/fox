@@ -20,7 +20,8 @@ typedef struct {
     char* filename;
 } TypeStack;
 
-TypeStack* typestack_init(Lexer* lexer);
+TypeStack typestack_init(Lexer* lexer);
+void typestack_evaluate(TypeStack* stack);
 void typestack_free(TypeStack* stack);
 
 void typestack_push(TypeStack* stack, VarType type);
