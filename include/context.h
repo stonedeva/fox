@@ -23,15 +23,12 @@ typedef struct {
 
 typedef struct {
     size_t stmt_count;
-    size_t if_count;
-    size_t loop_count;
     size_t literal_count;
-    size_t var_count;
     size_t func_count;
-    TokenType stmts[MAX_STACK_SIZE];
-    size_t addr_count;
-    size_t block_count;
+    size_t var_count;
     size_t temp_addr;
+    size_t main_addr;
+    TokenType stmts[MAX_STACK_SIZE];
     Variable vars[MAX_INSTANCES];
     Function funcs[MAX_INSTANCES];
     char* literals[MAX_INSTANCES];

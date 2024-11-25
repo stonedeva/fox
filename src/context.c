@@ -11,12 +11,9 @@ Context* context_init()
 	exit(1);
     }
 
-    context->if_count = 0;
-    context->loop_count = 0;
-    context->literal_count = 0;
+    context->temp_addr = 0;
+    context->main_addr = 0;
     context->func_count = 0;
-    context->addr_count = 0;
-    context->block_count = 0;
     context->var_count = 0;
     context->literal_count = 0;
     context->stmt_count = 0;

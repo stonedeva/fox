@@ -6,9 +6,6 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-size_t tmp_addr = 0;
-size_t main_addr = 0;
-
 Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry)
 {
     Compiler compiler = {0};
@@ -72,7 +69,7 @@ void compiler_crossreference(Compiler* compiler)
 	    break;
 	case TOK_DEF_FUNC:
 	    if (strcmp("main", compiler->tokens[i + 1].token) == 0) {
-		main_addr = i;
+		compiler->context->main_addr = i;
 	    }
 	    stack[stack_sz++] = i;
 	    context_push(compiler->context, TOK_DEF_FUNC);
@@ -115,7 +112,7 @@ char* compiler_curr_tok(Compiler* compiler)
     return compiler->tokens[ptr].token;
 }
 
-void compiler_emit_base(char* out_path)
+void compiler_emit_base(char* out_path, size_t main_addr)
 {
     FILE* out = fopen(out_path, "w");
     if (!out) {
@@ -358,7 +355,7 @@ void compiler_emit_else(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
     
-    fprintf(out, "	jmp addr_%d\n", tmp_addr);
+    fprintf(out, "	jmp addr_%d\n", context->temp_addr);
     fprintf(out, "addr_%d:\n", compiler->tok_ptr);
 }
 
@@ -382,7 +379,7 @@ void compiler_emit_do(Compiler* compiler)
     switch (type) {
     case TOK_LOOP:
     case TOK_CONDITION:
-	fprintf(out, "	jne addr_%d\n", tmp_addr);
+	fprintf(out, "	jne addr_%d\n", context->temp_addr);
 	break;
     default:
 	error_throw(compiler, FATAL, "Trying to perform 'do' without context");
@@ -621,23 +618,19 @@ void compiler_emit(Compiler* compiler)
 	    TokenType type = context_pop(context);
 	    if (type == TOK_CONDITION) {
 		fprintf(out, "addr_%d:\n", i);
-		context->if_count++;
 		break;
 	    }
 	    if (type == TOK_DEF_FUNC) {
 		fprintf(out, "	mov rax, 0\n");
 		fprintf(out, "	ret\n");
-		context->block_count++;
 		context->cw_func = NULL;
 		break;
 	    }
 	    if (type == TOK_LOOP) {
 		fprintf(out, "	jmp addr_%d\n", compiler->tokens[i].operand);
 		fprintf(out, "addr_%d:\n", i);
-		context->loop_count++;
 		break;
 	    }
-
 	    if (type == TOK_DEF_VAR) {
 		char* var_name = context->vars[context->var_count - 1].name;
 		fprintf(out, "	pop [var_%s]\n", var_name);
@@ -647,15 +640,15 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_CONDITION:
 	    context_push(context, TOK_CONDITION);
-	    tmp_addr = compiler->tokens[i].operand;
+	    context->temp_addr = compiler->tokens[i].operand;
 	    break;
 	case TOK_ELSE:
-	    tmp_addr = compiler->tokens[i].operand;
+	    context->temp_addr = compiler->tokens[i].operand;
 	    compiler_emit_else(compiler);
 	    break;
 	case TOK_LOOP:
 	    context_push(context, TOK_LOOP);
-	    tmp_addr = compiler->tokens[i].operand;
+	    context->temp_addr = compiler->tokens[i].operand;
 	    compiler_emit_loop(compiler);
 	    break;
 	case TOK_DO:
@@ -724,8 +717,6 @@ void compiler_emit(Compiler* compiler)
 	    error_throw(compiler, FATAL, "Unknown token!");
 	    break;
 	}
-
-	context->addr_count++;
 
 	i = compiler->tok_ptr;
 	compiler->tok_ptr++;

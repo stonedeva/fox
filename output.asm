@@ -37,7 +37,7 @@ _start:
 	mov rax, 60
 	syscall
 addr_0:
-	mov rax, 99
+	mov rax, 205
 	push rax
 	pop rdi
 	call print

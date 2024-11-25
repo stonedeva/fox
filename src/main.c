@@ -14,20 +14,19 @@ static void fox_print_help(int code)
 
     fprintf(stream, "Usage: foxc <file> [options...]\n\n");
     fprintf(stream, "Options:\n");
-    fprintf(stream, "-h	Show help map\n");
-    fprintf(stream, "-o	Set output file\n");
-    fprintf(stream, "-l	Compile to assembly\n");
-    fprintf(stream, "-r Execute after compiling\n");
-    fprintf(stream, "-v	Get compiler version\n");
-    fprintf(stream, "-e Set NO entry point\n");
+    fprintf(stream, "	-h	Show help map\n");
+    fprintf(stream, "	-o	Set output file\n");
+    fprintf(stream, "	-l	Compile to assembly\n");
+    fprintf(stream, "	-r 	Execute after compiling\n");
+    fprintf(stream, "	-v	Get compiler version\n");
+    fprintf(stream, "	-e 	Set NO entry point\n");
 
     exit(code);
 }
 
 static char* fox_out_path_from_input(char* input_path)
 {
-    size_t mem_size = sizeof(char) * strlen(input_path) + 1;
-    char* out_path = (char*)malloc(mem_size);
+    char out_path[strlen(input_path) + 1];
     strcpy(out_path, input_path);
     size_t out_len = strlen(out_path);
 
@@ -47,26 +46,25 @@ static int fox_init(int argc, char* argv[])
     size_t i = 2;
     while (i < argc) {
 	if (argv[i][0] != '-') {
-	    if (i + 1 > argc)
+	    if (i + 1 > argc) {
 		break;
-	    i++;
+	    }
 	}
 
 	char option = argv[i][1];
 	switch (option) {
 	case 'h':
 	    fox_print_help(0);
-	    break;
+	    return 0;
 	case 'v':
 	    printf("v0.01\n");
-	    break;
+	    return 0;
 	case 'e':
 	    has_entry = false;
 	    break;
 	default:
 	    fprintf(stderr, "%s: Invalid option provided!\n", program_path);
-	    fox_print_help(1);
-	    break;
+	    return 1;
 	}
 
 	i++;
@@ -75,17 +73,19 @@ static int fox_init(int argc, char* argv[])
     Lexer lexer = lexer_init(input_path);
     lexer_proc(&lexer);
 
-    TypeStack type = typestack_init(&lexer);
-    typestack_evaluate(&type);
+    TypeStack typestack = typestack_init(&lexer);
+    typestack_evaluate(&typestack);
+
+    char output_path[20];
 
 #ifndef DEBUG
-    char* output_path = fox_out_path_from_input(input_path);
+    strcpy(output_path, fox_out_path_from_input(input_path));
 #else
-    char* output_path = "output.asm";
+    strcpy(output_path, "output.asm");
 #endif
 
     Compiler compiler = compiler_init(NULL, output_path, &lexer, has_entry);
-    compiler_emit_base(output_path);
+    compiler_emit_base(output_path, compiler.context->main_addr);
     compiler_emit(&compiler);
 
     return 0;

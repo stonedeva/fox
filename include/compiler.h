@@ -27,7 +27,7 @@ void compiler_crossreference(Compiler* compiler);
 void compiler_emit_binaryop(Compiler* compiler);
 void compiler_emit_push(Compiler* compiler);
 void compiler_emit_func(Compiler* compiler);
-void compiler_emit_base(char* out_path);
+void compiler_emit_base(char* out_path, size_t main_addr);
 void compiler_emit(Compiler* compiler);
 void compiler_assemble(Compiler* compiler);
 
