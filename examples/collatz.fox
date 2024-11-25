@@ -1,0 +1,11 @@
+func main in
+    var num 7 end
+    while num 1 != do
+	if num 2 % 0 == do
+	    num 2 / #num
+	else
+	    num 3 * 1 + #num
+	end
+	num print
+    end
+end

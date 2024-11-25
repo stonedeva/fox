@@ -32,15 +32,53 @@ print:
 _start:
 	pop [var_argc]
 	pop [var_argv]
-	call addr_0
+	call addr_2
 	mov rdi, rax
 	mov rax, 60
 	syscall
 addr_0:
-	mov rax, 205
+	mov rax, 1
 	push rax
+	mov rax, 1
+	push rax
+	mov rax, [var_cstr]
+	push rax
+	mov rax, [var_len]
+	push rax
+	pop rdx
+	pop rsi
 	pop rdi
-	call print
+	pop rax
+	syscall
+	mov rax, 0
+	ret
+addr_11:
+	mov rax, 1
+	push rax
+	mov rax, 2
+	push rax
+	mov rax, [var_ecstr]
+	push rax
+	mov rax, [var_elen]
+	push rax
+	pop rdx
+	pop rsi
+	pop rdi
+	pop rax
+	syscall
+	mov rax, 0
+	ret
+addr_2:
+	mov rax, str0_len
+	push rax
+	mov rax, str0
+	push rax
+	pop [var_msg]
+	mov rax, [var_msg]
+	push rax
+	pop [var_cstr]
+	pop [var_len]
+	call addr_0
 	mov rax, 0
 	push rax
 	pop rax
@@ -48,5 +86,12 @@ addr_0:
 	mov rax, 0
 	ret
 segment readable writeable
+var_cstr dq 0
+var_len dq 0
+var_ecstr dq 0
+var_elen dq 0
+var_msg dq 0
 var_argc dq 0
 var_argv dq 0
+str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x00
+str0_len = 13

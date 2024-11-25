@@ -492,7 +492,7 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	mov rax, rbx\n");
 	break;
     case '*':
-	fprintf(out, "	mul rax\n");
+	fprintf(out, "	mul rbx\n");
 	break;
     case '/':
 	fprintf(out, "	xchg rax, rbx\n");

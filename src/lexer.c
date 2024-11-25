@@ -32,8 +32,7 @@ void lexer_proc(Lexer* lexer)
 
 static bool _lexer_is_delimiter(const char ch)
 {
-    return isspace(ch) || ch == ',' || ch == '.' || ch == ':' 
-	    || ch == '!' || ch == ';';
+    return isspace(ch) || ch == ',' || ch == '.' || ch == ':' || ch == ';';
 }
 
 static void _lexer_tokenize(Lexer* lexer) 

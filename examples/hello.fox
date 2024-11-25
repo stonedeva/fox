@@ -1,5 +1,4 @@
 func main in
-    205 print
-    0 return
+    5 3 * print
 end
 
