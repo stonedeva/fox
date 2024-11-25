@@ -18,6 +18,7 @@ typedef struct {
     char* name;
     size_t arg_count;
     char* args[MAX_ARGS];
+    size_t addr;
 } Function;
 
 typedef struct {

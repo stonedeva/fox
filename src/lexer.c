@@ -109,6 +109,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_DUP;
     } else if (strcmp("swap", cstr) == 0) {
 	return TOK_SWAP;
+    } else if (strcmp("over", cstr) == 0) {
+	return TOK_OVER;
     } else if (strcmp("drop", cstr) == 0) {
 	return TOK_DROP;
     } else if (strcmp("set", cstr) == 0) {

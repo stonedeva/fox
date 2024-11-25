@@ -84,8 +84,8 @@ static int fox_init(int argc, char* argv[])
     char* output_path = "output.asm";
 #endif
 
-    compiler_emit_base(output_path);
     Compiler compiler = compiler_init(NULL, output_path, &lexer, has_entry);
+    compiler_emit_base(output_path);
     compiler_emit(&compiler);
 
     return 0;

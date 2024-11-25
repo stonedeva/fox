@@ -1,0 +1,4 @@
+func main in
+    95 25 over swap dup
+    print print drop drop
+end

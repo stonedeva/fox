@@ -22,6 +22,7 @@ typedef struct {
 
 Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry);
 void compiler_free(Compiler* compiler);
+void compiler_crossreference(Compiler* compiler);
 
 void compiler_emit_binaryop(Compiler* compiler);
 void compiler_emit_push(Compiler* compiler);

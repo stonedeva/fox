@@ -1,19 +1,5 @@
 func main in
-    if 205 205 == do
-	1 print
-	if 5 105 == do
-	    2 print
-	else
-	    3 print
-	end
-	4 print
-    else
-	if 15 25 == do
-	    5 print
-	else
-	    6 print
-	end
-    end
+    99 print
     0 return
 end
 

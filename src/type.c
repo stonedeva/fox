@@ -94,6 +94,13 @@ void typestack_evaluate(TypeStack* stack)
 	    typestack_push(stack, b);
 	    typestack_push(stack, a);
 	    break;
+	case TOK_OVER:
+	    if (stack->type_count < 2) {
+		error_from_parts(filename, FATAL, "Operation 'over' requires two arguments", tok);
+	    }
+	    
+	    typestack_push(stack, stack->types[stack->type_count - 2]);
+	    break;
 	case TOK_DROP:
 	    (void) typestack_pop(stack);
 	    break;

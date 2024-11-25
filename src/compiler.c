@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 
 size_t tmp_addr = 0;
+size_t main_addr = 0;
 
 Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry)
 {
@@ -69,13 +70,25 @@ void compiler_crossreference(Compiler* compiler)
 	    compiler->tokens[if_ip].operand = i;
 	    stack[stack_sz - 1] = i;
 	    break;
+	case TOK_DEF_FUNC:
+	    if (strcmp("main", compiler->tokens[i + 1].token) == 0) {
+		main_addr = i;
+	    }
+	    stack[stack_sz++] = i;
+	    context_push(compiler->context, TOK_DEF_FUNC);
+	    break;
+	case TOK_LOOP:
+	    stack[stack_sz++] = i;
+	    context_push(compiler->context, TOK_LOOP);
+	    break;
 	case TOK_END:
 	    TokenType ref = context_pop(compiler->context);
-	    if (ref != TOK_CONDITION && ref != TOK_ELSE) {
+	    if (ref != TOK_CONDITION && ref != TOK_ELSE && ref != TOK_LOOP && ref != TOK_DEF_FUNC) {
 		break;
 	    }
 	    size_t ref_ip = stack[stack_sz - 1];
 	    compiler->tokens[ref_ip].operand = i;
+	    compiler->tokens[i].operand = ref_ip;
 	    stack_sz--;
 	    break;
 	}
@@ -144,8 +157,10 @@ void compiler_emit_base(char* out_path)
     fprintf(out, "_start:\n");
     fprintf(out, "	pop [var_argc]\n");
     fprintf(out, "	pop [var_argv]\n");
-    fprintf(out, "	mov byte [call_flag], 1\n");
-    fprintf(out, "	call main\n");
+    fprintf(out, "	call addr_%d\n", main_addr);
+    fprintf(out, "	mov rdi, rax\n");
+    fprintf(out, "	mov rax, 60\n");
+    fprintf(out, "	syscall\n");
 
     fclose(out);
 }
@@ -189,6 +204,15 @@ void compiler_emit_swap(Compiler* compiler)
     fprintf(out, "	pop rbx\n");
     fprintf(out, "	push rax\n");
     fprintf(out, "	push rbx\n");
+}
+
+void compiler_emit_over(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+
+    fprintf(out, "	mov rax, [rsp+8]\n");
+    fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_drop(Compiler* compiler)
@@ -296,7 +320,8 @@ void compiler_emit_func(Compiler* compiler)
     char* name = compiler_next_tok(compiler);
 
     Function func = {
-	.name = strdup(name)
+	.name = strdup(name),
+	.addr = ptr
     };
     
     context->cw_func = name;
@@ -317,11 +342,7 @@ void compiler_emit_func(Compiler* compiler)
     context->funcs[context->func_count] = func;
     context->func_count++;
 
-    fprintf(out, "%s:\n", name);
-    fprintf(out, "	cmp byte [call_flag], 1\n");
-    fprintf(out, "	mov byte [call_flag], 0\n");
-    fprintf(out, "	jne block_addr_%d\n", context->block_count);
-    
+    fprintf(out, "addr_%d:\n", compiler->tok_ptr);
     compiler->tok_ptr = ptr;
 }
 
@@ -345,7 +366,7 @@ void compiler_emit_loop(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
-    fprintf(out, "loopaddr_%d:\n", context->loop_count);
+    fprintf(out, "addr_%d:\n", compiler->tok_ptr);
 }
 
 void compiler_emit_do(Compiler* compiler)
@@ -354,15 +375,12 @@ void compiler_emit_do(Compiler* compiler)
     Context* context = compiler->context;
 
     fprintf(out, "	pop rax\n");
-    fprintf(out, "	mov [cond_flag], al\n");
     fprintf(out, "	cmp rax, 1\n");
 
     TokenType type = context->stmts[context->stmt_count - 1];
     
     switch (type) {
     case TOK_LOOP:
-	fprintf(out, "	jne endloop_addr_%d\n", context->loop_count);
-	break;
     case TOK_CONDITION:
 	fprintf(out, "	jne addr_%d\n", tmp_addr);
 	break;
@@ -386,13 +404,11 @@ void compiler_emit_func_call(Compiler* compiler)
 	return;
     }
 
-    fprintf(out, "	mov byte [call_flag], 1\n");
-
     for (size_t i = 0; i < func.arg_count; i++) {
 	fprintf(out, "	pop [var_%s]\n", func.args[i]);
     }
 
-    fprintf(out, "	call %s\n", name);
+    fprintf(out, "	call addr_%d\n", func.addr);
     //fprintf(out, "	push rax\n");
 }
 
@@ -528,8 +544,6 @@ void compiler_emit_segments(Compiler* compiler)
     
     fprintf(out, "var_argc dq 0\n");
     fprintf(out, "var_argv dq 0\n");
-    fprintf(out, "call_flag db 0\n");
-    fprintf(out, "cond_flag db 0\n");
     
     for (size_t i = 0; i < context->literal_count; i++) {
 	char* literal = context->literals[i];
@@ -613,14 +627,13 @@ void compiler_emit(Compiler* compiler)
 	    if (type == TOK_DEF_FUNC) {
 		fprintf(out, "	mov rax, 0\n");
 		fprintf(out, "	ret\n");
-		fprintf(out, "block_addr_%d:\n", context->block_count);
 		context->block_count++;
 		context->cw_func = NULL;
 		break;
 	    }
 	    if (type == TOK_LOOP) {
-		fprintf(out, "	jmp loopaddr_%d\n", context->loop_count);
-		fprintf(out, "endloop_addr_%d:\n", context->loop_count);
+		fprintf(out, "	jmp addr_%d\n", compiler->tokens[i].operand);
+		fprintf(out, "addr_%d:\n", i);
 		context->loop_count++;
 		break;
 	    }
@@ -642,6 +655,7 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_LOOP:
 	    context_push(context, TOK_LOOP);
+	    tmp_addr = compiler->tokens[i].operand;
 	    compiler_emit_loop(compiler);
 	    break;
 	case TOK_DO:
@@ -694,6 +708,9 @@ void compiler_emit(Compiler* compiler)
 	case TOK_SWAP:
 	    compiler_emit_swap(compiler);
 	    break;
+	case TOK_OVER:
+	    compiler_emit_over(compiler);
+	    break;
 	case TOK_DROP:
 	    compiler_emit_drop(compiler);
 	    break;
@@ -712,13 +729,6 @@ void compiler_emit(Compiler* compiler)
 
 	i = compiler->tok_ptr;
 	compiler->tok_ptr++;
-    }
-
-    if (compiler->has_entry) {
-	fprintf(out, "addr_%d:\n", context->addr_count);
-	fprintf(out, "	mov rdi, rax\n");
-	fprintf(out, "	mov rax, 60\n");
-	fprintf(out, "	syscall\n");
     }
 
     compiler_emit_segments(compiler);

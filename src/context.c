@@ -35,6 +35,9 @@ void context_push(Context* context, TokenType type)
 
 TokenType context_pop(Context* context)
 {
+    if (context->stmt_count < 1) {
+	return 0;
+    }
     TokenType type = context->stmts[context->stmt_count - 1];
     context->stmt_count--;
     return type;
