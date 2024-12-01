@@ -1,5 +1,0 @@
-func main in
-    var a 15 end
-    var b 21 end
-    a b + print
-end

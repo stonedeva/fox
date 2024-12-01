@@ -15,6 +15,7 @@ Context* context_init()
     context->main_addr = 0;
     context->func_count = 0;
     context->var_count = 0;
+    context->macro_count = 0;
     context->literal_count = 0;
     context->stmt_count = 0;
 }

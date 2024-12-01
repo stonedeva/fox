@@ -1,0 +1,6 @@
+func main in
+    mem 5 set
+    mem 8 + 4 set
+    mem 16 + 9 set
+    mem 24 + 7 set
+end

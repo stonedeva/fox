@@ -22,16 +22,23 @@ typedef struct {
 } Function;
 
 typedef struct {
+    char* name;
+    char* value;
+} Macro;
+
+typedef struct {
     size_t stmt_count;
     size_t literal_count;
     size_t func_count;
     size_t var_count;
+    size_t macro_count;
     size_t temp_addr;
     size_t main_addr;
     TokenType stmts[MAX_STACK_SIZE];
     Variable vars[MAX_INSTANCES];
     Function funcs[MAX_INSTANCES];
     char* literals[MAX_INSTANCES];
+    Macro macros[MAX_INSTANCES];
     char* cw_func;
 } Context;
 

@@ -53,9 +53,13 @@ void compiler_crossreference(Compiler* compiler)
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	TokenType tok = compiler->tokens[i].type;
 	switch (tok) {
+	case TOK_LOOP:
 	case TOK_CONDITION:
 	    stack[stack_sz++] = i;
-	    context_push(compiler->context, TOK_CONDITION);
+	    context_push(compiler->context, tok);
+	    break;
+	case TOK_DEF_VAR:
+	    context_push(compiler->context, TOK_DEF_VAR);
 	    break;
 	case TOK_ELSE:
 	    if (context_pop(compiler->context) != TOK_CONDITION) {
@@ -74,14 +78,13 @@ void compiler_crossreference(Compiler* compiler)
 	    stack[stack_sz++] = i;
 	    context_push(compiler->context, TOK_DEF_FUNC);
 	    break;
-	case TOK_LOOP:
-	    stack[stack_sz++] = i;
-	    context_push(compiler->context, TOK_LOOP);
-	    break;
 	case TOK_END:
 	    TokenType ref = context_pop(compiler->context);
-	    if (ref != TOK_CONDITION && ref != TOK_ELSE && ref != TOK_LOOP && ref != TOK_DEF_FUNC) {
+	    if (ref == TOK_DEF_VAR) {
 		break;
+	    }
+	    if (stack_sz < 1) {
+		error_throw(compiler, FATAL, "Uncorresponding token 'end'");
 	    }
 	    size_t ref_ip = stack[stack_sz - 1];
 	    compiler->tokens[ref_ip].operand = i;
@@ -89,6 +92,10 @@ void compiler_crossreference(Compiler* compiler)
 	    stack_sz--;
 	    break;
 	}
+    }
+
+    if (stack_sz != 0) {
+	error_from_parts(compiler->input_name, FATAL, "Block is unclosed", compiler->tokens[stack_sz - 1]);
     }
 
     compiler->context->stmt_count = 0;
@@ -152,8 +159,8 @@ void compiler_emit_base(char* out_path, size_t main_addr)
     fprintf(out, "        add     rsp, 40\n");
     fprintf(out, "        ret\n");
     fprintf(out, "_start:\n");
-    fprintf(out, "	pop [var_argc]\n");
-    fprintf(out, "	pop [var_argv]\n");
+    fprintf(out, "	pop [argc]\n");
+    fprintf(out, "	pop [argv]\n");
     fprintf(out, "	call addr_%d\n", main_addr);
     fprintf(out, "	mov rdi, rax\n");
     fprintf(out, "	mov rax, 60\n");
@@ -220,6 +227,13 @@ void compiler_emit_drop(Compiler* compiler)
     fprintf(out, "	add rsp, 8\n");
 }
 
+void compiler_emit_mem(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    fprintf(out, "	mov rax, mem\n");
+    fprintf(out, "	push rax\n");
+}
+
 void compiler_emit_var(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -248,7 +262,7 @@ void compiler_emit_redef_var(Compiler* compiler)
     Context* context = compiler->context;
 
     fprintf(out, "	pop rax\n");
-    fprintf(out, "	mov [var_%s], rax\n", name);
+    fprintf(out, "	mov [%s], rax\n", name);
 }
 
 void compiler_emit_reference(Compiler* compiler)
@@ -269,7 +283,7 @@ void compiler_emit_reference(Compiler* compiler)
 	error_throw(compiler, FATAL, "Unknown typename!");
     }*/
 
-    fprintf(out, "	mov rax, [var_%s]\n", name);
+    fprintf(out, "	mov rax, [%s]\n", name);
     fprintf(out, "	push rax\n");
 }
 
@@ -281,7 +295,7 @@ void compiler_emit_ptr_ref(Compiler* compiler)
     char* name = compiler_curr_tok(compiler);
     name++;
 
-    fprintf(out, "	mov rax, var_%s\n", name);
+    fprintf(out, "	mov rax, %s\n", name);
     fprintf(out, "	push rax\n");
 }
 
@@ -326,7 +340,19 @@ void compiler_emit_func(Compiler* compiler)
 
     while (strcmp("in", compiler->tokens[ptr].token) != 0) {
 	char* arg_name = compiler->tokens[ptr].token;
+	bool arg_exists = false;
+	for (size_t i = 0; i < context->var_count; i++) {
+	    if (strcmp(arg_name, context->vars[i].name) == 0) {
+		arg_exists = true;
+	    }
+	}
+	
 	func.args[func.arg_count] = arg_name;
+	if (arg_exists) {
+	    ptr++;
+	    continue;
+	}
+
 	context->vars[context->var_count] = (Variable) {
 	    .name = arg_name,
 	    .value = NULL
@@ -402,7 +428,7 @@ void compiler_emit_func_call(Compiler* compiler)
     }
 
     for (size_t i = 0; i < func.arg_count; i++) {
-	fprintf(out, "	pop [var_%s]\n", func.args[i]);
+	fprintf(out, "	pop [%s]\n", func.args[i]);
     }
 
     fprintf(out, "	call addr_%d\n", func.addr);
@@ -536,11 +562,11 @@ void compiler_emit_segments(Compiler* compiler)
 
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
-	fprintf(out, "var_%s dq 0\n", var.name);
+	fprintf(out, "%s dq 0\n", var.name);
     }
     
-    fprintf(out, "var_argc dq 0\n");
-    fprintf(out, "var_argv dq 0\n");
+    fprintf(out, "argc dq 0\n");
+    fprintf(out, "argv dq 0\n");
     
     for (size_t i = 0; i < context->literal_count; i++) {
 	char* literal = context->literals[i];
@@ -566,6 +592,7 @@ void compiler_emit_segments(Compiler* compiler)
 	fprintf(out, "0x%02x\n", (unsigned int)0x00);
 	fprintf(out, "str%d_len = %d\n", i, strlen(literal));
     }
+    fprintf(out, "mem rb 2400\n");
 }
 
 void compiler_emit_import(Compiler* compiler)
@@ -596,6 +623,19 @@ void compiler_emit_import(Compiler* compiler)
     compiler->tok_ptr++;
 }
 
+void compiler_emit_macro(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    Context* context = compiler->context;
+    size_t ptr = compiler->tok_ptr;
+
+    context->macros[context->macro_count++] = (Macro) {
+	.name = compiler->tokens[ptr + 1].token,
+	.value = compiler->tokens[ptr + 2].token
+    };
+    compiler->tok_ptr += 2;
+}
+
 void compiler_emit(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -603,7 +643,14 @@ void compiler_emit(Compiler* compiler)
 
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	Token tok = compiler->tokens[i];
-	
+
+	for (size_t i = 0; i < context->macro_count; i++) {
+	    if (strcmp(tok.token, context->macros[i].name) == 0) {
+		strcpy(tok.token, context->macros[i].value);
+		tok.type = TOK_NUMBER;
+	    }
+	}
+
 	switch (tok.type) {
 	case TOK_DEF_FUNC:
 	    context_push(context, TOK_DEF_FUNC);
@@ -633,7 +680,7 @@ void compiler_emit(Compiler* compiler)
 	    }
 	    if (type == TOK_DEF_VAR) {
 		char* var_name = context->vars[context->var_count - 1].name;
-		fprintf(out, "	pop [var_%s]\n", var_name);
+		fprintf(out, "	pop [%s]\n", var_name);
 		break;
 	    }
 
@@ -707,11 +754,17 @@ void compiler_emit(Compiler* compiler)
 	case TOK_DROP:
 	    compiler_emit_drop(compiler);
 	    break;
+	case TOK_MEM:
+	    compiler_emit_mem(compiler);
+	    break;
 	case TOK_SYSCALL:
 	    compiler_emit_syscall(compiler);
 	    break;
 	case TOK_IMPORT:
 	    compiler_emit_import(compiler);
+	    break;
+	case TOK_MACRO_DEF:
+	    compiler_emit_macro(compiler);
 	    break;
 	default:
 	    error_throw(compiler, FATAL, "Unknown token!");

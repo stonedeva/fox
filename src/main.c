@@ -42,6 +42,7 @@ static int fox_init(int argc, char* argv[])
     char* program_path = argv[0];
     char* input_path = argv[1];
     bool has_entry = true;
+    bool has_typecheck = true;
 
     size_t i = 2;
     while (i < argc) {
@@ -62,6 +63,9 @@ static int fox_init(int argc, char* argv[])
 	case 'e':
 	    has_entry = false;
 	    break;
+	case 't':
+	    has_typecheck = false;
+	    break;
 	default:
 	    fprintf(stderr, "%s: Invalid option provided!\n", program_path);
 	    return 1;
@@ -73,8 +77,10 @@ static int fox_init(int argc, char* argv[])
     Lexer lexer = lexer_init(input_path);
     lexer_proc(&lexer);
 
-    TypeStack typestack = typestack_init(&lexer);
-    typestack_evaluate(&typestack);
+    if (has_typecheck) {
+	TypeStack typestack = typestack_init(&lexer);
+	typestack_evaluate(&typestack);
+    }
 
     char output_path[20];
 

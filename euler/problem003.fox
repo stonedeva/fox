@@ -1,12 +1,12 @@
 func main in
     var num 600851475143 end
-    var div 2 end
+    var divi 2 end
 
-    while div num > do
-	if num div % 0 == do
-	    num div / #num
+    while divi num > do
+	if num divi % 0 == do
+	    num divi / #num
 	else
-	    div 1 + #div
+	    divi 1 + #divi
 	end
     end
 

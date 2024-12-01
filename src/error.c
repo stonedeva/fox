@@ -27,7 +27,7 @@ static const char* _error_cstr_from_level(ErrorLevel lvl)
 
 void error_from_parts(char* input_path, ErrorLevel lvl, char* err, Token tok)
 {
-    char* lvl_cstr = _error_cstr_from_level(lvl);
+    const char* lvl_cstr = _error_cstr_from_level(lvl);
 
     fprintf(stderr, "\033[1m%s:%d,%d: %s\033[0m: %s\n", input_path, tok.line, tok.row, lvl_cstr, err);
     if (lvl == FATAL) {

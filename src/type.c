@@ -60,6 +60,9 @@ void typestack_evaluate(TypeStack* stack)
 	case TOK_NUMBER:
 	    typestack_push(stack, INTEGER);
 	    break;
+	case TOK_MEM:
+	    typestack_push(stack, POINTER);
+	    break;
 	case TOK_CONDITION:
 	    break;
 	case TOK_ELSE:
@@ -67,6 +70,9 @@ void typestack_evaluate(TypeStack* stack)
 	case TOK_LOOP:
 	    break;
 	case TOK_DO:
+	    if (stack->type_count < 1) {
+		error_from_parts(filename, FATAL, "Operation 'do' requires one argument", tok);
+	    }
 	    if (typestack_pop(stack) != BOOLEAN) {
 		error_from_parts(filename, WARNING, "Trying operation 'do' with non-boolean", tok);
 		break;
@@ -105,6 +111,9 @@ void typestack_evaluate(TypeStack* stack)
 	    (void) typestack_pop(stack);
 	    break;
 	case TOK_DEF_FUNC:
+	    while (strcmp("in", stack->tokens[i].token) != 0) {
+		i++;
+	    }
 	    break;
 	case TOK_FUNC_CALL:
 	    break;
@@ -142,8 +151,12 @@ void typestack_evaluate(TypeStack* stack)
 	    }
 	    break;
 	case TOK_DEF_VAR:
+	    while (strcmp("end", stack->tokens[i].token) != 0) {
+		i++;
+	    }
 	    break;
 	case TOK_REDEF_VAR:
+	    (void) typestack_pop(stack);
 	    break;
 	case TOK_SYSCALL:
 	    if (stack->type_count < 4) {
@@ -163,6 +176,7 @@ void typestack_evaluate(TypeStack* stack)
 	    typestack_push(stack, POINTER);
 	    break;
 	case TOK_IMPORT:
+	    i++;
 	    break;
 	}
     }
@@ -175,8 +189,7 @@ void typestack_evaluate(TypeStack* stack)
 
 void typestack_push(TypeStack* stack, VarType type)
 {
-    stack->types[stack->type_count] = type;
-    stack->type_count++;
+    stack->types[stack->type_count++] = type;
 }
 
 VarType typestack_pop(TypeStack* stack)

@@ -1,5 +1,11 @@
 import "std.fox"
 
+define OP_PUSH 0
+define OP_PLUS 1
+define OP_MINUS 2
+define OP_MULT 3
+define OP_DIVI 4
+
 func usage in
     "Options:\n" @puts
     "	-v	Show current version\n" @puts

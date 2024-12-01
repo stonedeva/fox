@@ -116,6 +116,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_PTR_SET;
     } else if (strcmp("get", cstr) == 0) {
 	return TOK_PTR_GET;
+    } else if (strcmp("mem", cstr) == 0) {
+	return TOK_MEM;
     } else if (strcmp("return", cstr) == 0) {
 	return TOK_RETURN;
     } else if (strcmp("if", cstr) == 0) {
@@ -130,6 +132,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_SYSCALL;
     } else if (strcmp("import", cstr) == 0) {
 	return TOK_IMPORT;
+    } else if (strcmp("define", cstr) == 0) {
+	return TOK_MACRO_DEF;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {

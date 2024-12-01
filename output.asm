@@ -30,68 +30,128 @@ print:
         add     rsp, 40
         ret
 _start:
-	pop [var_argc]
-	pop [var_argv]
-	call addr_2
+	pop [argc]
+	pop [argv]
+	call addr_0
 	mov rdi, rax
 	mov rax, 60
 	syscall
 addr_0:
-	mov rax, 1
+	mov rax, 0
+	push rax
+	pop [count]
+	mov rax, 0
+	push rax
+	pop [res1]
+	mov rax, 0
+	push rax
+	pop [res2]
+addr_15:
+	mov rax, [count]
+	push rax
+	mov rax, 100
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	setg al
+	movzx rax, al
+        push rax
+	pop rax
+	cmp rax, 1
+	jne addr_30
+	mov rax, [count]
 	push rax
 	mov rax, 1
 	push rax
-	mov rax, [var_cstr]
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	mov [count], rax
+	mov rax, [res1]
 	push rax
-	mov rax, [var_len]
+	mov rax, [count]
 	push rax
-	pop rdx
-	pop rsi
+	mov rax, [count]
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	mov [res1], rax
+	jmp addr_15
+addr_30:
+addr_31:
+	mov rax, 0
+	push rax
+	mov rax, [count]
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	setg al
+	movzx rax, al
+        push rax
+	pop rax
+	cmp rax, 1
+	jne addr_44
+	mov rax, [res2]
+	push rax
+	mov rax, [count]
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	mov [res2], rax
+	mov rax, [count]
+	push rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	sub rbx, rax
+	mov rax, rbx
+        push rax
+	pop rax
+	mov [count], rax
+	jmp addr_31
+addr_44:
+	mov rax, [res2]
+	push rax
+	mov rax, [res2]
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	mov [res2], rax
+	mov rax, [res2]
+	push rax
+	mov rax, [res1]
+	push rax
+	pop rax
+	pop rbx
+	sub rbx, rax
+	mov rax, rbx
+        push rax
 	pop rdi
-	pop rax
-	syscall
-	mov rax, 0
-	ret
-addr_11:
-	mov rax, 1
-	push rax
-	mov rax, 2
-	push rax
-	mov rax, [var_ecstr]
-	push rax
-	mov rax, [var_elen]
-	push rax
-	pop rdx
-	pop rsi
-	pop rdi
-	pop rax
-	syscall
-	mov rax, 0
-	ret
-addr_2:
-	mov rax, str0_len
-	push rax
-	mov rax, str0
-	push rax
-	pop [var_msg]
-	mov rax, [var_msg]
-	push rax
-	pop [var_cstr]
-	pop [var_len]
-	call addr_0
-	mov rax, 0
-	push rax
-	pop rax
-	ret
+	call print
 	mov rax, 0
 	ret
 segment readable writeable
-var_cstr dq 0
-var_len dq 0
-var_ecstr dq 0
-var_elen dq 0
-var_msg dq 0
-var_argc dq 0
-var_argv dq 0
-str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x00
-str0_len = 13
+count dq 0
+res1 dq 0
+res2 dq 0
+argc dq 0
+argv dq 0
+mem rb 2400

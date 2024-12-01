@@ -27,6 +27,7 @@ typedef enum {
     TOK_OVER,
     TOK_ROT,
     TOK_DROP,
+    TOK_MEM,
     TOK_DEF_FUNC,
     TOK_FUNC_CALL,
     TOK_VAR_REF,
@@ -40,7 +41,8 @@ typedef enum {
     TOK_END,
     TOK_CHARACTER,
     TOK_STRING_LITERAL,
-    TOK_IMPORT
+    TOK_IMPORT,
+    TOK_MACRO_DEF
 } TokenType;
 
 typedef struct {
