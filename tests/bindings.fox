@@ -1,5 +1,5 @@
 func main in
-    205 255
+    255 205
     bind a b in
 	a b + print
     end

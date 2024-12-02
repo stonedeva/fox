@@ -37,121 +37,23 @@ _start:
 	mov rax, 60
 	syscall
 addr_0:
-	mov rax, 0
+	mov rax, 205
 	push rax
-	pop [count]
-	mov rax, 0
-	push rax
-	pop [res1]
-	mov rax, 0
-	push rax
-	pop [res2]
-addr_15:
-	mov rax, [count]
-	push rax
-	mov rax, 100
+	mov rax, 255
 	push rax
 	pop rax
 	pop rbx
-	cmp rax, rbx
-	setg al
-	movzx rax, al
-        push rax
-	pop rax
-	cmp rax, 1
-	jne addr_30
-	mov rax, [count]
 	push rax
-	mov rax, 1
-	push rax
+	push rbx
 	pop rax
 	pop rbx
 	add rax, rbx
-        push rax
-	pop rax
-	mov [count], rax
-	mov rax, [res1]
-	push rax
-	mov rax, [count]
-	push rax
-	mov rax, [count]
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	mov [res1], rax
-	jmp addr_15
-addr_30:
-addr_31:
-	mov rax, 0
-	push rax
-	mov rax, [count]
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	setg al
-	movzx rax, al
-        push rax
-	pop rax
-	cmp rax, 1
-	jne addr_44
-	mov rax, [res2]
-	push rax
-	mov rax, [count]
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	mov [res2], rax
-	mov rax, [count]
-	push rax
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	sub rbx, rax
-	mov rax, rbx
-        push rax
-	pop rax
-	mov [count], rax
-	jmp addr_31
-addr_44:
-	mov rax, [res2]
-	push rax
-	mov rax, [res2]
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	mov [res2], rax
-	mov rax, [res2]
-	push rax
-	mov rax, [res1]
-	push rax
-	pop rax
-	pop rbx
-	sub rbx, rax
-	mov rax, rbx
         push rax
 	pop rdi
 	call print
 	mov rax, 0
 	ret
 segment readable writeable
-count dq 0
-res1 dq 0
-res2 dq 0
 argc dq 0
 argv dq 0
 mem rb 2400

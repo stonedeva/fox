@@ -6,6 +6,11 @@
 #include <assert.h>
 #include <sys/stat.h>
 
+const char* asm_regs[4] = {"rax", "rbx", "rcx", "rdx"};
+char* bindings[20] = {0};
+size_t binding_sz = 0;
+bool active_binding = false;
+
 Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry)
 {
     Compiler compiler = {0};
@@ -59,7 +64,8 @@ void compiler_crossreference(Compiler* compiler)
 	    context_push(compiler->context, tok);
 	    break;
 	case TOK_DEF_VAR:
-	    context_push(compiler->context, TOK_DEF_VAR);
+	case TOK_BINDING:
+	    context_push(compiler->context, tok);
 	    break;
 	case TOK_ELSE:
 	    if (context_pop(compiler->context) != TOK_CONDITION) {
@@ -80,7 +86,7 @@ void compiler_crossreference(Compiler* compiler)
 	    break;
 	case TOK_END:
 	    TokenType ref = context_pop(compiler->context);
-	    if (ref == TOK_DEF_VAR) {
+	    if (ref == TOK_DEF_VAR || ref == TOK_BINDING) {
 		break;
 	    }
 	    if (stack_sz < 1) {
@@ -232,6 +238,23 @@ void compiler_emit_mem(Compiler* compiler)
     FILE* out = compiler->output;
     fprintf(out, "	mov rax, mem\n");
     fprintf(out, "	push rax\n");
+}
+
+void compiler_emit_binding(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t ptr = compiler->tok_ptr;
+    ptr++;
+
+    while (strcmp("in", compiler->tokens[ptr].token) != 0) {
+	bindings[binding_sz++] = compiler->tokens[ptr].token;
+	ptr++;
+    }
+
+    for (size_t i = 0; i < binding_sz; i++) {
+	fprintf(out, "	pop %s\n", asm_regs[i]);
+    }
+    compiler->tok_ptr = ptr;
 }
 
 void compiler_emit_var(Compiler* compiler)
@@ -644,11 +667,26 @@ void compiler_emit(Compiler* compiler)
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	Token tok = compiler->tokens[i];
 
-	for (size_t i = 0; i < context->macro_count; i++) {
-	    if (strcmp(tok.token, context->macros[i].name) == 0) {
-		strcpy(tok.token, context->macros[i].value);
+	for (size_t j = 0; j < context->macro_count; j++) {
+	    if (strcmp(tok.token, context->macros[j].name) == 0) {
+		strcpy(tok.token, context->macros[j].value);
 		tok.type = TOK_NUMBER;
 	    }
+	}
+
+	bool binding_res = false;
+	if (active_binding) {
+	    for (size_t j = 0; j < binding_sz; j++) {
+		if (strcmp(tok.token, bindings[j]) == 0) {
+		    fprintf(out, "	push %s\n", asm_regs[j]); 
+		    binding_res = true;
+		}
+	    }
+	}
+
+	if (binding_res) {
+	    compiler->tok_ptr++;
+	    continue;
 	}
 
 	switch (tok.type) {
@@ -681,6 +719,11 @@ void compiler_emit(Compiler* compiler)
 	    if (type == TOK_DEF_VAR) {
 		char* var_name = context->vars[context->var_count - 1].name;
 		fprintf(out, "	pop [%s]\n", var_name);
+		break;
+	    }
+	    if (type == TOK_BINDING) {
+		active_binding = false;
+		binding_sz = 0;
 		break;
 	    }
 
@@ -765,6 +808,11 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_MACRO_DEF:
 	    compiler_emit_macro(compiler);
+	    break;
+	case TOK_BINDING:
+	    active_binding = true;
+	    context_push(context, TOK_BINDING);
+	    compiler_emit_binding(compiler);
 	    break;
 	default:
 	    error_throw(compiler, FATAL, "Unknown token!");
