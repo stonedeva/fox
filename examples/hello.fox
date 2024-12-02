@@ -1,6 +1,4 @@
 func main in
-    205 255
-    bind a b in
-	a b + print
-    end
+
 end
+

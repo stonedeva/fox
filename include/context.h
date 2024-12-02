@@ -33,6 +33,9 @@ typedef struct {
     size_t var_count;
     size_t macro_count;
     size_t temp_addr;
+    char* bindings[8];
+    size_t binding_count;
+    bool active_binding;
     size_t main_addr;
     TokenType stmts[MAX_STACK_SIZE];
     Variable vars[MAX_INSTANCES];

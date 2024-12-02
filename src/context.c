@@ -13,6 +13,8 @@ Context* context_init()
 
     context->temp_addr = 0;
     context->main_addr = 0;
+    context->binding_count = 0;
+    context->active_binding = false;
     context->func_count = 0;
     context->var_count = 0;
     context->macro_count = 0;

@@ -37,20 +37,6 @@ _start:
 	mov rax, 60
 	syscall
 addr_0:
-	mov rax, 205
-	push rax
-	mov rax, 255
-	push rax
-	pop rax
-	pop rbx
-	push rax
-	push rbx
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rdi
-	call print
 	mov rax, 0
 	ret
 segment readable writeable

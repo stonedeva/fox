@@ -6,11 +6,6 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-const char* asm_regs[4] = {"rax", "rbx", "rcx", "rdx"};
-char* bindings[20] = {0};
-size_t binding_sz = 0;
-bool active_binding = false;
-
 Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry)
 {
     Compiler compiler = {0};
@@ -243,16 +238,18 @@ void compiler_emit_mem(Compiler* compiler)
 void compiler_emit_binding(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    Context* context = compiler->context;
+
     size_t ptr = compiler->tok_ptr;
     ptr++;
 
     while (strcmp("in", compiler->tokens[ptr].token) != 0) {
-	bindings[binding_sz++] = compiler->tokens[ptr].token;
+	context->bindings[context->binding_count++] = compiler->tokens[ptr].token;
 	ptr++;
     }
 
-    for (size_t i = 0; i < binding_sz; i++) {
-	fprintf(out, "	pop %s\n", asm_regs[i]);
+    for (size_t i = 0; i < context->binding_count; i++) {
+	fprintf(out, "	pop r%d\n", i + 9);
     }
     compiler->tok_ptr = ptr;
 }
@@ -675,10 +672,10 @@ void compiler_emit(Compiler* compiler)
 	}
 
 	bool binding_res = false;
-	if (active_binding) {
-	    for (size_t j = 0; j < binding_sz; j++) {
-		if (strcmp(tok.token, bindings[j]) == 0) {
-		    fprintf(out, "	push %s\n", asm_regs[j]); 
+	if (context->active_binding) {
+	    for (size_t j = 0; j < context->binding_count; j++) {
+		if (strcmp(tok.token, context->bindings[j]) == 0) {
+		    fprintf(out, "	push r%d\n", j + 9); 
 		    binding_res = true;
 		}
 	    }
@@ -722,8 +719,8 @@ void compiler_emit(Compiler* compiler)
 		break;
 	    }
 	    if (type == TOK_BINDING) {
-		active_binding = false;
-		binding_sz = 0;
+		context->active_binding = false;
+		context->binding_count = 0;
 		break;
 	    }
 
@@ -810,7 +807,7 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_macro(compiler);
 	    break;
 	case TOK_BINDING:
-	    active_binding = true;
+	    context->active_binding = true;
 	    context_push(context, TOK_BINDING);
 	    compiler_emit_binding(compiler);
 	    break;
