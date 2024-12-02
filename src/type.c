@@ -149,6 +149,7 @@ void typestack_evaluate(TypeStack* stack)
 	    if (a != POINTER) {
 		error_from_parts(filename, WARNING, "Operation 'ptr-set' second argument is non-pointer", tok);
 	    }
+	    typestack_push(stack, INTEGER);
 	    break;
 	case TOK_DEF_VAR:
 	    while (strcmp("end", stack->tokens[i].token) != 0) {

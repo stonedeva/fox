@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry)
+Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry, size_t mem_capacity)
 {
     Compiler compiler = {0};
 
@@ -29,6 +29,7 @@ Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool h
     compiler.tokens = lexer->tokens;
     compiler.tok_sz = lexer->tok_sz;
     compiler.tok_ptr = 0;
+    compiler.mem_capacity = mem_capacity;
 
     compiler_crossreference(&compiler);
 
@@ -189,6 +190,11 @@ void compiler_emit_print(Compiler* compiler)
 
     fprintf(out, "	pop rdi\n");
     fprintf(out, "	call print\n");
+}
+
+void compiler_emit_printc(Compiler* compiler)
+{
+    assert(0 && "TODO: compiler_emit_printc(): Not implemented yet\n");
 }
 
 void compiler_emit_dup(Compiler* compiler)
@@ -612,7 +618,7 @@ void compiler_emit_segments(Compiler* compiler)
 	fprintf(out, "0x%02x\n", (unsigned int)0x00);
 	fprintf(out, "str%d_len = %d\n", i, strlen(literal));
     }
-    fprintf(out, "mem rb 2400\n");
+    fprintf(out, "mem rb %d\n", compiler->mem_capacity);
 }
 
 void compiler_emit_import(Compiler* compiler)
@@ -637,7 +643,7 @@ void compiler_emit_import(Compiler* compiler)
     Lexer sub_lexer = lexer_init(full_path);
     lexer_proc(&sub_lexer);
 
-    Compiler sub_compiler = compiler_init(compiler->context, "output.asm", &sub_lexer, false);
+    Compiler sub_compiler = compiler_init(compiler->context, "output.asm", &sub_lexer, false, (size_t)compiler->mem_capacity / 2);
     compiler_emit(&sub_compiler);
 
     compiler->tok_ptr++;
@@ -781,6 +787,9 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_PRINT:
 	    compiler_emit_print(compiler);
+	    break;
+	case TOK_PRINTC:
+	    compiler_emit_printc(compiler);
 	    break;
 	case TOK_DUP:
 	    compiler_emit_dup(compiler);

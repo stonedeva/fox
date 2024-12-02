@@ -17,10 +17,11 @@ typedef struct {
     Token* tokens;
     bool has_entry;
     char* input_name;
+    size_t mem_capacity;
 } Compiler;
 
 
-Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry);
+Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry, size_t mem_capacity);
 void compiler_free(Compiler* compiler);
 void compiler_crossreference(Compiler* compiler);
 

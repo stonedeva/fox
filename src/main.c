@@ -41,6 +41,8 @@ static int fox_init(int argc, char* argv[])
 {
     char* program_path = argv[0];
     char* input_path = argv[1];
+
+    size_t mem_capacity = 2400;
     bool has_entry = true;
     bool has_typecheck = true;
 
@@ -66,6 +68,15 @@ static int fox_init(int argc, char* argv[])
 	case 't':
 	    has_typecheck = false;
 	    break;
+	case 'm':
+	    if (i >= argc) {
+		fprintf(stderr, "%s: Invalid option provided!\n", program_path);
+		fprintf(stderr, "ERROR: Option '-m' requires integer");
+		break;
+	    }
+	    mem_capacity = (size_t)strtoull(argv[i + 1], NULL, 10);
+	    i++;
+	    break;
 	default:
 	    fprintf(stderr, "%s: Invalid option provided!\n", program_path);
 	    return 1;
@@ -90,7 +101,7 @@ static int fox_init(int argc, char* argv[])
     strcpy(output_path, "output.asm");
 #endif
 
-    Compiler compiler = compiler_init(NULL, output_path, &lexer, has_entry);
+    Compiler compiler = compiler_init(NULL, output_path, &lexer, has_entry, mem_capacity);
     compiler_emit_base(output_path, compiler.context->main_addr);
     compiler_emit(&compiler);
 
