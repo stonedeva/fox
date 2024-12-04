@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import subprocess
+import sys
 
 dir_name = "tests"
+if len(sys.argv) > 1:
+    dir_name = sys.argv[1]
+
 directory = Path(dir_name)
 
 def compare_results(path, output):
