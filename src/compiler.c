@@ -181,6 +181,7 @@ void compiler_emit_syscall(Compiler* compiler)
     fprintf(out, "	pop rdi\n");
     fprintf(out, "	pop rax\n");
     fprintf(out, "	syscall\n");
+    fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_print(Compiler* compiler)

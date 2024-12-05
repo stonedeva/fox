@@ -30,7 +30,7 @@ void typestack_evaluate(TypeStack* stack)
 	switch (tok.type) {
 	case TOK_BINARYOP:
 	    if (stack->type_count < 2) {
-		error_from_parts(filename, FATAL, "Binaryop requires two values", tok);
+		error_from_parts(filename, WARNING, "Binaryop requires two values", tok);
 	    }
 	    VarType a = typestack_pop(stack);
 	    VarType b = typestack_pop(stack);
