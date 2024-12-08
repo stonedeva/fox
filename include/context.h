@@ -17,7 +17,7 @@ typedef struct {
 typedef struct {
     char* name;
     size_t arg_count;
-    char* args[MAX_ARGS];
+    VarType args[MAX_ARGS];
     size_t addr;
 } Function;
 

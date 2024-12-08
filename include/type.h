@@ -9,7 +9,8 @@ typedef enum {
     INTEGER,
     BYTE,
     POINTER,
-    BOOLEAN
+    BOOLEAN,
+    TYPE_INVALID
 } VarType;
 
 typedef struct {
@@ -26,5 +27,6 @@ void typestack_free(TypeStack* stack);
 
 void typestack_push(TypeStack* stack, VarType type);
 VarType typestack_pop(TypeStack* stack);
+VarType typestack_type_from_cstr(const char* cstr);
 
 #endif // TYPE_H

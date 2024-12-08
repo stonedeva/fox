@@ -174,8 +174,6 @@ void compiler_emit_base(char* out_path, size_t main_addr)
 void compiler_emit_syscall(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    Context* context = compiler->context;
-
     fprintf(out, "	pop rdx\n");
     fprintf(out, "	pop rsi\n");
     fprintf(out, "	pop rdi\n");
@@ -187,8 +185,6 @@ void compiler_emit_syscall(Compiler* compiler)
 void compiler_emit_print(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    Context* context = compiler->context;
-
     fprintf(out, "	pop rdi\n");
     fprintf(out, "	call print\n");
 }
@@ -201,10 +197,7 @@ void compiler_emit_printc(Compiler* compiler)
 void compiler_emit_dup(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    Context* context = compiler->context;
-
-    fprintf(out, "	mov rax, [rsp]\n");
-    fprintf(out, "	push rax\n");
+    fprintf(out, "	pushq [rsp]\n"); 
 }
 
 void compiler_emit_swap(Compiler* compiler)
@@ -221,17 +214,12 @@ void compiler_emit_swap(Compiler* compiler)
 void compiler_emit_over(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    Context* context = compiler->context;
-
-    fprintf(out, "	mov rax, [rsp+8]\n");
-    fprintf(out, "	push rax\n");
+    fprintf(out, "	pushq [rsp+8]\n");
 }
 
 void compiler_emit_drop(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    Context* context = compiler->context;
-
     fprintf(out, "	add rsp, 8\n");
 }
 
@@ -367,25 +355,13 @@ void compiler_emit_func(Compiler* compiler)
 
     while (strcmp("in", compiler->tokens[ptr].token) != 0) {
 	char* arg_name = compiler->tokens[ptr].token;
-	bool arg_exists = false;
-	for (size_t i = 0; i < context->var_count; i++) {
-	    if (strcmp(arg_name, context->vars[i].name) == 0) {
-		arg_exists = true;
-	    }
-	}
+	VarType arg_type = typestack_type_from_cstr(arg_name);
 	
-	func.args[func.arg_count] = arg_name;
-	if (arg_exists) {
-	    ptr++;
-	    continue;
+	if (arg_type == TYPE_INVALID) {
+	    error_throw(compiler, FATAL, "Invalid argument type");
 	}
 
-	context->vars[context->var_count] = (Variable) {
-	    .name = arg_name,
-	    .value = NULL
-	};
-	context->var_count++;
-	func.arg_count++;
+	func.args[func.arg_count++] = arg_type;
 	ptr++;
     }
 
@@ -393,6 +369,10 @@ void compiler_emit_func(Compiler* compiler)
     context->func_count++;
 
     fprintf(out, "addr_%d:\n", compiler->tok_ptr);
+    if (context->main_addr != func.addr) {
+	fprintf(out, "	pop rbp\n");
+    }
+
     compiler->tok_ptr = ptr;
 }
 
@@ -454,10 +434,6 @@ void compiler_emit_func_call(Compiler* compiler)
 	return;
     }
 
-    for (size_t i = 0; i < func.arg_count; i++) {
-	fprintf(out, "	pop [%s]\n", func.args[i]);
-    }
-
     fprintf(out, "	call addr_%d\n", func.addr);
     //fprintf(out, "	push rax\n");
 }
@@ -465,11 +441,7 @@ void compiler_emit_func_call(Compiler* compiler)
 void compiler_emit_push(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    size_t ptr = compiler->tok_ptr;
-    
-    char* val = compiler_curr_tok(compiler);
-
-    fprintf(out, "	mov rax, %s\n", val);
+    fprintf(out, "	mov rax, %s\n", compiler_curr_tok(compiler));
     fprintf(out, "	push rax\n");
 }
 
@@ -491,6 +463,7 @@ void compiler_emit_cstr(Compiler* compiler)
     fprintf(out, "	push rax\n");
     fprintf(out, "	mov rax, str%d\n", context->literal_count);
     fprintf(out, "	push rax\n");
+
     context->literal_count++;
 }
 
@@ -711,6 +684,9 @@ void compiler_emit(Compiler* compiler)
 	    }
 	    if (type == TOK_DEF_FUNC) {
 		fprintf(out, "	mov rax, 0\n");
+		if (strcmp("main", context->cw_func) != 0) {
+		    fprintf(out, "	push rbp\n");
+		}
 		fprintf(out, "	ret\n");
 		context->cw_func = NULL;
 		break;

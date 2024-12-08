@@ -1,10 +1,14 @@
-func puts cstr len in
-    1 1 cstr len syscall
+func puts ptr int in
+    bind cstr len in
+	1 1 cstr len syscall
+    end
     drop
 end
 
-func eputs ecstr elen in
-    1 2 ecstr elen syscall
+func eputs ptr int in
+    bind cstr len in
+	1 1 cstr len syscall
+    end
     drop
 end
 

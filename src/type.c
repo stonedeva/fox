@@ -166,6 +166,8 @@ void typestack_evaluate(TypeStack* stack)
 	    for (size_t i = 0; i < 4; i++) {
 		(void) typestack_pop(stack);
 	    }
+	    typestack_push(stack, INTEGER);
+
 	    break;
 	case TOK_RETURN:
 	    (void) typestack_pop(stack);
@@ -198,4 +200,19 @@ VarType typestack_pop(TypeStack* stack)
     VarType type = stack->types[stack->type_count - 1];
     stack->type_count--;
     return type;
+}
+
+VarType typestack_type_from_cstr(const char* cstr)
+{
+    if (strcmp("int", cstr) == 0) {
+	return INTEGER;
+    } else if (strcmp("bool", cstr) == 0) {
+	return BOOLEAN;
+    } else if (strcmp("ptr", cstr) == 0) {
+	return POINTER;
+    } else if (strcmp("byte", cstr) == 0) {
+	return BYTE;
+    } else {
+	return TYPE_INVALID;
+    }
 }
