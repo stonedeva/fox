@@ -32,59 +32,103 @@ print:
 _start:
 	pop [argc]
 	pop [argv]
-	call addr_2
+	call addr_0
 	mov rdi, rax
 	mov rax, 60
 	syscall
 addr_0:
-	pop rbp
-	pop r9
-	pop r10
-	mov rax, 1
-	push rax
-	mov rax, 1
-	push rax
-	push r9
-	push r10
-	pop rdx
-	pop rsi
-	pop rdi
-	pop rax
-	syscall
-	push rax
-	add rsp, 8
 	mov rax, 0
-	push rbp
-	ret
-addr_17:
-	pop rbp
-	pop r9
-	pop r10
-	mov rax, 1
 	push rax
-	mov rax, 1
-	push rax
-	push r9
-	push r10
-	pop rdx
-	pop rsi
-	pop rdi
-	pop rax
-	syscall
-	push rax
-	add rsp, 8
+	pop [index]
 	mov rax, 0
-	push rbp
-	ret
-addr_2:
-	mov rax, str0_len
 	push rax
-	mov rax, str0
+	pop [result]
+addr_11:
+	mov rax, [index]
 	push rax
-	pop [msg]
-	mov rax, [msg]
+	mov rax, 1000
 	push rax
-	call addr_0
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	setg al
+	movzx rax, al
+        push rax
+	pop rax
+	cmp rax, 1
+	jne addr_38
+	mov rax, [index]
+	push rax
+	mov rax, 3
+	push rax
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+	mov rax, rdx
+        push rax
+	mov rax, 0
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	mov rax, [index]
+	push rax
+	mov rax, 5
+	push rax
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+	mov rax, rdx
+        push rax
+	mov rax, 0
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	pop rbx
+	or rax, rbx
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_33
+	mov rax, [result]
+	push rax
+	mov rax, [index]
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	mov [result], rax
+addr_33:
+	mov rax, [index]
+	push rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	mov [index], rax
+	jmp addr_11
+addr_38:
+	mov rax, [result]
+	push rax
+	pop rdi
+	call print
 	mov rax, 0
 	push rax
 	pop rax
@@ -92,9 +136,8 @@ addr_2:
 	mov rax, 0
 	ret
 segment readable writeable
-msg dq 0
+index dq 0
+result dq 0
 argc dq 0
 argv dq 0
-str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64, 0x21, 0x00
-str0_len = 13
 mem rb 2400

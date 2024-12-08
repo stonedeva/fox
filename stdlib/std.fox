@@ -1,13 +1,43 @@
+define SYS_read 0
+define SYS_write 1
+define SYS_open 2
+define SYS_close 3
+define SYS_exit 60
+
+define stdin 0
+define stdout 1
+define stderr 2
+
 func puts ptr int in
-    bind cstr len in
-	1 1 cstr len syscall
+    bind str len in
+	SYS_write stdout str len syscall
+    end
+    drop
+end
+
+func fopen ptr int in
+    bind path len in
+	SYS_open path 577 438 syscall
+    end
+end
+
+func fclose int in
+    bind fd in
+	SYS_close fd 0 0 syscall
+    end
+    drop
+end
+
+func fputs ptr int int in
+    bind fd str len in
+	SYS_write fd str len syscall
     end
     drop
 end
 
 func eputs ptr int in
-    bind cstr len in
-	1 1 cstr len syscall
+    bind str len in
+	SYS_write stderr str len syscall
     end
     drop
 end
