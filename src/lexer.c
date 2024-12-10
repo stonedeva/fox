@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "context.h"
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +36,10 @@ static bool _lexer_is_delimiter(const char ch)
     return isspace(ch) || ch == ',' || ch == '.' || ch == ':' || ch == ';';
 }
 
+Macro macros[10];
+size_t macro_count = 0;
+bool is_macro = false;
+
 static void _lexer_tokenize(Lexer* lexer) 
 {
     size_t row = 1;
@@ -48,7 +53,7 @@ static void _lexer_tokenize(Lexer* lexer)
     for (size_t i = 0; i < len; i++) {
         char ch = line[i];
 
-	if (ch == ';') {
+	if (ch == '/' && line[i + 1] == '/') {
 	    return;
 	}
         
@@ -142,7 +147,7 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {
 	return TOK_BINARYOP;
-    } else if (cstr[0] == '"' && cstr[strlen(cstr) - 1] == '"'){
+    } else if (cstr[0] == '"'){
 	return TOK_STRING_LITERAL;
     } else if (cstr[0] == '@') {
 	return TOK_FUNC_CALL;

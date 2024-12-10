@@ -1,8 +1,7 @@
 import "std.fox"
 
 func main in
-    var msg "Hello, World!" end
-    msg @puts
+    "Hello, World!" @puts
 
     0 return
 end

@@ -1,0 +1,2 @@
+- Address count resets after imported file,
+  causes already defined addresses

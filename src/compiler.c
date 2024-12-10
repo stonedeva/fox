@@ -53,6 +53,7 @@ void compiler_crossreference(Compiler* compiler)
     
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	TokenType tok = compiler->tokens[i].type;
+
 	switch (tok) {
 	case TOK_LOOP:
 	case TOK_CONDITION:
@@ -445,22 +446,31 @@ void compiler_emit_push(Compiler* compiler)
     fprintf(out, "	push rax\n");
 }
 
-void compiler_emit_cstr(Compiler* compiler)
+void compiler_emit_str(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
     size_t ptr = compiler->tok_ptr;
 
-    char* cstr = compiler_curr_tok(compiler);
+    bool is_cstr = false;
+
+    char* str = compiler_curr_tok(compiler);
     if (context->cw_func == NULL) {
 	error_throw(compiler, FATAL, "Strings are not allowed at top-level");
 	return;
     }
 
-    context->literals[context->literal_count] = cstr;
+    if (str[strlen(str) - 1] == 'c') {
+	is_cstr = true;
+	str[strlen(str) - 1] = '\0';
+    }
 
-    fprintf(out, "	mov rax, str%d_len\n", context->literal_count);
-    fprintf(out, "	push rax\n");
+    context->literals[context->literal_count] = str;
+
+    if (!is_cstr) {
+	fprintf(out, "	mov rax, str%d_len\n", context->literal_count);
+	fprintf(out, "	push rax\n");
+    }
     fprintf(out, "	mov rax, str%d\n", context->literal_count);
     fprintf(out, "	push rax\n");
 
@@ -582,6 +592,21 @@ void compiler_emit_segments(Compiler* compiler)
 		switch (escaped) {
 		case 'n':
 		    fprintf(out, "0x%02x, ", (unsigned int)0xA);
+		    break;
+		case 'r':
+		    fprintf(out, "0x%02x, ", (unsigned int)0x0D);
+		    break;
+		case 't':
+		    fprintf(out, "0x%02x, ", (unsigned int)0x09);
+		    break;
+		case 'b':
+		    fprintf(out, "0x%02x, ", (unsigned int)0x08);
+		    break;
+		case 'v':
+		    fprintf(out, "0x%02x, ", (unsigned int)0x0B);
+		    break;
+		case '\\':
+		    fprintf(out, "0x%02x, ", (unsigned int)0x5C);
 		    break;
 		}
 		i++;
@@ -741,7 +766,7 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_binaryop(compiler);
 	    break;
 	case TOK_STRING_LITERAL:
-	    compiler_emit_cstr(compiler);
+	    compiler_emit_str(compiler);
 	    break;
 	case TOK_FUNC_CALL:
 	    if (context->cw_func == NULL) {
