@@ -13,6 +13,7 @@ typedef struct {
     char* name;
     size_t value;
     bool is_const;
+    size_t addr;
 } Variable;
 
 typedef struct {

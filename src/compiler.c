@@ -260,12 +260,12 @@ void compiler_emit_var(Compiler* compiler)
 
     Variable var = {
 	.name = strdup(name),
+	.addr = compiler->tok_ptr,
+	.type = INTEGER,
 	.value = NULL
     };
 
-    context->vars[context->var_count] = var;
-    context->var_count++;
-
+    context->vars[context->var_count++] = var;
     compiler->tok_ptr++;
 }
 
@@ -278,8 +278,15 @@ void compiler_emit_redef_var(Compiler* compiler)
 
     Context* context = compiler->context;
 
+    Variable var = context_var_by_name(context, name);
+    if (var.name == NULL) {
+	error_from_parts(compiler->input_name, FATAL,
+			 "Variable in redefinition does not exist",
+			 compiler->tokens[ptr]);
+    }
+
     fprintf(out, "	pop rax\n");
-    fprintf(out, "	mov [%s], rax\n", name);
+    fprintf(out, "	mov [addr_%d], rax\n", var.addr);
 }
 
 void compiler_emit_reference(Compiler* compiler)
@@ -290,15 +297,16 @@ void compiler_emit_reference(Compiler* compiler)
     size_t ptr = compiler->tok_ptr;
 
     Variable var = context_var_by_name(context, name);
-
-    /*if (!exists) {
-	error_throw(compiler, FATAL, "Unknown typename!");
-    }*/
+    if (var.name == NULL) {
+	error_from_parts(compiler->input_name, FATAL,
+			 "Variable in reference does not exist",
+			 compiler->tokens[ptr]);
+    }
 
     if (var.is_const) { 
-	fprintf(out, "	mov rax, %s\n", name);
+	fprintf(out, "	mov rax, addr_%d\n", var.addr);
     } else {
-	fprintf(out, "	mov rax, [%s]\n", name);
+	fprintf(out, "	mov rax, [addr_%d]\n", var.addr);
     }
     fprintf(out, "	push rax\n");
 }
@@ -306,12 +314,20 @@ void compiler_emit_reference(Compiler* compiler)
 void compiler_emit_ptr_ref(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    size_t ptr = compiler->tok_ptr;
     Context* context = compiler->context;
 
     char* name = compiler_curr_tok(compiler);
     name++;
 
-    fprintf(out, "	mov rax, %s\n", name);
+    Variable var = context_var_by_name(context, name);
+    if (var.name == NULL) {
+	error_from_parts(compiler->input_name, FATAL,
+			 "Variable in pointer does not exist",
+			 compiler->tokens[ptr]);
+    }
+
+    fprintf(out, "	mov rax, addr_%d\n", var.addr);
     fprintf(out, "	push rax\n");
 }
 
@@ -571,9 +587,9 @@ void compiler_emit_segments(Compiler* compiler)
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
 	if (var.is_const) {
-	    fprintf(out, "%s = %d\n", var.name, var.value);
+	    fprintf(out, "addr_%d = %d\n", var.addr, var.value);
 	} else {
-	    fprintf(out, "%s dq 0\n", var.name);
+	    fprintf(out, "addr_%d dq 0\n", var.addr);
 	}
     }
     
@@ -669,8 +685,8 @@ void compiler_eval_end(Compiler* compiler)
 	fprintf(out, "addr_%d:\n", i);
 	break;
     case TOK_DEF_VAR:
-	char* var_name = context->vars[context->var_count - 1].name;
-	fprintf(out, "	pop [%s]\n", var_name);
+	size_t var_addr = context->vars[context->var_count - 1].addr;
+	fprintf(out, "	pop [addr_%d]\n", var_addr);
 	break;
     case TOK_BINDING:
 	context->active_binding = false;
@@ -734,6 +750,7 @@ void compiler_emit_const(Compiler* compiler)
 {
     Context* context = compiler->context;
 
+    size_t addr = compiler->tok_ptr;
     char* name = compiler_next_tok(compiler);
     compiler->tok_ptr += 2;
     uint64_t val = compiler_eval_const(compiler);
@@ -742,7 +759,8 @@ void compiler_emit_const(Compiler* compiler)
 	.name = name,
 	.type = INTEGER,
 	.value = val,
-	.is_const = true
+	.is_const = true,
+	.addr = addr
     };
 }
 
