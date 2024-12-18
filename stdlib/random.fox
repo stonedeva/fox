@@ -2,9 +2,9 @@
 // https://en.wikipedia.org/wiki/Linear_congruential_generator
 // X_n + 1 = (a * X_n + c) mod m
 
-define RAND_a 1664525
-define RAND_c 1013904223
-define RAND_m 8388608
+const RAND_a 1664525 end
+const RAND_c 1013904223 end
+const RAND_m 8388608 end
 
 // rand - Generate random number
 // : seed, range -> random number
