@@ -1,2 +1,3 @@
 func main in
+    N print
 end

@@ -708,6 +708,14 @@ uint64_t compiler_eval_const(Compiler* compiler)
 		eval_stack_sz--;
 		break;
 	    }
+	} else if (tok.type == TOK_VAR_REF) {
+	    Variable var = context_var_by_name(compiler->context, tok.token);
+	    if (var.name == NULL) {
+		error_from_parts(compiler->input_name, FATAL, 
+				 "Unknown variable in 'const' definition",
+				 compiler->tokens[ptr]);
+	    }
+	    eval_stack[eval_stack_sz++] = var.value;
 	}
 	ptr++;
     }
