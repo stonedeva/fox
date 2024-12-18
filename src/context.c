@@ -54,3 +54,15 @@ Function context_func_by_name(Context* context, char* name)
 
     return (Function) {};
 }
+
+Variable context_var_by_name(Context* context, char* name)
+{
+    for (size_t i = 0; i < context->var_count; i++) {
+	Variable var = context->vars[i];
+	if (strcmp(name, var.name) == 0) {
+	    return var;
+	}
+    }
+
+    return (Variable) {};
+}

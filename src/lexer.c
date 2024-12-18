@@ -139,8 +139,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_SYSCALL;
     } else if (strcmp("import", cstr) == 0) {
 	return TOK_IMPORT;
-    } else if (strcmp("define", cstr) == 0) {
-	return TOK_MACRO_DEF;
+    } else if (strcmp("const", cstr) == 0) {
+	return TOK_DEF_CONST;
     } else if (strcmp("bind", cstr) == 0) {
 	return TOK_BINDING;
     } else if (utils_is_number(cstr)) {

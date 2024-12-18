@@ -1,13 +1,13 @@
-define SYS_read 0
-define SYS_write 1
-define SYS_open 2
-define SYS_close 3
-define SYS_execve 59
-define SYS_exit 60
+const SYS_read 0 end
+const SYS_write 1 end
+const SYS_open 2 end
+const SYS_close 3 end
+const SYS_execve 59 end
+const SYS_exit 60 end
 
-define stdin 0
-define stdout 1
-define stderr 2
+const stdin 0 end
+const stdout 1 end
+const stderr 2 end
 
 // puts - Writes a string to standard output
 // : pointer, length

@@ -1,3 +1,2 @@
 func main in
-    205 255 + print
 end

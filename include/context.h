@@ -11,7 +11,8 @@
 typedef struct {
     VarType type;
     char* name;
-    char* value;
+    size_t value;
+    bool is_const;
 } Variable;
 
 typedef struct {
@@ -50,5 +51,6 @@ void context_free(Context* context);
 void context_push(Context* context, TokenType type);
 TokenType context_pop(Context* context);
 Function context_func_by_name(Context* context, char* name);
+Variable context_var_by_name(Context* context, char* name);
 
 #endif // CONTEXT_H

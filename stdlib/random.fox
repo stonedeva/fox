@@ -1,0 +1,20 @@
+// rand - Generate random number
+// https://en.wikipedia.org/wiki/Linear_congruential_generator
+// X_n + 1 = (a * X_n + c) mod m
+
+define RAND_a 1664525
+define RAND_c 1013904223
+define RAND_m 8388608
+
+// rand - Generate random number
+// : seed, range -> random number
+func rand int int in
+    var x1 0 end
+    var x2 0 end
+    bind n x0 in
+	RAND_a x0 * RAND_c + RAND_m % #x1
+	RAND_a x1 * RAND_c + RAND_m % #x2
+	
+	x2 n %
+    end
+end

@@ -5,6 +5,8 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/stat.h>
+#include <stdint.h>
+
 
 Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry, size_t mem_capacity)
 {
@@ -61,6 +63,7 @@ void compiler_crossreference(Compiler* compiler)
 	    context_push(compiler->context, tok);
 	    break;
 	case TOK_DEF_VAR:
+	case TOK_DEF_CONST:
 	case TOK_BINDING:
 	    context_push(compiler->context, tok);
 	    break;
@@ -83,7 +86,7 @@ void compiler_crossreference(Compiler* compiler)
 	    break;
 	case TOK_END:
 	    TokenType ref = context_pop(compiler->context);
-	    if (ref == TOK_DEF_VAR || ref == TOK_BINDING) {
+	    if (ref == TOK_DEF_VAR || ref == TOK_DEF_CONST || ref == TOK_BINDING) {
 		break;
 	    }
 	    if (stack_sz < 1) {
@@ -162,8 +165,6 @@ void compiler_emit_base(char* out_path, size_t main_addr)
     fprintf(out, "        add     rsp, 40\n");
     fprintf(out, "        ret\n");
     fprintf(out, "_start:\n");
-    fprintf(out, "	pop [argc]\n");
-    fprintf(out, "	pop [argv]\n");
     fprintf(out, "	call addr_%d\n", main_addr);
     fprintf(out, "	mov rdi, rax\n");
     fprintf(out, "	mov rax, 60\n");
@@ -288,18 +289,17 @@ void compiler_emit_reference(Compiler* compiler)
     char* name = compiler_curr_tok(compiler);
     size_t ptr = compiler->tok_ptr;
 
-    bool exists = false;
-    for (size_t i = 0; i < context->var_count; i++) {
-	if (strcmp(name, context->vars[i].name) == 0) {
-	    exists = true;
-	}
-    }
+    Variable var = context_var_by_name(context, name);
 
     /*if (!exists) {
 	error_throw(compiler, FATAL, "Unknown typename!");
     }*/
 
-    fprintf(out, "	mov rax, [%s]\n", name);
+    if (var.is_const) { 
+	fprintf(out, "	mov rax, %s\n", name);
+    } else {
+	fprintf(out, "	mov rax, [%s]\n", name);
+    }
     fprintf(out, "	push rax\n");
 }
 
@@ -370,9 +370,7 @@ void compiler_emit_func(Compiler* compiler)
     context->func_count++;
 
     fprintf(out, "addr_%d:\n", compiler->tok_ptr);
-    if (context->main_addr != func.addr) {
-	fprintf(out, "	pop rbp\n");
-    }
+    fprintf(out, "	pop rbp\n");
 
     compiler->tok_ptr = ptr;
 }
@@ -572,11 +570,12 @@ void compiler_emit_segments(Compiler* compiler)
 
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
-	fprintf(out, "%s dq 0\n", var.name);
+	if (var.is_const) {
+	    fprintf(out, "%s = %d\n", var.name, var.value);
+	} else {
+	    fprintf(out, "%s dq 0\n", var.name);
+	}
     }
-    
-    fprintf(out, "argc dq 0\n");
-    fprintf(out, "argv dq 0\n");
     
     for (size_t i = 0; i < context->literal_count; i++) {
 	char* literal = context->literals[i];
@@ -648,17 +647,95 @@ void compiler_emit_import(Compiler* compiler)
     compiler->tok_ptr++;
 }
 
-void compiler_emit_macro(Compiler* compiler)
+void compiler_eval_end(Compiler* compiler)
 {
-    FILE* out = compiler->output;
+    TokenType type = context_pop(compiler->context);
     Context* context = compiler->context;
-    size_t ptr = compiler->tok_ptr;
+    FILE* out = compiler->output;
+    size_t i = compiler->tok_ptr;
+    
+    switch (type) {
+    case TOK_CONDITION:
+	fprintf(out, "addr_%d:\n", i);
+	break;
+    case TOK_DEF_FUNC:
+	fprintf(out, "	mov rax, 0\n");
+	fprintf(out, "	push rbp\n");
+	fprintf(out, "	ret\n");
+	context->cw_func = NULL;
+	break;
+    case TOK_LOOP:
+	fprintf(out, "	jmp addr_%d\n", compiler->tokens[i].operand);
+	fprintf(out, "addr_%d:\n", i);
+	break;
+    case TOK_DEF_VAR:
+	char* var_name = context->vars[context->var_count - 1].name;
+	fprintf(out, "	pop [%s]\n", var_name);
+	break;
+    case TOK_BINDING:
+	context->active_binding = false;
+	context->binding_count = 0;
+	break;
+    }
+}
 
-    context->macros[context->macro_count++] = (Macro) {
-	.name = compiler->tokens[ptr + 1].token,
-	.value = compiler->tokens[ptr + 2].token
-    };
+uint64_t compiler_eval_const(Compiler* compiler)
+{
+    size_t ptr = compiler->tok_ptr;
+    size_t eval_stack[20] = {0};
+    size_t eval_stack_sz = 0;
+
+    while (compiler->tokens[ptr].type != TOK_END) {
+	Token tok = compiler->tokens[ptr];
+	if (tok.type == TOK_NUMBER) {
+	    eval_stack[eval_stack_sz++] = utils_cstr_as_number(tok.token);
+	} else if (tok.type == TOK_BINARYOP) {
+	    switch (tok.token[0]) {
+	    case '+':
+		eval_stack[eval_stack_sz - 2] += eval_stack[eval_stack_sz - 1];
+		eval_stack_sz--;
+		break;
+	    case '-':
+		eval_stack[eval_stack_sz - 2] -= eval_stack[eval_stack_sz - 1];
+		eval_stack_sz--;
+		break;
+	    case '*':
+		eval_stack[eval_stack_sz - 2] *= eval_stack[eval_stack_sz - 1];
+		eval_stack_sz--;
+		break;
+	    case '/':
+		eval_stack[eval_stack_sz - 2] /= eval_stack[eval_stack_sz - 1];
+		eval_stack_sz--;
+		break;
+	    }
+	}
+	ptr++;
+    }
+
+    if (eval_stack_sz != 1) {	
+	error_from_parts(compiler->input_name, FATAL, "Unused data from 'const'", 
+			 compiler->tokens[ptr]);
+    }
+
+    compiler->tok_ptr = ptr;
+
+    return eval_stack[0];
+}
+
+void compiler_emit_const(Compiler* compiler)
+{
+    Context* context = compiler->context;
+
+    char* name = compiler_next_tok(compiler);
     compiler->tok_ptr += 2;
+    uint64_t val = compiler_eval_const(compiler);
+
+    context->vars[context->var_count++] = (Variable) {
+	.name = name,
+	.type = INTEGER,
+	.value = val,
+	.is_const = true
+    };
 }
 
 void compiler_emit(Compiler* compiler)
@@ -668,13 +745,6 @@ void compiler_emit(Compiler* compiler)
 
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	Token tok = compiler->tokens[i];
-
-	for (size_t j = 0; j < context->macro_count; j++) {
-	    if (strcmp(tok.token, context->macros[j].name) == 0) {
-		strcpy(tok.token, context->macros[j].value);
-		tok.type = TOK_NUMBER;
-	    }
-	}
 
 	bool binding_res = false;
 	if (context->active_binding) {
@@ -701,36 +771,8 @@ void compiler_emit(Compiler* compiler)
 		error_throw(compiler, FATAL, "Uncorresponding 'end' statement");
 		break;
 	    }
-
-	    TokenType type = context_pop(context);
-	    if (type == TOK_CONDITION) {
-		fprintf(out, "addr_%d:\n", i);
-		break;
-	    }
-	    if (type == TOK_DEF_FUNC) {
-		fprintf(out, "	mov rax, 0\n");
-		if (strcmp("main", context->cw_func) != 0) {
-		    fprintf(out, "	push rbp\n");
-		}
-		fprintf(out, "	ret\n");
-		context->cw_func = NULL;
-		break;
-	    }
-	    if (type == TOK_LOOP) {
-		fprintf(out, "	jmp addr_%d\n", compiler->tokens[i].operand);
-		fprintf(out, "addr_%d:\n", i);
-		break;
-	    }
-	    if (type == TOK_DEF_VAR) {
-		char* var_name = context->vars[context->var_count - 1].name;
-		fprintf(out, "	pop [%s]\n", var_name);
-		break;
-	    }
-	    if (type == TOK_BINDING) {
-		context->active_binding = false;
-		context->binding_count = 0;
-		break;
-	    }
+	    
+	    compiler_eval_end(compiler);
 
 	    break;
 	case TOK_CONDITION:
@@ -814,8 +856,8 @@ void compiler_emit(Compiler* compiler)
 	case TOK_IMPORT:
 	    compiler_emit_import(compiler);
 	    break;
-	case TOK_MACRO_DEF:
-	    compiler_emit_macro(compiler);
+	case TOK_DEF_CONST:
+	    compiler_emit_const(compiler);
 	    break;
 	case TOK_BINDING:
 	    context->active_binding = true;

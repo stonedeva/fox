@@ -43,7 +43,7 @@ typedef enum {
     TOK_CHARACTER,
     TOK_STRING_LITERAL,
     TOK_IMPORT,
-    TOK_MACRO_DEF,
+    TOK_DEF_CONST,
     TOK_BINDING
 } TokenType;
 
