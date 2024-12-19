@@ -77,7 +77,6 @@ This code again pushes ```205``` and ```255```onto the stack.
 It then compares them using the greater than operator. 
 The result will be pushed onto the stack.
 ```0``` meaning ```false``` and ```1``` meaning ```true```
-```dd
 
 ### Strings
 ```code
@@ -165,6 +164,4 @@ func main in
 	fd @fclose
     end
 end
-
-### 
 ```
