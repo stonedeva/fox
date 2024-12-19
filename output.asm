@@ -30,20 +30,110 @@ print:
         add     rsp, 40
         ret
 _start:
-	call addr_10
+	call addr_0
 	mov rdi, rax
 	mov rax, 60
 	syscall
-addr_10:
-	pop rbp
-	mov rax, addr_4
+addr_0:
+	mov rax, 0
+	push rax
+	pop [addr_3]
+	mov rax, 0
+	push rax
+	pop [addr_7]
+addr_11:
+	mov rax, [addr_3]
+	push rax
+	mov rax, 1000
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	setg al
+	movzx rax, al
+        push rax
+	pop rax
+	cmp rax, 1
+	jne addr_38
+	mov rax, [addr_3]
+	push rax
+	mov rax, 3
+	push rax
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+	mov rax, rdx
+        push rax
+	mov rax, 0
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	mov rax, [addr_3]
+	push rax
+	mov rax, 5
+	push rax
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+	mov rax, rdx
+        push rax
+	mov rax, 0
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	pop rbx
+	or rax, rbx
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_33
+	mov rax, [addr_7]
+	push rax
+	mov rax, [addr_3]
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	mov [addr_7], rax
+addr_33:
+	mov rax, [addr_3]
+	push rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	mov [addr_3], rax
+	jmp addr_11
+addr_38:
+	mov rax, [addr_7]
 	push rax
 	pop rdi
 	call print
 	mov rax, 0
-	push rbp
+	push rax
+	pop rax
+	ret
+	mov rax, 0
 	ret
 segment readable writeable
-addr_0 = 8
-addr_4 = 800
+addr_3 dq 0
+addr_7 dq 0
 mem rb 2400

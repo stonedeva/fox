@@ -386,7 +386,9 @@ void compiler_emit_func(Compiler* compiler)
     context->func_count++;
 
     fprintf(out, "addr_%d:\n", compiler->tok_ptr);
-    fprintf(out, "	pop rbp\n");
+    if (func.addr != context->main_addr) {
+	fprintf(out, "	pop rbp\n");
+    }
 
     compiler->tok_ptr = ptr;
 }
@@ -676,7 +678,9 @@ void compiler_eval_end(Compiler* compiler)
 	break;
     case TOK_DEF_FUNC:
 	fprintf(out, "	mov rax, 0\n");
-	fprintf(out, "	push rbp\n");
+	if (strcmp("main", context->cw_func) != 0) {
+	    fprintf(out, "	push rbp\n");
+	}
 	fprintf(out, "	ret\n");
 	context->cw_func = NULL;
 	break;

@@ -19,13 +19,21 @@ for file in directory.iterdir():
         if not file.name.endswith(".fox"):
             continue
 
-        subprocess.run(["./build/foxc", f"{dir_name}/{file.name}"])
-        execution = subprocess.run("./output", capture_output=True, text=True, shell=True)
+        build = subprocess.run(f"./build/foxc {dir_name}/{file.name}",
+                                capture_output = True,
+                                text = True, shell = True)
+        print(f"[Test] Compiling {dir_name}/{file.name}")
+        if build.returncode != 0:
+            print(build.stderr)
 
-        result = compare_results(file.name.replace(".fox", ".txt"), execution.stdout)
-        if not result[0]:
+        exe = subprocess.run("./output", capture_output=True, 
+                                   text=True, shell=True)
+        print(f"[Test] Executing ./output")
+        
+        result = compare_results(file.name.replace(".fox", ".txt"), exe.stdout)
+        if exe.returncode != 0 or not result[0]:
             print(f"\nResult for: '{file.name}' is incorrect")
             print("======================")
-            print(f"Result: {execution.stdout}")
+            print(f"Result: {exe.stdout}")
             print("======================")
             print(f"Expected: {result[1]}")

@@ -1,6 +1,11 @@
-const sizeof(int) 8 end
-const N sizeof(int) 100 * end
+import "std.fox"
 
 func main in
-    N print
+    "test.txt"c @fopen
+    
+    bind fd in
+	"Hello, World!\n" fd @fputs
+	"This is a new line!\n" fd @fputs
+	fd @fclose
+    end
 end

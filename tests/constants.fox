@@ -1,0 +1,7 @@
+const sizeof(int) 8 end
+const N sizeof(int) 100 * end
+
+func main in
+    sizeof(int) print
+    N print
+end

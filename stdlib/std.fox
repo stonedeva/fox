@@ -39,7 +39,7 @@ end
 // : pointer, length, file descriptor
 func fputs ptr int int in
     bind fd str len in
-	SYS_write fd str len syscall
+	SYS_write fd str len 1 - syscall
     end
     drop
 end
