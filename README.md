@@ -148,6 +148,7 @@ func main in
 	c print
     end
 end
+```
 
 ## Examples
 ### File operations
