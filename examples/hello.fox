@@ -1,11 +1,3 @@
-import "std.fox"
-
 func main in
-    "test.txt"c @fopen
-    
-    bind fd in
-	"Hello, World!\n" fd @fputs
-	"This is a new line!\n" fd @fputs
-	fd @fclose
-    end
+    "Hello" drop print
 end
