@@ -42,7 +42,13 @@ They will remove them handle them and push the result back.
 - ```-```
 - ```*```
 - ```/```
-- ```%```
+
+#### Bitwise
+- ```>>```
+- ```<<```
+- ```|```
+- ```&```
+- ```^```
 
 #### Logical
 - ```<```
@@ -110,6 +116,16 @@ func main in
 end
 ```
 
+### Memory
+```code
+const sizeof(int) 8 end
+memory board sizeof(int) 100 * end
+
+func main in
+    board print
+end
+```
+
 ### If-Conditions
 ```code
 import "std.fox"
@@ -141,7 +157,7 @@ end
 ```code
 func main in
     10 20 30
-    bind a b c in
+    take a b c in
 	a print
 	b print
 	c print
