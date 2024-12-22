@@ -43,9 +43,8 @@ void typestack_evaluate(TypeStack* stack)
 		typestack_push(stack, BOOLEAN);
 		break;
 	    }
-	    switch (tok.token[0]) {
-	    case '<':
-	    case '>':
+
+	    if (tok.token[0] == '<' || tok.token[0] == '>') {
 		typestack_push(stack, BOOLEAN);
 		break;
 	    }
@@ -125,16 +124,8 @@ void typestack_evaluate(TypeStack* stack)
 		error_from_parts(filename, FATAL, "Operation 'ptr-set' requires two arguments", tok);
 	    }
 
-	    a = typestack_pop(stack);
-	    b = typestack_pop(stack);
-	    if (b != INTEGER) {
-		error_from_parts(filename, WARNING, "Operation 'ptr-set' first argument is non-intger", tok);
-		break;
-	    }
-	    if (b != POINTER) {
-		error_from_parts(filename, WARNING, "Operation 'ptr-set' second argument is non-pointer", tok);
-		break;
-	    }
+	    (void) typestack_pop(stack);
+	    (void) typestack_pop(stack);
 	    break;
 	case TOK_PTR_GET:
 	    if (stack->type_count < 1) {
@@ -142,12 +133,11 @@ void typestack_evaluate(TypeStack* stack)
 		break;
 	    }
 
-	    a = typestack_pop(stack);
-	    if (a != POINTER) {
-		error_from_parts(filename, WARNING, "Operation 'ptr-set' second argument is non-pointer", tok);
-	    }
+	    (void) typestack_pop(stack);
 	    typestack_push(stack, INTEGER);
 	    break;
+	case TOK_DEF_CONST:
+	case TOK_DEF_MEM:
 	case TOK_DEF_VAR:
 	    while (strcmp("end", stack->tokens[i].token) != 0) {
 		i++;

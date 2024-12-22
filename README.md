@@ -166,7 +166,37 @@ end
 ```
 
 ## Examples
+### Max element
+Find the largest element in an array
+```code
+const sizeof(int) 8 end
+memory list sizeof(int) 4 * end
+
+func main in
+    list 20 set
+    list 8 + 30 set
+    list 16 + 95 set
+    list 24 + 40 set
+
+    var max 0 end
+
+    0 while dup 4 > do
+        list over sizeof(int) * + get
+        take element in
+            if max element > do
+                element #max
+            end
+        end
+        1 +
+    end
+    drop
+
+    max print
+end
+```
+
 ### File operations
+Write strings to a file
 ```code
 import "std.fox"
 

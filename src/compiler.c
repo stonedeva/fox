@@ -85,23 +85,16 @@ void compiler_crossreference(Compiler* compiler)
 	    break;
 	case TOK_END:
 	    TokenType ref = context_pop(compiler->context);
-	    /*if (ref == TOK_TAKE || ref == TOK_PEEK || ref == TOK_DEF_CONST ||
-		ref == TOK_DEF_MEM) {
-		break;
-	    }*/
-
-	    // TODO: This code might screw up the crossreferencing.
-	    // It is only a temporary solution and should be fixed later.
 	    if (stack_sz < 1) {
-		error_from_parts(compiler->input_name, WARNING, 
+		error_from_parts(compiler->input_name, FATAL, 
 				"Uncorresponding token 'end'", 
 				compiler->tokens[0]);
-	    } else {
-		size_t ref_ip = stack[stack_sz - 1];
-		compiler->tokens[ref_ip].operand = i;
-		compiler->tokens[i].operand = ref_ip;
-		stack_sz--;
 	    }
+
+	    size_t ref_ip = stack[stack_sz - 1];
+	    compiler->tokens[ref_ip].operand = i;
+	    compiler->tokens[i].operand = ref_ip;
+	    stack_sz--;
 	    break;
 	}
     }
@@ -205,7 +198,7 @@ void compiler_emit_printc(Compiler* compiler)
 void compiler_emit_dup(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    fprintf(out, "	pushq [rsp]\n"); 
+    fprintf(out, "	push QWORD [rsp]\n"); 
 }
 
 void compiler_emit_swap(Compiler* compiler)
