@@ -1,10 +1,10 @@
 func read in
     "./examples/files.fox"
-    bind filename len in
+    take filename len in
         2 filename 0 0 syscall
     end
     
-    bind fd in
+    take fd in
         0 fd mem 1024 syscall 
         drop
     end
@@ -19,13 +19,13 @@ end
 func write in
     ; Open file
     "test.txt"
-    bind filename len in
+    take filename len in
         2 filename 577 438 syscall
     end
 
     ; Write message to file
     "Hello"
-    bind cstr len fd in
+    take cstr len fd in
         1 fd cstr len syscall
         drop
     end

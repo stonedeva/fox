@@ -1,3 +1,12 @@
+import "std.fox"
+
 func main in
-    "Hello" drop print
+    "test.txt"c @fopen
+
+    take fd in
+	"Hello, World!\n" fd @fputs
+	"A new line!\n" fd @fputs
+	"Content of a text file!\n" fd @fputs
+	fd @fclose
+    end
 end

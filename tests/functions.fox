@@ -1,0 +1,10 @@
+func sum int int in
+    peek a b in
+	a b + print
+    end
+    drop drop
+end
+
+func main in
+    205 95 @sum
+end

@@ -34,17 +34,139 @@ _start:
 	mov rdi, rax
 	mov rax, 60
 	syscall
+	; func
 addr_0:
-	mov rax, str0_len
+	; var
+	; 0
+	mov rax, 0
 	push rax
-	mov rax, str0
+	; end
+	pop [addr_3]
+	; var
+	; 0
+	mov rax, 0
 	push rax
-	add rsp, 8
+	; end
+	pop [addr_7]
+	; while
+addr_11:
+	; index
+	mov rax, [addr_3]
+	push rax
+	; 1000
+	mov rax, 1000
+	push rax
+	; >
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	setg al
+	movzx rax, al
+        push rax
+	; do
+	pop rax
+	cmp rax, 1
+	jne addr_38
+	; if
+	; index
+	mov rax, [addr_3]
+	push rax
+	; 3
+	mov rax, 3
+	push rax
+	; %
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+	mov rax, rdx
+        push rax
+	; 0
+	mov rax, 0
+	push rax
+	; ==
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	; index
+	mov rax, [addr_3]
+	push rax
+	; 5
+	mov rax, 5
+	push rax
+	; %
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+	mov rax, rdx
+        push rax
+	; 0
+	mov rax, 0
+	push rax
+	; ==
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	; ||
+	pop rax
+	pop rbx
+	or rax, rbx
+	push rax
+	; do
+	pop rax
+	cmp rax, 1
+	jne addr_33
+	; result
+	mov rax, [addr_7]
+	push rax
+	; index
+	mov rax, [addr_3]
+	push rax
+	; +
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	; #result
+	pop rax
+	mov [addr_7], rax
+	; end
+addr_33:
+	; index
+	mov rax, [addr_3]
+	push rax
+	; 1
+	mov rax, 1
+	push rax
+	; +
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	; #index
+	pop rax
+	mov [addr_3], rax
+	; end
+	jmp addr_11
+addr_38:
+	; result
+	mov rax, [addr_7]
+	push rax
+	; print
 	pop rdi
 	call print
+	; end
 	mov rax, 0
 	ret
 segment readable writeable
-str0 db 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x00
-str0_len = 5
-mem rb 2400
+addr_3 dq 0
+addr_7 dq 0

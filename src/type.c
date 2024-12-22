@@ -60,9 +60,6 @@ void typestack_evaluate(TypeStack* stack)
 	case TOK_NUMBER:
 	    typestack_push(stack, INTEGER);
 	    break;
-	case TOK_MEM:
-	    typestack_push(stack, POINTER);
-	    break;
 	case TOK_CONDITION:
 	    break;
 	case TOK_ELSE:

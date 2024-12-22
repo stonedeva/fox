@@ -23,6 +23,7 @@ Lexer lexer_init(char* filename)
 
     return lexer;
 }
+
 void lexer_proc(Lexer* lexer) 
 {
     while (fgets(lexer->line, sizeof(lexer->line), lexer->file)) {
@@ -35,10 +36,6 @@ static bool _lexer_is_delimiter(const char ch)
 {
     return isspace(ch) || ch == ',' || ch == '.' || ch == ':' || ch == ';';
 }
-
-Macro macros[10];
-size_t macro_count = 0;
-bool is_macro = false;
 
 static void _lexer_tokenize(Lexer* lexer) 
 {
@@ -54,7 +51,7 @@ static void _lexer_tokenize(Lexer* lexer)
         char ch = line[i];
 
 	if (ch == '/' && line[i + 1] == '/') {
-	    return;
+	    break;
 	}
         
 	// Inside String
@@ -123,8 +120,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_PTR_SET;
     } else if (strcmp("get", cstr) == 0) {
 	return TOK_PTR_GET;
-    } else if (strcmp("mem", cstr) == 0) {
-	return TOK_MEM;
+    } else if (strcmp("memory", cstr) == 0) {
+	return TOK_DEF_MEM;
     } else if (strcmp("return", cstr) == 0) {
 	return TOK_RETURN;
     } else if (strcmp("if", cstr) == 0) {
@@ -141,8 +138,10 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_IMPORT;
     } else if (strcmp("const", cstr) == 0) {
 	return TOK_DEF_CONST;
-    } else if (strcmp("bind", cstr) == 0) {
-	return TOK_BINDING;
+    } else if (strcmp("peek", cstr) == 0) {
+	return TOK_PEEK;
+    } else if (strcmp("take", cstr) == 0) {
+	return TOK_TAKE;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {

@@ -1,0 +1,2 @@
+Make import take all tokens from file and put them into the lexer->tokens
+array

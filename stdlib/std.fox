@@ -11,88 +11,89 @@ const stderr 2 end
 
 // puts - Writes a string to standard output
 // : pointer, length
-func puts ptr int in
-    bind str len in
+func puts int ptr in
+    take len str in
 	SYS_write stdout str len syscall
+	drop
     end
-    drop
 end
 
 // fopen - Opens a file
 // : pointer => file descriptor
 func fopen ptr in
-    bind path in
+    peek path in
 	SYS_open path 577 438 syscall
     end
+    swap drop
 end
 
 // fclose - Closes a file
 // : file descriptor
 func fclose int in
-    bind fd in
+    take fd in
 	SYS_close fd 0 0 syscall
+	drop
     end
-    drop
 end
 
 // fputs - Write string to file
 // : pointer, length, file descriptor
-func fputs ptr int int in
-    bind fd str len in
+func fputs int ptr int in
+    take len str fd in
 	SYS_write fd str len 1 - syscall
+	drop
     end
-    drop
 end
 
 // eputs - Write string to standard error
 // : pointer, length
-func eputs ptr int in
-    bind str len in
+func eputs int ptr in
+    take len str in
 	SYS_write stderr str len syscall
+	drop
     end
-    drop
 end
 
 // read - Read string from standard input
 // : dest, length
 func read ptr int in
-    bind dst len in
+    take dst len in
 	SYS_read stdin dst len syscall
+	drop
     end
-    drop
 end
 
 // fread - Read string from file
 // : file descriptor, dest, length
 func fread int ptr int in
-    bind fd dst len in
+    take fd dst len in
 	SYS_read fd dst len syscall
+	drop
     end
-    drop
 end
 
 // exit - Exit program
 // : code
 func exit int in
-    bind code in
+    take code in
 	SYS_exit code 0 0 syscall
+	drop
     end
-    drop
 end
 
 // execve - Executes process
 // : filename, argv, envp
 func execve ptr ptr ptr in
-    bind filename argv envp in
+    take filename argv envp in
 	SYS_execve filename argv envp syscall
+	drop
     end
-    drop
 end
 
 // memcpy - Copys a region of memory into another
 // : dest, source, size
 func memcpy ptr ptr int in
-    bind dst src n in
+    take dst src n in
 	0 while dup n > do
 	    src dup + get
 	    dst dup + set
@@ -101,3 +102,4 @@ func memcpy ptr ptr int in
 	drop
     end
 end
+

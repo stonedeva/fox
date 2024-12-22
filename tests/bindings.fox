@@ -1,8 +1,8 @@
 func main in
     500 5
-    bind a b in
+    take a b in
 	a b + print
 	a b * print
-	b a / print
+	a b / print
     end
 end

@@ -10,5 +10,4 @@ func main in
     end
 
     result print
-    0 return
 end

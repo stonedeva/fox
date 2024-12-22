@@ -1,0 +1,6 @@
+const sizeof(int) 8 end
+memory N sizeof(int) 5 * end
+
+func main in
+    N print
+end

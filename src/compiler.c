@@ -11,7 +11,6 @@
 Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry, size_t mem_capacity)
 {
     Compiler compiler = {0};
-
     FILE* output = fopen(output_path, "a");
 
     if (!output) {
@@ -50,7 +49,7 @@ void compiler_free(Compiler* compiler)
 
 void compiler_crossreference(Compiler* compiler)
 {
-    size_t stack[200] = {0};
+    size_t stack[300] = {0};
     size_t stack_sz = 0;
     
     for (size_t i = 0; i < compiler->tok_sz; i++) {
@@ -59,12 +58,12 @@ void compiler_crossreference(Compiler* compiler)
 	switch (tok) {
 	case TOK_LOOP:
 	case TOK_CONDITION:
-	    stack[stack_sz++] = i;
-	    context_push(compiler->context, tok);
-	    break;
+	case TOK_DEF_MEM:
 	case TOK_DEF_VAR:
 	case TOK_DEF_CONST:
-	case TOK_BINDING:
+	case TOK_PEEK:
+	case TOK_TAKE:
+	    stack[stack_sz++] = i;
 	    context_push(compiler->context, tok);
 	    break;
 	case TOK_ELSE:
@@ -86,16 +85,23 @@ void compiler_crossreference(Compiler* compiler)
 	    break;
 	case TOK_END:
 	    TokenType ref = context_pop(compiler->context);
-	    if (ref == TOK_DEF_VAR || ref == TOK_DEF_CONST || ref == TOK_BINDING) {
+	    /*if (ref == TOK_TAKE || ref == TOK_PEEK || ref == TOK_DEF_CONST ||
+		ref == TOK_DEF_MEM) {
 		break;
-	    }
+	    }*/
+
+	    // TODO: This code might screw up the crossreferencing.
+	    // It is only a temporary solution and should be fixed later.
 	    if (stack_sz < 1) {
-		error_throw(compiler, FATAL, "Uncorresponding token 'end'");
+		error_from_parts(compiler->input_name, WARNING, 
+				"Uncorresponding token 'end'", 
+				compiler->tokens[0]);
+	    } else {
+		size_t ref_ip = stack[stack_sz - 1];
+		compiler->tokens[ref_ip].operand = i;
+		compiler->tokens[i].operand = ref_ip;
+		stack_sz--;
 	    }
-	    size_t ref_ip = stack[stack_sz - 1];
-	    compiler->tokens[ref_ip].operand = i;
-	    compiler->tokens[i].operand = ref_ip;
-	    stack_sz--;
 	    break;
 	}
     }
@@ -225,14 +231,7 @@ void compiler_emit_drop(Compiler* compiler)
     fprintf(out, "	add rsp, 8\n");
 }
 
-void compiler_emit_mem(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    fprintf(out, "	mov rax, mem\n");
-    fprintf(out, "	push rax\n");
-}
-
-void compiler_emit_binding(Compiler* compiler)
+void compiler_emit_bind_def(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
@@ -245,9 +244,8 @@ void compiler_emit_binding(Compiler* compiler)
 	ptr++;
     }
 
-    for (size_t i = 0; i < context->binding_count; i++) {
-	fprintf(out, "	pop r%d\n", i + 9);
-    }
+    fprintf(out, "	mov r15, rsp\n");
+
     compiler->tok_ptr = ptr;
 }
 
@@ -303,7 +301,7 @@ void compiler_emit_reference(Compiler* compiler)
 			 compiler->tokens[ptr]);
     }
 
-    if (var.is_const) { 
+    if (var.is_const || var.is_mem) {
 	fprintf(out, "	mov rax, addr_%d\n", var.addr);
     } else {
 	fprintf(out, "	mov rax, [addr_%d]\n", var.addr);
@@ -397,6 +395,7 @@ void compiler_emit_return(Compiler* compiler)
 {
     FILE* out = compiler->output;
     fprintf(out, "	pop rax\n");
+    fprintf(out, "	push rbp\n");
     fprintf(out, "	ret\n");
 }
 
@@ -590,6 +589,8 @@ void compiler_emit_segments(Compiler* compiler)
 	Variable var = context->vars[i];
 	if (var.is_const) {
 	    fprintf(out, "addr_%d = %d\n", var.addr, var.value);
+	} else if (var.is_mem) {
+	    fprintf(out, "addr_%d rb %d\n", var.addr, var.value);
 	} else {
 	    fprintf(out, "addr_%d dq 0\n", var.addr);
 	}
@@ -634,7 +635,6 @@ void compiler_emit_segments(Compiler* compiler)
 	fprintf(out, "0x%02x\n", (unsigned int)0x00);
 	fprintf(out, "str%d_len = %d\n", i, strlen(literal));
     }
-    fprintf(out, "mem rb %d\n", compiler->mem_capacity);
 }
 
 void compiler_emit_import(Compiler* compiler)
@@ -692,8 +692,13 @@ void compiler_eval_end(Compiler* compiler)
 	size_t var_addr = context->vars[context->var_count - 1].addr;
 	fprintf(out, "	pop [addr_%d]\n", var_addr);
 	break;
-    case TOK_BINDING:
+    case TOK_PEEK:
 	context->active_binding = false;
+	context->binding_count = 0;
+	break;
+    case TOK_TAKE:
+	context->active_binding = false;
+	fprintf(out, "	add rsp, %d\n", context->binding_count * 8);
 	context->binding_count = 0;
 	break;
     }
@@ -750,7 +755,7 @@ uint64_t compiler_eval_const(Compiler* compiler)
     return eval_stack[0];
 }
 
-void compiler_emit_const(Compiler* compiler)
+void compiler_emit_const_def(Compiler* compiler, TokenType type)
 {
     Context* context = compiler->context;
 
@@ -759,13 +764,26 @@ void compiler_emit_const(Compiler* compiler)
     compiler->tok_ptr += 2;
     uint64_t val = compiler_eval_const(compiler);
 
-    context->vars[context->var_count++] = (Variable) {
+    Variable var = {
 	.name = name,
 	.type = INTEGER,
 	.value = val,
-	.is_const = true,
 	.addr = addr
     };
+
+    switch (type) {
+    case TOK_DEF_MEM:
+	var.is_mem = true;
+	break;
+    case TOK_DEF_CONST:
+	var.is_const = true;
+	break;
+    default:
+	assert(0 && "compiler_emit_const_def(): Illegal token type provided!\n");
+	break;
+    }
+
+    context->vars[context->var_count++] = var;
 }
 
 void compiler_emit(Compiler* compiler)
@@ -780,7 +798,8 @@ void compiler_emit(Compiler* compiler)
 	if (context->active_binding) {
 	    for (size_t j = 0; j < context->binding_count; j++) {
 		if (strcmp(tok.token, context->bindings[j]) == 0) {
-		    fprintf(out, "	push r%d\n", j + 9); 
+		    size_t addr = (context->binding_count - j - 1) * 8;
+		    fprintf(out, "	push QWORD [r15 + %d]\n", addr); 
 		    binding_res = true;
 		}
 	    }
@@ -790,6 +809,8 @@ void compiler_emit(Compiler* compiler)
 	    compiler->tok_ptr++;
 	    continue;
 	}
+
+	fprintf(out, "	; %s\n", tok.token);
 
 	switch (tok.type) {
 	case TOK_DEF_FUNC:
@@ -877,8 +898,8 @@ void compiler_emit(Compiler* compiler)
 	case TOK_DROP:
 	    compiler_emit_drop(compiler);
 	    break;
-	case TOK_MEM:
-	    compiler_emit_mem(compiler);
+	case TOK_DEF_MEM:
+	    compiler_emit_const_def(compiler, TOK_DEF_MEM);
 	    break;
 	case TOK_SYSCALL:
 	    compiler_emit_syscall(compiler);
@@ -887,12 +908,13 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_import(compiler);
 	    break;
 	case TOK_DEF_CONST:
-	    compiler_emit_const(compiler);
+	    compiler_emit_const_def(compiler, TOK_DEF_CONST);
 	    break;
-	case TOK_BINDING:
+	case TOK_TAKE:
+	case TOK_PEEK:
 	    context->active_binding = true;
-	    context_push(context, TOK_BINDING);
-	    compiler_emit_binding(compiler);
+	    context_push(context, tok.type);
+	    compiler_emit_bind_def(compiler);
 	    break;
 	default:
 	    error_throw(compiler, FATAL, "Unknown token!");
