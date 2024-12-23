@@ -2,5 +2,15 @@ const sizeof(int) 8 end
 memory N sizeof(int) 5 * end
 
 func main in
-    N print
+    // 8-Bit
+    N 22 set8
+    N get8 print
+    
+    // 32-Bit
+    N 83 set32
+    N get32 print
+
+    // 64-Bit
+    N 95 set64
+    N get64 print
 end

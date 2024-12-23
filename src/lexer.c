@@ -153,20 +153,28 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_END;
     } else if (strcmp("print", cstr) == 0) {
 	return TOK_PRINT;
-    } else if (strcmp("printc", cstr) == 0) {
-	return TOK_PRINTC;
     } else if (strcmp("dup", cstr) == 0) {
 	return TOK_DUP;
     } else if (strcmp("swap", cstr) == 0) {
 	return TOK_SWAP;
     } else if (strcmp("over", cstr) == 0) {
 	return TOK_OVER;
+    } else if (strcmp("rot", cstr) == 0) {
+	return TOK_ROT;
     } else if (strcmp("drop", cstr) == 0) {
 	return TOK_DROP;
-    } else if (strcmp("set", cstr) == 0) {
-	return TOK_PTR_SET;
-    } else if (strcmp("get", cstr) == 0) {
-	return TOK_PTR_GET;
+    } else if (strcmp("set8", cstr) == 0) {
+	return TOK_PTR_SET8;
+    } else if (strcmp("set32", cstr) == 0) {
+	return TOK_PTR_SET32;
+    } else if (strcmp("set64", cstr) == 0) {
+	return TOK_PTR_SET64;
+    } else if (strcmp("get8", cstr) == 0) {
+	return TOK_PTR_GET8;
+    } else if (strcmp("get32", cstr) == 0) {
+	return TOK_PTR_GET32;
+    } else if (strcmp("get64", cstr) == 0) {
+	return TOK_PTR_GET64;
     } else if (strcmp("memory", cstr) == 0) {
 	return TOK_DEF_MEM;
     } else if (strcmp("return", cstr) == 0) {
@@ -189,12 +197,16 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_PEEK;
     } else if (strcmp("take", cstr) == 0) {
 	return TOK_TAKE;
+    } else if (strcmp("continue", cstr) == 0) {
+	return TOK_CONTINUE;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {
 	return TOK_BINARYOP;
     } else if (cstr[0] == '"'){
 	return TOK_STRING_LITERAL;
+    } else if (cstr[0] == '\'') {
+	return TOK_CHAR;
     } else if (cstr[0] == '@') {
 	return TOK_FUNC_CALL;
     } else if (cstr[0] == '#') {

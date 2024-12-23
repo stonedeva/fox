@@ -9,11 +9,29 @@ const stdin 0 end
 const stdout 1 end
 const stderr 2 end
 
+const PUTD_BUFFER_CAP 20 end
+const sizeof(int) 8 end
+
 // puts - Writes a string to standard output
 // : pointer, length
 func puts int ptr in
     take len str in
 	SYS_write stdout str len syscall
+	drop
+    end
+end
+
+// WARNING: This function is not finished!
+// putd - Write a number to standard output
+// : number, file descriptor
+func putd int in
+    memory putd_buffer PUTD_BUFFER_CAP end
+    
+    take num in
+	0 while dup num 0 != do
+	    putd_buffer dup + num 10 % set8
+	    1 +
+	end
 	drop
     end
 end
@@ -95,8 +113,8 @@ end
 func memcpy ptr ptr int in
     take dst src n in
 	0 while dup n > do
-	    src dup + get
-	    dst dup + set
+	    src over + get8
+	    dst over + set8
 	    1 +
 	end
 	drop

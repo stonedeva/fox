@@ -1,10 +1,21 @@
-import "stdlib/std.fox"
+import "std.fox"
 
 const OP_PUSH 0 end
 const OP_PLUS 1 end
 const OP_MINUS 2 end
 const OP_MULT 3 end
 const OP_DIVI 4 end
+const OP_PRINT 5 end
+
+// struct Ops {
+//   type: u64,
+//   operand: u64
+// }
+const MAX_OPS 500 end
+const sizeof(Op) 16 end
+
+memory ops sizeof(Op) MAX_OPS * end 
+var ops_count 0 end
 
 func usage in
     "Options:\n" @puts
@@ -15,12 +26,123 @@ func usage in
     "	-h	Show help map\n" @puts 
 end
 
-func main in
-    if argc 2 > do
-	"Usage: ./foxc [options...] <file>\n" @eputs
-	"No input file provided!\n" @eputs
-	1 return
+func push_op int int in
+    take type operand in
+	ops ops_count sizeof(Op) * + type set64
+	ops ops_count sizeof(Op) * + sizeof(int) + operand set64
     end
+    ops_count 1 + #ops_count
+end
 
-    0 return
+func dump_ops in
+    // TODO: dump_ops() segfaults after printing all the ops
+    // only happens when printing strings
+    0 while dup ops_count > do
+	"============\n" @puts
+	"Type: " @puts
+	ops over sizeof(Op) * + get64 print
+	"Operand: " @puts
+	ops over sizeof(Op) * + sizeof(int) + get64 print
+	1 +
+    end
+    drop
+end
+
+func main in
+    OP_PUSH 4 @push_op
+    OP_PUSH 25 @push_op
+    OP_MULT 0 @push_op
+
+    "format ELF64 executable 0\n" @puts
+    "entry _start\n" @puts
+    "segment readable executable\n" @puts
+    "print:\n" @puts
+    "    mov r8, -3689348814741910323\n" @puts
+    "    sub rsp, 40\n" @puts
+    "    mov BYTE [rsp+31], 10\n" @puts
+    "    lea rcx, [rsp+30]\n" @puts
+    ".L2:\n" @puts
+    "    mov rax, rdi\n" @puts
+    "    mul r8\n" @puts
+    "    mov rax, rdi\n" @puts
+    "    shr rdx, 3\n" @puts
+    "    lea rsi, [rdx+rdx*4]\n" @puts
+    "    add rsi, rsi\n" @puts
+    "    sub rax, rsi\n" @puts
+    "    mov rsi, rcx\n" @puts
+    "    sub rcx, 1\n" @puts
+    "    add eax, 48\n" @puts
+    "    mov BYTE [rcx+1], al\n" @puts
+    "    mov rax, rdi\n" @puts
+    "    mov rdi, rdx\n" @puts
+    "    cmp rax, 9\n" @puts
+    "    ja .L2\n" @puts
+    "    lea rdx, [rsp+32]\n" @puts
+    "    mov edi, 1\n" @puts
+    "    sub rdx, rsi\n" @puts
+    "    mov rax, 1\n" @puts
+    "    syscall\n" @puts
+    "    add rsp, 40\n" @puts
+    "    ret\n" @puts
+    "_start:\n" @puts
+
+    0 while dup ops_count > do
+    	if ops over sizeof(Op) * + get64 OP_PUSH == do
+    	    "    ;; --- push int ---\n" @puts
+    	    "    mov rax, %d\n" @puts
+    	    "    push rax\n" @puts
+    	    1 +
+    	    continue
+    	end
+    	if ops over sizeof(Op) * + get64 OP_PLUS == do
+    	    "    ;; --- plus ---\n" @puts
+    	    "    pop rax\n" @puts
+    	    "    pop rbx\n" @puts
+    	    "    add rax, rbx\n" @puts
+    	    "    push rax\n" @puts
+    	    1 +
+    	    continue
+    	end 
+    	if ops over sizeof(Op) * + get64 OP_MINUS == do
+    	    "    ;; --- minus ---\n" @puts
+    	    "    pop rax\n" @puts
+    	    "    pop rbx\n" @puts
+    	    "    sub rbx, rax\n" @puts
+    	    "    push rbx\n" @puts
+    	    1 +
+    	    continue
+    	end 
+    	if ops over sizeof(Op) * + get64 OP_MULT == do
+    	    "    ;; --- multiply ---\n" @puts
+    	    "    pop rax\n" @puts
+    	    "    pop rbx\n" @puts
+    	    "    mul rbx\n" @puts
+    	    "    push rax\n" @puts
+    	    1 +
+    	    continue
+    	end
+    	if ops over sizeof(Op) * + get64 OP_DIVI == do
+    	    "    ;; --- divide ---\n" @puts
+    	    "    pop rbx\n" @puts
+    	    "    pop rax\n" @puts
+    	    "	 xor rdx, rdx\n" @puts
+    	    "    div rbx\n" @puts
+    	    "    push rax\n" @puts
+    	    1 +
+    	    continue
+    	end
+    	if ops over sizeof(Op) * + get64 OP_PRINT == do
+    	    "    ;; --- print ---\n" @puts
+    	    "    pop rdi\n" @puts
+    	    "    call print\n" @puts
+    	    1 +
+    	    continue
+    	end
+	1 +
+    end
+    drop
+
+    "    mov rax, 60\n" @puts
+    "    mov rdi, 0\n" @puts
+    "    syscall\n" @puts
 end

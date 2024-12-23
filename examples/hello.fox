@@ -1,5 +1,2 @@
-import "std.fox"
-
 func main in
-    "Hello, World!\n" @puts
 end

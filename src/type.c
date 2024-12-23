@@ -119,7 +119,9 @@ void typestack_evaluate(TypeStack* stack)
 	case TOK_PTR_REF:
 	    typestack_push(stack, POINTER); 
 	    break;
-	case TOK_PTR_SET:
+	case TOK_PTR_SET8:
+	case TOK_PTR_SET32:
+	case TOK_PTR_SET64:
 	    if (stack->type_count < 2) {
 		error_from_parts(filename, FATAL, "Operation 'ptr-set' requires two arguments", tok);
 	    }
@@ -127,7 +129,9 @@ void typestack_evaluate(TypeStack* stack)
 	    (void) typestack_pop(stack);
 	    (void) typestack_pop(stack);
 	    break;
-	case TOK_PTR_GET:
+	case TOK_PTR_GET8:
+	case TOK_PTR_GET32:
+	case TOK_PTR_GET64:
 	    if (stack->type_count < 1) {
 		error_from_parts(filename, WARNING, "Operation 'ptr-get' requires one argument", tok);
 		break;

@@ -65,7 +65,8 @@ void compiler_crossreference(Compiler* compiler)
 	    if (context_pop(compiler->context) != TOK_CONDITION) {
 		break;
 	    }
-	    context_push(compiler->context, TOK_ELSE);
+
+	    context_push(compiler->context, tok);
 
 	    size_t if_ip = stack[stack_sz - 1];
 	    compiler->tokens[if_ip].operand = i;
@@ -185,9 +186,13 @@ void compiler_emit_print(Compiler* compiler)
     fprintf(out, "	call print\n");
 }
 
-void compiler_emit_printc(Compiler* compiler)
+void compiler_emit_char(Compiler* compiler)
 {
-    assert(0 && "TODO: compiler_emit_printc(): Not implemented yet\n");
+    FILE* out = compiler->output;
+    char ch = compiler_curr_tok(compiler)[1];
+    
+    fprintf(out, "	mov rax, %d\n", (int)ch);
+    fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_dup(Compiler* compiler)
@@ -210,13 +215,32 @@ void compiler_emit_swap(Compiler* compiler)
 void compiler_emit_over(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    fprintf(out, "	pushq [rsp+8]\n");
+    fprintf(out, "	push QWORD [rsp+8]\n");
+}
+
+void compiler_emit_rot(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+
+    fprintf(out, "	mov rax, [rsp + 16]\n");
+    fprintf(out, "	mov rbx, [rsp + 8]\n");
+    fprintf(out, "	mov rcx, [rsp]\n");
+    fprintf(out, "	mov [rsp + 16], rbx\n");
+    fprintf(out, "	mov [rsp + 8], rcx\n");
+    fprintf(out, "	mov [rsp], rax\n");
 }
 
 void compiler_emit_drop(Compiler* compiler)
 {
     FILE* out = compiler->output;
     fprintf(out, "	add rsp, 8\n");
+}
+
+void compiler_emit_continue(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    size_t addr = compiler->context->current_loop;
+    fprintf(out, "	jmp addr_%d\n", addr);
 }
 
 void compiler_emit_bind_def(Compiler* compiler)
@@ -271,6 +295,12 @@ void compiler_emit_redef_var(Compiler* compiler)
 			 compiler->tokens[ptr]);
     }
 
+    if (var.is_const || var.is_mem) {
+	error_from_parts(compiler->input_name, FATAL,
+			 "Variable in redefinition is constant or memory",
+			 compiler->tokens[ptr]);
+    }
+
     fprintf(out, "	pop rax\n");
     fprintf(out, "	mov [addr_%d], rax\n", var.addr);
 }
@@ -317,7 +347,7 @@ void compiler_emit_ptr_ref(Compiler* compiler)
     fprintf(out, "	push rax\n");
 }
 
-void compiler_emit_ptr_set(Compiler* compiler)
+void compiler_emit_ptr_set(Compiler* compiler, TokenType type)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
@@ -325,19 +355,54 @@ void compiler_emit_ptr_set(Compiler* compiler)
     char* name = compiler_curr_tok(compiler);
     name++;
 
-    fprintf(out, "	pop rax\n");
-    fprintf(out, "	pop rbx\n");
-    fprintf(out, "	mov [rbx], rax\n");
+    switch (type) {
+    case TOK_PTR_SET8:
+	fprintf(out, "	pop rbx\n");
+	fprintf(out, "	pop rax\n");
+	fprintf(out, "	mov [rax], bl\n");
+	break;
+    case TOK_PTR_SET32:
+	fprintf(out, "	pop rbx\n");
+	fprintf(out, "	pop rax\n");
+	fprintf(out, "	mov [rax], ebx\n");
+	break;
+    case TOK_PTR_SET64:
+	fprintf(out, "	pop rbx\n");
+	fprintf(out, "	pop rax\n");
+	fprintf(out, "	mov [rax], rbx\n");
+	break;
+    default:
+	assert(0 && "compiler_emit_ptr_set(): Illegal token type provided!\n");
+    }
 }
 
-void compiler_emit_ptr_get(Compiler* compiler)
+void compiler_emit_ptr_get(Compiler* compiler, TokenType type)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
-    fprintf(out, "	pop rbx\n");
-    fprintf(out, "	mov rax, [rbx]\n");
-    fprintf(out, "	push rax\n");
+    switch (type) {
+    case TOK_PTR_GET8:
+	fprintf(out, "	pop rax\n");
+	fprintf(out, "	xor rbx, rbx\n");
+	fprintf(out, "	mov bl, [rax]\n");
+	fprintf(out, "	push rbx\n");
+	break;
+    case TOK_PTR_GET32:
+	fprintf(out, "	pop rax\n");
+	fprintf(out, "	xor rbx, rbx\n");
+	fprintf(out, "	mov ebx, [rax]\n");
+	fprintf(out, "	push rbx\n");
+	break;
+    case TOK_PTR_GET64:
+	fprintf(out, "	pop rax\n");
+	fprintf(out, "	xor rbx, rbx\n");
+	fprintf(out, "	mov rbx, [rax]\n");
+	fprintf(out, "	push rbx\n");
+	break;
+    default:
+	assert(0 && "compiler_emit_ptr_get(): Illegal token type provided!\n"); 
+    }
 }
 
 void compiler_emit_func(Compiler* compiler)
@@ -607,6 +672,9 @@ void compiler_emit_segments(Compiler* compiler)
 		case 'v':
 		    fprintf(out, "0x%02x, ", (unsigned int)0x0B);
 		    break;
+		case '0':
+		    fprintf(out, "0x%02x, ", (unsigned int)0x00);
+		    break;
 		case '\\':
 		    fprintf(out, "0x%02x, ", (unsigned int)0x5C);
 		    break;
@@ -766,8 +834,6 @@ void compiler_emit(Compiler* compiler)
 	    continue;
 	}
 
-	fprintf(out, "	; %s\n", tok.token);
-
 	switch (tok.type) {
 	case TOK_DEF_FUNC:
 	    context_push(context, TOK_DEF_FUNC);
@@ -791,9 +857,13 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_else(compiler);
 	    break;
 	case TOK_LOOP:
+	    context->current_loop = compiler->tok_ptr;
 	    context_push(context, TOK_LOOP);
 	    context->temp_addr = compiler->tokens[i].operand;
 	    compiler_emit_loop(compiler);
+	    break;
+	case TOK_CONTINUE:
+	    compiler_emit_continue(compiler);
 	    break;
 	case TOK_DO:
 	    compiler_emit_do(compiler);
@@ -830,17 +900,21 @@ void compiler_emit(Compiler* compiler)
 	case TOK_PTR_REF:
 	    compiler_emit_ptr_ref(compiler);
 	    break;
-	case TOK_PTR_SET:
-	    compiler_emit_ptr_set(compiler);
+	case TOK_PTR_SET8:
+	case TOK_PTR_SET32:
+	case TOK_PTR_SET64:
+	    compiler_emit_ptr_set(compiler, tok.type);
 	    break;
-	case TOK_PTR_GET:
-	    compiler_emit_ptr_get(compiler);
+	case TOK_PTR_GET8:
+	case TOK_PTR_GET32:
+	case TOK_PTR_GET64:
+	    compiler_emit_ptr_get(compiler, tok.type);
 	    break;
 	case TOK_PRINT:
 	    compiler_emit_print(compiler);
 	    break;
-	case TOK_PRINTC:
-	    compiler_emit_printc(compiler);
+	case TOK_CHAR:
+	    compiler_emit_char(compiler);
 	    break;
 	case TOK_DUP:
 	    compiler_emit_dup(compiler);
@@ -850,6 +924,9 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_OVER:
 	    compiler_emit_over(compiler);
+	    break;
+	case TOK_ROT:
+	    compiler_emit_rot(compiler);
 	    break;
 	case TOK_DROP:
 	    compiler_emit_drop(compiler);

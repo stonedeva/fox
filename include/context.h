@@ -39,6 +39,7 @@ typedef struct {
     size_t binding_count;
     bool active_binding;
     size_t main_addr;
+    size_t current_loop;
     TokenType stmts[MAX_STACK_SIZE];
     Variable vars[MAX_INSTANCES];
     Function funcs[MAX_INSTANCES];
