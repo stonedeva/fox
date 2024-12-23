@@ -30,8 +30,8 @@ cc -o cbuild cbuild.c
 | ```over```     | Duplicate element beneath top of the stack        |  ```a b -> a b a``` |
 | ```drop```     | Drop the element on top of the stack      |	```a b -> a```	|
 | ```print```	| Print the element on top of the stack	     |	```Maintained``` |
-| ```set```     | Set the value of address on top of the stack      |	```Maintained```	|
-| ```get```	| Get the value of address on top of the stack	     |	```a (pointer) -> a (pointer) a (value)``` |
+| ```set```     | Set the value of address on top of the stack      |	```b a (pointer) -> b```	|
+| ```get```	| Get the value of address on top of the stack	     |	```a (pointer) -> a (value)``` |
 
 ## Operators
 Operatores apply for the top two stack elements.
