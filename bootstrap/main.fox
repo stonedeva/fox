@@ -1,4 +1,4 @@
-import "std.fox"
+import "stdlib/std.fox"
 
 const OP_PUSH 0 end
 const OP_PLUS 1 end

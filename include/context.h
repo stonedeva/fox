@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include "type.h"
 
-#define MAX_STACK_SIZE 200
-#define MAX_INSTANCES 100
+#define MAX_STACK_SIZE 2000
+#define MAX_INSTANCES 1000
 #define MAX_ARGS 20
 
 typedef struct {

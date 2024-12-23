@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 
-Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool has_entry, size_t mem_capacity)
+Compiler compiler_init(char* output_path, Lexer* lexer, size_t mem_capacity)
 {
     Compiler compiler = {0};
     FILE* output = fopen(output_path, "a");
@@ -18,14 +18,9 @@ Compiler compiler_init(Context* context, char* output_path, Lexer* lexer, bool h
 	exit(1);
     }
 
-    if (context == NULL) {
-	compiler.context = context_init();
-    } else {
-	compiler.context = context;
-    }
+    compiler.context = context_init();
     compiler.output_path = output_path;
     compiler.input_name = lexer->filename;
-    compiler.has_entry = has_entry;
     compiler.output = output;
     compiler.tokens = lexer->tokens;
     compiler.tok_sz = lexer->tok_sz;
@@ -572,10 +567,6 @@ void compiler_emit_segments(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
-    if (!compiler->has_entry) {
-	return;
-    }
-
     fprintf(out, "segment readable writeable\n");
 
     for (size_t i = 0; i < context->var_count; i++) {
@@ -628,34 +619,6 @@ void compiler_emit_segments(Compiler* compiler)
 	fprintf(out, "0x%02x\n", (unsigned int)0x00);
 	fprintf(out, "str%d_len = %d\n", i, strlen(literal));
     }
-}
-
-void compiler_emit_import(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    size_t ptr = compiler->tok_ptr;
-
-    char* path = compiler_next_tok(compiler);
-    size_t path_len = strlen(path) - 1;
-    path++;
-    path[path_len - 1] = '\0';
-
-    char full_path[1024];
-    snprintf(full_path, sizeof(full_path), "stdlib/%s", path);
-
-    struct stat buffer;
-    if (stat(full_path, &buffer) != 0) {
-	error_throw(compiler, FATAL, "Import path not found!");
-	return;
-    }
-
-    Lexer sub_lexer = lexer_init(full_path);
-    lexer_proc(&sub_lexer);
-
-    Compiler sub_compiler = compiler_init(compiler->context, "output.asm", &sub_lexer, false, (size_t)compiler->mem_capacity / 2);
-    compiler_emit(&sub_compiler);
-
-    compiler->tok_ptr++;
 }
 
 void compiler_eval_end(Compiler* compiler)
@@ -897,9 +860,6 @@ void compiler_emit(Compiler* compiler)
 	case TOK_SYSCALL:
 	    compiler_emit_syscall(compiler);
 	    break;
-	case TOK_IMPORT:
-	    compiler_emit_import(compiler);
-	    break;
 	case TOK_DEF_CONST:
 	    compiler_emit_const_def(compiler, TOK_DEF_CONST);
 	    break;
@@ -921,9 +881,7 @@ void compiler_emit(Compiler* compiler)
     compiler_emit_segments(compiler);
     fflush(compiler->output);
 
-    if (compiler->has_entry) {
-	compiler_assemble(compiler);
-    }
+    compiler_assemble(compiler);
 }
 
 void compiler_assemble(Compiler* compiler)

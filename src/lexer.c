@@ -9,11 +9,12 @@
 /*
  * Public functions
 */
-Lexer lexer_init(char* filename) 
+Lexer lexer_init(char* filename, char* import_path) 
 {
     Lexer lexer = {
 	.file = fopen(filename, "r"),
 	.line_count = 1,
+	.import_path = import_path,
 	.filename = filename
     };
     if (lexer.file == NULL) {
@@ -47,11 +48,21 @@ static void _lexer_tokenize(Lexer* lexer)
     size_t token_index = 0;
     bool inside_string = false;
 
+    if (strncmp("import", line, 6) == 0) {
+        (void) strtok(line, " ");
+        char* path =  strtok(NULL, " ");
+        path++;
+        path[len - 6 - 4] = '\0'; // Remove '\n' and quotes in path
+
+        _lexer_import_file(lexer, path);
+        return;
+    }
+
     for (size_t i = 0; i < len; i++) {
         char ch = line[i];
 
 	if (ch == '/' && line[i + 1] == '/') {
-	    break;
+	    return;
 	}
         
 	// Inside String
@@ -91,6 +102,42 @@ static void _lexer_tokenize(Lexer* lexer)
 	lexer->tok_sz++;
 	row++;
     }
+}
+
+void _lexer_import_file(Lexer* lexer, const char* path)
+{
+    char cwd[1024];
+
+    if (lexer->import_path != NULL && path[0] != '.' && path[1] != '/') {
+	if (getcwd(cwd, sizeof(cwd)) == NULL) {
+	    fprintf(stderr, "Lexer Error: getcwd(): '%s': %s\n",
+		    path, strerror(errno));    
+	    exit(1);
+	}
+	chdir(lexer->import_path);
+    }
+
+    FILE* file = fopen(path, "r");
+    if (!file) {
+        fprintf(stderr, "Lexer Error: Could not import file: '%s': %s\n",
+                path, strerror(errno));
+        exit(1);
+    }
+
+    Lexer import_lexer = lexer_init(path, NULL);
+    lexer_proc(&import_lexer);
+
+    if (import_lexer.tok_sz == 0) {
+        fprintf(stderr, "Lexer Warning: Importing empty file!\n");
+        return;
+    }
+
+    for (size_t i = 0; i < import_lexer.tok_sz; i++) {
+        lexer->tokens[lexer->tok_sz++] = import_lexer.tokens[i];
+    }
+    fclose(file);
+
+    chdir(cwd);
 }
 
 /*

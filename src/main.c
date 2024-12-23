@@ -43,7 +43,6 @@ static int fox_init(int argc, char* argv[])
     char* input_path = argv[1];
 
     size_t mem_capacity = 2400;
-    bool has_entry = true;
     bool has_typecheck = true;
 
     size_t i = 2;
@@ -62,9 +61,6 @@ static int fox_init(int argc, char* argv[])
 	case 'v':
 	    printf("v0.01\n");
 	    return 0;
-	case 'e':
-	    has_entry = false;
-	    break;
 	case 't':
 	    has_typecheck = false;
 	    break;
@@ -85,7 +81,7 @@ static int fox_init(int argc, char* argv[])
 	i++;
     }
 
-    Lexer lexer = lexer_init(input_path);
+    Lexer lexer = lexer_init(input_path, "stdlib");
     lexer_proc(&lexer);
 
     if (has_typecheck) {
@@ -101,7 +97,7 @@ static int fox_init(int argc, char* argv[])
     strcpy(output_path, "output.asm");
 #endif
 
-    Compiler compiler = compiler_init(NULL, output_path, &lexer, has_entry, mem_capacity);
+    Compiler compiler = compiler_init(output_path, &lexer, mem_capacity);
     compiler_emit_base(output_path, compiler.context->main_addr);
     compiler_emit(&compiler);
 

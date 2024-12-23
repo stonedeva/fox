@@ -7,7 +7,7 @@ extern "C" {
 #include <stdio.h>
 #include <stdbool.h>
 
-#define MAX_TOKENS 255
+#define MAX_TOKENS 64000
 #define SEMICOLON ';'
 
 /*
@@ -62,10 +62,11 @@ typedef struct {
     size_t tok_sz;
     char line[MAX_TOKENS];
     size_t line_count;
+    char* import_path;
     char* filename;
 } Lexer;
 
-Lexer lexer_init(char* filename);
+Lexer lexer_init(char* filename, char* import_path);
 void lexer_proc(Lexer* lexer);
 
 /*
