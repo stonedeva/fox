@@ -28,6 +28,7 @@ cc -o cbuild cbuild.c
 | ```dup```     | Duplicate top of the stack                 | ```a -> a a```  |
 | ```swap```     | Swap top two elements of the stack        |  ```a b -> b a``` |
 | ```over```     | Duplicate element beneath top of the stack        |  ```a b -> a b a``` |
+| ```rot```     | Rotate top three elements of the stack        |  ```a b c -> b c a``` |
 | ```drop```     | Drop the element on top of the stack      |	```a b -> a```	|
 | ```print```	| Print the element on top of the stack	     |	```Maintained``` |
 | ```set```     | Set the value of address on top of the stack      |	```b a (pointer) -> b```	|
