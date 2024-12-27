@@ -1,0 +1,9 @@
+import "std.fox"
+
+func main in
+    0 while dup argc > do
+	dup @argv_at get64 @cstrlen print
+	1 +
+    end
+    drop
+end

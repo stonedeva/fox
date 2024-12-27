@@ -160,6 +160,8 @@ void compiler_emit_base(char* out_path, size_t main_addr)
     fprintf(out, "        add     rsp, 40\n");
     fprintf(out, "        ret\n");
     fprintf(out, "_start:\n");
+    fprintf(out, "	pop [argc]\n");
+    fprintf(out, "	mov [argv_ptr], rsp\n");
     fprintf(out, "	call addr_%d\n", main_addr);
     fprintf(out, "	mov rdi, rax\n");
     fprintf(out, "	mov rax, 60\n");
@@ -233,7 +235,14 @@ void compiler_emit_rot(Compiler* compiler)
 void compiler_emit_drop(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    fprintf(out, "	add rsp, 8\n");
+
+    if (compiler_curr_tok(compiler)[0] == 'd') {
+	fprintf(out, "	add rsp, 8\n");
+	return;
+    }
+
+    int amount = compiler_curr_tok(compiler)[0] - '0';
+    fprintf(out, "	add rsp, %d\n", 8 * amount);
 }
 
 void compiler_emit_continue(Compiler* compiler)
@@ -447,8 +456,9 @@ void compiler_emit_func(Compiler* compiler)
 void compiler_emit_return(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    fprintf(out, "	pop rax\n");
-    fprintf(out, "	push rbp\n");
+    if (strcmp("main", compiler->context->cw_func) != 0) {
+	fprintf(out, "	push rbp\n");
+    }
     fprintf(out, "	ret\n");
 }
 
@@ -644,6 +654,9 @@ void compiler_emit_segments(Compiler* compiler)
 	    fprintf(out, "addr_%d dq 0\n", var.addr);
 	}
     }
+
+    fprintf(out, "argc rq 1\n");
+    fprintf(out, "argv_ptr rq 1\n");
     
     for (size_t i = 0; i < context->literal_count; i++) {
 	char* literal = context->literals[i];
@@ -726,6 +739,20 @@ void compiler_eval_end(Compiler* compiler)
 	context->binding_count = 0;
 	break;
     }
+}
+
+void compiler_emit_argc(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    fprintf(out, "	mov rax, [argc]\n");
+    fprintf(out, "	push rax\n");
+}
+
+void compiler_emit_argv(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    fprintf(out, "	mov rax, [argv_ptr]\n");
+    fprintf(out, "	push rax\n");
 }
 
 uint64_t compiler_eval_const(Compiler* compiler)
@@ -823,7 +850,7 @@ void compiler_emit(Compiler* compiler)
 	    for (size_t j = 0; j < context->binding_count; j++) {
 		if (strcmp(tok.token, context->bindings[j]) == 0) {
 		    size_t addr = (context->binding_count - j - 1) * 8;
-		    fprintf(out, "	push QWORD [r15 + %d]\n", addr); 
+		    fprintf(out, "	push QWORD [r15 + %d]\n", addr);
 		    binding_res = true;
 		}
 	    }
@@ -945,6 +972,12 @@ void compiler_emit(Compiler* compiler)
 	    context->active_binding = true;
 	    context_push(context, tok.type);
 	    compiler_emit_bind_def(compiler);
+	    break;
+	case TOK_ARGC:
+	    compiler_emit_argc(compiler);
+	    break;
+	case TOK_ARGV:
+	    compiler_emit_argv(compiler);
 	    break;
 	default:
 	    error_throw(compiler, FATAL, "Unknown token!");

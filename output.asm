@@ -30,105 +30,35 @@ print:
         add     rsp, 40
         ret
 _start:
-	call addr_0
+	pop [argc]
+	mov [argv_ptr], rsp
+	call addr_15
 	mov rdi, rax
 	mov rax, 60
 	syscall
 addr_0:
-	mov rax, 0
-	push rax
-	pop [addr_3]
-	mov rax, 0
-	push rax
-	pop [addr_7]
-addr_11:
-	mov rax, [addr_3]
-	push rax
-	mov rax, 1000
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	setg al
-	movzx rax, al
-        push rax
-	pop rax
-	cmp rax, 1
-	jne addr_38
-	mov rax, [addr_3]
-	push rax
-	mov rax, 3
-	push rax
-	pop rax
-	pop rbx
-	xchg rax, rbx
-	xor rdx, rdx
-	div rbx
-	mov rax, rdx
-        push rax
-	mov rax, 0
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	mov rax, [addr_3]
-	push rax
-	mov rax, 5
-	push rax
-	pop rax
-	pop rbx
-	xchg rax, rbx
-	xor rdx, rdx
-	div rbx
-	mov rax, rdx
-        push rax
-	mov rax, 0
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	pop rbx
-	or rax, rbx
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_33
-	mov rax, [addr_7]
-	push rax
-	mov rax, [addr_3]
-	push rax
+	pop rbp
+	mov r15, rsp
+	push QWORD [r15 + 8]
+	push QWORD [r15 + 0]
 	pop rax
 	pop rbx
 	add rax, rbx
         push rax
-	pop rax
-	mov [addr_7], rax
-addr_33:
-	mov rax, [addr_3]
-	push rax
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	mov [addr_3], rax
-	jmp addr_11
-addr_38:
-	mov rax, [addr_7]
-	push rax
 	pop rdi
 	call print
+	add rsp, 16
+	mov rax, 0
+	push rbp
+	ret
+addr_15:
+	mov rax, 205
+	push rax
+	mov rax, 95
+	push rax
+	call addr_0
 	mov rax, 0
 	ret
 segment readable writeable
-addr_3 dq 0
-addr_7 dq 0
+argc rq 1
+argv_ptr rq 1

@@ -1,7 +1,7 @@
-const sizeof(int) 8 end
-const N sizeof(int) 100 * end
+const sizeof(int64) 8 end
+const N sizeof(int64) 100 * end
 
 func main in
-    sizeof(int) print
+    sizeof(int64) print
     N print
 end

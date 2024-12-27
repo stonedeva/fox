@@ -50,7 +50,9 @@ typedef enum {
     TOK_IMPORT,
     TOK_DEF_CONST,
     TOK_PEEK,
-    TOK_TAKE
+    TOK_TAKE,
+    TOK_ARGC,
+    TOK_ARGV
 } TokenType;
 
 typedef struct {

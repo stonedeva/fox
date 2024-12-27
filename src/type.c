@@ -108,6 +108,11 @@ void typestack_evaluate(TypeStack* stack)
 	    break;
 	case TOK_DEF_FUNC:
 	    while (strcmp("in", stack->tokens[i].token) != 0) {
+		VarType arg_type = typestack_type_from_cstr(stack->tokens[i].token);
+		if (arg_type == TYPE_INVALID) {
+		    break;
+		}
+		typestack_push(stack, arg_type);
 		i++;
 	    }
 	    break;
@@ -169,8 +174,11 @@ void typestack_evaluate(TypeStack* stack)
 	    typestack_push(stack, INTEGER);
 	    typestack_push(stack, POINTER);
 	    break;
-	case TOK_IMPORT:
-	    i++;
+	case TOK_ARGC:
+	    typestack_push(stack, INTEGER);
+	    break;
+	case TOK_ARGV:
+	    typestack_push(stack, POINTER);
 	    break;
 	}
     }

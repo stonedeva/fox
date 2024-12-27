@@ -1,5 +1,5 @@
-const sizeof(int) 8 end
-memory list sizeof(int) 4 * end
+const sizeof(int64) 8 end
+memory list sizeof(int64) 4 * end
 
 func main in
     list 20 set8
@@ -10,7 +10,7 @@ func main in
     var max 0 end
 
     0 while dup 4 > do
-	list over sizeof(int) * + get8
+	list over sizeof(int64) * + get8
 	take element in
 	    if max element > do
 		element #max

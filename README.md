@@ -119,8 +119,8 @@ end
 
 ### Memory
 ```code
-const sizeof(int) 8 end
-memory board sizeof(int) 100 * end
+const sizeof(int64) 8 end
+memory board sizeof(int64) 100 * end
 
 func main in
     board print
@@ -170,8 +170,8 @@ end
 ### Max element
 Find the largest element in an array
 ```code
-const sizeof(int) 8 end
-memory list sizeof(int) 4 * end
+const sizeof(int64) 8 end
+memory list sizeof(int64) 4 * end
 
 func main in
     list 20 set
@@ -182,7 +182,7 @@ func main in
     var max 0 end
 
     0 while dup 4 > do
-        list over sizeof(int) * + get
+        list over sizeof(int64) * + get
         take element in
             if max element > do
                 element #max

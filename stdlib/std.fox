@@ -9,8 +9,61 @@ const stdin 0 end
 const stdout 1 end
 const stderr 2 end
 
-const PUTD_BUFFER_CAP 20 end
-const sizeof(int) 8 end
+const sizeof(int32) 4 end
+const sizeof(int64) 8 end
+const sizeof(ptr) 8 end
+
+// argv_at - Returns the argument at a given index
+// : index => argument
+func argv_at int in
+    sizeof(ptr) * argv +
+end
+
+// strcmp - Compare two strings
+// : n1, s1, n2, s2 => comparisson
+func strcmp int ptr int ptr in
+    take n1 s1 n2 s2 in
+        0 while dup n1 > do
+            if dup s1 + get8 over s2 + get8 != do
+                5drop
+                0 return
+            end
+            1 +
+        end
+        drop
+    end
+    1 return
+end
+
+// cstrlen - Determine length of null-terminated string
+// : pointer => length
+func cstrlen ptr in
+    peek str in
+        0 while dup str + get8 0 != do
+            1 +
+        end
+    end
+    swap drop
+end
+
+// cstr_to_fstr - Convert a C-style string to a Fox-string
+// : pointer => pointer, length
+func cstr_to_fstr ptr in
+    dup @cstrlen
+end
+
+// memcpy - Copys a region of memory into another
+// : dest, source, size
+func memcpy ptr ptr int in
+    take dst src n in
+	0 while dup n > do
+	    dup src + get8
+	    dst over + set8
+	    1 +
+	end
+	drop
+    end
+end
 
 // puts - Writes a string to standard output
 // : pointer, length
@@ -21,17 +74,11 @@ func puts int ptr in
     end
 end
 
-// WARNING: This function is not finished!
-// putd - Write a number to standard output
-// : number, file descriptor
-func putd int in
-    memory putd_buffer PUTD_BUFFER_CAP end
-    
-    take num in
-	0 while dup num 0 != do
-	    putd_buffer dup + num 10 % set8
-	    1 +
-	end
+// cputs - Write a null-terminated string to standard output
+// : pointer
+func cputs ptr in
+    take str in
+	SYS_write stdout str str @cstrlen syscall 
 	drop
     end
 end
@@ -104,19 +151,6 @@ end
 func execve ptr ptr ptr in
     take filename argv envp in
 	SYS_execve filename argv envp syscall
-	drop
-    end
-end
-
-// memcpy - Copys a region of memory into another
-// : dest, source, size
-func memcpy ptr ptr int in
-    take dst src n in
-	0 while dup n > do
-	    src over + get8
-	    dst over + set8
-	    1 +
-	end
 	drop
     end
 end

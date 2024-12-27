@@ -27,9 +27,13 @@ func usage in
 end
 
 func push_op int int in
+    if MAX_OPS ops_count == do
+	"ERROR: Operation limit has been reached!\n" @eputs
+	1 @exit
+    end
     take type operand in
 	ops ops_count sizeof(Op) * + type set64
-	ops ops_count sizeof(Op) * + sizeof(int) + operand set64
+	ops ops_count sizeof(Op) * + sizeof(int64) + operand set64
     end
     ops_count 1 + #ops_count
 end
@@ -42,7 +46,7 @@ func dump_ops in
 	"Type: " @puts
 	ops over sizeof(Op) * + get64 print
 	"Operand: " @puts
-	ops over sizeof(Op) * + sizeof(int) + get64 print
+	ops over sizeof(Op) * + sizeof(int64) + get64 print
 	1 +
     end
     drop
@@ -52,6 +56,7 @@ func main in
     OP_PUSH 4 @push_op
     OP_PUSH 25 @push_op
     OP_MULT 0 @push_op
+    OP_PRINT 0 @push_op
 
     "format ELF64 executable 0\n" @puts
     "entry _start\n" @puts

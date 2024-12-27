@@ -1,8 +1,7 @@
 func sum int int in
-    peek a b in
+    take a b in
 	a b + print
     end
-    drop drop
 end
 
 func main in

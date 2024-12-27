@@ -161,7 +161,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_OVER;
     } else if (strcmp("rot", cstr) == 0) {
 	return TOK_ROT;
-    } else if (strcmp("drop", cstr) == 0) {
+    } else if (strcmp("drop", cstr) == 0 ||
+	       strcmp("drop", cstr + 1) == 0) {
 	return TOK_DROP;
     } else if (strcmp("set8", cstr) == 0) {
 	return TOK_PTR_SET8;
@@ -199,6 +200,10 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_TAKE;
     } else if (strcmp("continue", cstr) == 0) {
 	return TOK_CONTINUE;
+    } else if (strcmp("argc", cstr) == 0) {
+	return TOK_ARGC;
+    } else if (strcmp("argv", cstr) == 0) {
+	return TOK_ARGV;
     } else if (utils_is_number(cstr)) {
 	return TOK_NUMBER;
     } else if (utils_is_operator(cstr)) {
