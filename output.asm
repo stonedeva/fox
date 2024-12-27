@@ -32,7 +32,7 @@ print:
 _start:
 	pop [argc]
 	mov [argv_ptr], rsp
-	call addr_364
+	call addr_363
 	mov rdi, rax
 	mov rax, 60
 	syscall
@@ -306,13 +306,10 @@ addr_215:
 	mov rax, [rsp]
 	add rsp, 16
 	push rax
-	mov rax, [rsp]
-	add rsp, 16
-	push rax
 	mov rax, 0
 	push rbp
 	ret
-addr_237:
+addr_236:
 	pop rbp
 	mov r15, rsp
 	mov rax, addr_12
@@ -333,7 +330,7 @@ addr_237:
 	mov rax, 0
 	push rbp
 	ret
-addr_252:
+addr_251:
 	pop rbp
 	mov r15, rsp
 	mov rax, addr_4
@@ -359,7 +356,7 @@ addr_252:
 	mov rax, 0
 	push rbp
 	ret
-addr_273:
+addr_272:
 	pop rbp
 	mov r15, rsp
 	mov rax, addr_4
@@ -379,7 +376,7 @@ addr_273:
 	mov rax, 0
 	push rbp
 	ret
-addr_290:
+addr_289:
 	pop rbp
 	mov r15, rsp
 	mov rax, addr_0
@@ -399,7 +396,7 @@ addr_290:
 	mov rax, 0
 	push rbp
 	ret
-addr_307:
+addr_306:
 	pop rbp
 	mov r15, rsp
 	mov rax, addr_0
@@ -418,7 +415,7 @@ addr_307:
 	mov rax, 0
 	push rbp
 	ret
-addr_326:
+addr_325:
 	pop rbp
 	mov r15, rsp
 	mov rax, addr_20
@@ -439,7 +436,7 @@ addr_326:
 	mov rax, 0
 	push rbp
 	ret
-addr_341:
+addr_340:
 	pop rbp
 	mov r15, rsp
 	mov rax, addr_16
@@ -458,9 +455,7 @@ addr_341:
 	mov rax, 0
 	push rbp
 	ret
-addr_364:
-	mov rax, 2
-	push rax
+addr_363:
 	mov rax, str0
 	push rax
 	mov rax, addr_52
@@ -480,28 +475,28 @@ addr_364:
         push rax
 	pop rax
 	cmp rax, 1
-	jne addr_384
+	jne addr_382
 	mov rax, str1_len
 	push rax
 	mov rax, str1
 	push rax
-	call addr_273
+	call addr_272
 	mov rax, 1
 	push rax
-	call addr_326
-addr_384:
+	call addr_325
+addr_382:
 	push QWORD [r15 + 0]
-	mov rax, addr_360
+	mov rax, addr_359
 	push rax
 	mov rax, 1024
 	push rax
-	call addr_307
+	call addr_306
 	push QWORD [r15 + 0]
-	call addr_237
+	call addr_236
 	add rsp, 8
 	mov rax, 1024
 	push rax
-	mov rax, addr_360
+	mov rax, addr_359
 	push rax
 	call addr_182
 	mov rax, 0
@@ -522,7 +517,7 @@ addr_44 = 8
 addr_48 = 577
 addr_52 = 0
 addr_56 = 438
-addr_360 rb 1024
+addr_359 rb 1024
 argc rq 1
 argv_ptr rq 1
 str0 db 0x2e, 0x2f, 0x65, 0x78, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x73, 0x2f, 0x63, 0x61, 0x74, 0x2e, 0x66, 0x6f, 0x78, 0x00
