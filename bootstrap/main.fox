@@ -6,12 +6,20 @@ const OP_MINUS 2 end
 const OP_MULT 3 end
 const OP_DIVI 4 end
 const OP_PRINT 5 end
+const OP_DUP 6 end
+const OP_OVER 7 end
+const OP_SWAP 8 end
+const OP_DROP 9 end
+const OP_ROT 10 end
+const OP_NIP 11 end
 
 // struct Ops {
 //   type: u64,
 //   operand: u64
 // }
 const MAX_OPS 500 end
+const Op.type 0 end
+const Op.operand 8 end
 const sizeof(Op) 16 end
 
 memory ops sizeof(Op) MAX_OPS * end 
@@ -33,7 +41,7 @@ func push_op int int in
     end
     take type operand in
 	ops ops_count sizeof(Op) * + type set64
-	ops ops_count sizeof(Op) * + sizeof(int64) + operand set64
+	ops ops_count sizeof(Op) * + Op.operand + operand set64
     end
     ops_count 1 + #ops_count
 end
@@ -46,17 +54,18 @@ func dump_ops in
 	"Type: " @puts
 	ops over sizeof(Op) * + get64 print
 	"Operand: " @puts
-	ops over sizeof(Op) * + sizeof(int64) + get64 print
+	ops over sizeof(Op) * + Op.operand + get64 print
 	1 +
     end
     drop
 end
 
 func main in
-    OP_PUSH 4 @push_op
-    OP_PUSH 25 @push_op
-    OP_MULT 0 @push_op
-    OP_PRINT 0 @push_op
+    OP_PUSH 95 @push_op
+    OP_PUSH 10 @push_op
+    OP_DUP 0 @push_op
+    OP_PLUS 0 @push_op
+    OP_PLUS 0 @push_op
 
     "format ELF64 executable 0\n" @puts
     "entry _start\n" @puts
@@ -143,10 +152,58 @@ func main in
     	    1 +
     	    continue
     	end
+	if ops over sizeof(Op) * + get64 OP_DUP == do
+	    "    ;; --- dup ---\n" @puts
+	    "    push [rsp]\n" @puts
+	    1 +
+	    continue
+	end
+	if ops over sizeof(Op) * + get64 OP_OVER == do
+	    "    ;; --- over ---\n" @puts
+	    "    push [rsp+8]\n" @puts
+	    1 +
+	    continue
+	end
+	if ops over sizeof(Op) * + get64 OP_SWAP == do
+	    "    ;; --- swap ---\n" @puts
+	    "    pop rax\n" @puts
+	    "    pop rbx\n" @puts
+	    "    push rbx\n" @puts
+	    "    push rax\n" @puts
+	    1 +
+	    continue
+	end
+	if ops over sizeof(Op) * + get64 OP_DROP == do
+	    "    ;; --- drop ---\n" @puts
+	    "    add rsp, 8\n" @puts
+	    1 +
+	    continue
+	end
+	if ops over sizeof(Op) * + get64 OP_ROT == do
+	    "    ;; --- rot ---\n" @puts
+	    "    add rsp, 8\n" @puts
+	    "	 mov rax, [rsp + 16]\n" @puts
+	    "	 mov rbx, [rsp + 8]\n" @puts
+	    "	 mov rcx, [rsp]\n" @puts
+	    "	 mov [rsp + 16], rbx\n" @puts
+	    "	 mov [rsp + 8], rcx\n" @puts
+	    "	 mov [rsp], rax\n" @puts
+	    1 +
+	    continue
+	end
+	if ops over sizeof(Op) * + get64 OP_NIP == do
+	    "    ;; --- nip ---\n" @puts
+	    "    mov rax, [rsp]\n" @puts
+	    "    add rsp, 16\n" @puts
+	    "    push rax\n" @puts
+	    1 +
+	    continue
+	end
 	1 +
     end
     drop
 
+    "    ;; --- exit ---\n" @puts
     "    mov rax, 60\n" @puts
     "    mov rdi, 0\n" @puts
     "    syscall\n" @puts

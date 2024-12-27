@@ -35,7 +35,7 @@ void lexer_proc(Lexer* lexer)
 
 static bool _lexer_is_delimiter(const char ch)
 {
-    return isspace(ch) || ch == ',' || ch == '.' || ch == ':' || ch == ';';
+    return isspace(ch) || ch == ',' || ch == ':' || ch == ';';
 }
 
 static void _lexer_tokenize(Lexer* lexer) 
@@ -164,6 +164,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
     } else if (strcmp("drop", cstr) == 0 ||
 	       strcmp("drop", cstr + 1) == 0) {
 	return TOK_DROP;
+    } else if (strcmp("nip", cstr) == 0) {
+	return TOK_NIP;
     } else if (strcmp("set8", cstr) == 0) {
 	return TOK_PTR_SET8;
     } else if (strcmp("set32", cstr) == 0) {

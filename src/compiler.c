@@ -235,14 +235,21 @@ void compiler_emit_rot(Compiler* compiler)
 void compiler_emit_drop(Compiler* compiler)
 {
     FILE* out = compiler->output;
-
-    if (compiler_curr_tok(compiler)[0] == 'd') {
+    if (!isdigit(compiler_curr_tok(compiler)[0])) {
 	fprintf(out, "	add rsp, 8\n");
 	return;
     }
 
     int amount = compiler_curr_tok(compiler)[0] - '0';
     fprintf(out, "	add rsp, %d\n", 8 * amount);
+}
+
+void compiler_emit_nip(Compiler* compiler)
+{
+    FILE* out = compiler->output;
+    fprintf(out, "	mov rax, [rsp]\n");
+    fprintf(out, "	add rsp, 16\n");
+    fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_continue(Compiler* compiler)
@@ -266,7 +273,6 @@ void compiler_emit_bind_def(Compiler* compiler)
     }
 
     fprintf(out, "	mov r15, rsp\n");
-
     compiler->tok_ptr = ptr;
 }
 
@@ -957,6 +963,9 @@ void compiler_emit(Compiler* compiler)
 	    break;
 	case TOK_DROP:
 	    compiler_emit_drop(compiler);
+	    break;
+	case TOK_NIP:
+	    compiler_emit_nip(compiler);
 	    break;
 	case TOK_DEF_MEM:
 	    compiler_emit_const_def(compiler, TOK_DEF_MEM);

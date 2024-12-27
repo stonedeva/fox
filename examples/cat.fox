@@ -1,0 +1,18 @@
+import "std.fox"
+
+memory content 1024 end
+
+func main in
+    2 "./examples/cat.fox"c O_RDONLY 0 syscall
+
+    take fd in
+        if fd 0 > do
+            "ERROR: Could not open file!\n" @eputs
+            1 @exit
+        end
+        fd content 1024 @fread
+        fd @fclose
+    end
+
+    1024 content @puts
+end
