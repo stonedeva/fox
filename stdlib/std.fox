@@ -101,7 +101,7 @@ func fopen ptr int int in
     peek path mode perm in
 	SYS_open path mode perm syscall
     end
-    nip nip nip
+    nip nip nip nip
 end
 
 // fclose - Closes a file

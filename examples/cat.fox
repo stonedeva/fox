@@ -3,7 +3,7 @@ import "std.fox"
 memory content 1024 end
 
 func main in
-    2 "./examples/cat.fox"c O_RDONLY 0 syscall
+    2 "./examples/cat.fox"c O_RDONLY 0 @fopen
 
     take fd in
         if fd 0 > do
