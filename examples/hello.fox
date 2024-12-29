@@ -1,2 +1,10 @@
+import "std.fox"
+
 func main in
+    "test.txt"c O_WRONLY O_CREAT @fopen
+
+    take fd in
+	205 fd @fputd
+	fd @fclose
+    end
 end

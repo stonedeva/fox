@@ -13,6 +13,9 @@ const sizeof(int32) 4 end
 const sizeof(int64) 8 end
 const sizeof(ptr) 8 end
 
+const PUTD_BUFFER_CAP 32 end
+memory putd_buffer PUTD_BUFFER_CAP end
+
 const O_WRONLY 577 end
 const O_RDONLY 0 end
 const O_CREAT 438 end
@@ -84,6 +87,44 @@ func puts int ptr in
 	SYS_write stdout str len syscall
 	drop
     end
+end
+
+// fputd - Write a number to file
+// : number, file descriptor
+func fputd int int in
+    swap
+    0 while over 0 != do
+        peek num index in
+            putd_buffer PUTD_BUFFER_CAP index - 1 - +
+            num 10 % '0' + set8
+        end
+        1 +
+        swap 10 / swap
+    end
+    swap drop
+
+    take digits fd in
+	SYS_write fd 
+	putd_buffer PUTD_BUFFER_CAP digits - + digits syscall 
+	drop
+    end
+end
+
+// putd - Write number to standard output
+// : number
+func putd int in
+    0 while over 0 != do
+        peek num index in
+            putd_buffer PUTD_BUFFER_CAP index - 1 - +
+            num 10 % '0' + set8
+        end
+        1 +
+        swap 10 / swap
+    end
+    2drop
+
+    SYS_write stdout putd_buffer PUTD_BUFFER_CAP syscall 
+    drop
 end
 
 // cputs - Write a null-terminated string to standard output

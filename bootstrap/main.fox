@@ -1,6 +1,6 @@
 import "std.fox"
 
-const OP_PUSH 0 end
+const OP_PUSH_INT 0 end
 const OP_PLUS 1 end
 const OP_MINUS 2 end
 const OP_MULT 3 end
@@ -18,7 +18,6 @@ const OP_NIP 11 end
 //   operand: u64
 // }
 const MAX_OPS 500 end
-const Op.type 0 end
 const Op.operand 8 end
 const sizeof(Op) 16 end
 
@@ -60,13 +59,7 @@ func dump_ops in
     drop
 end
 
-func main in
-    OP_PUSH 95 @push_op
-    OP_PUSH 10 @push_op
-    OP_DUP 0 @push_op
-    OP_PLUS 0 @push_op
-    OP_PLUS 0 @push_op
-
+func compile_ops in
     "format ELF64 executable 0\n" @puts
     "entry _start\n" @puts
     "segment readable executable\n" @puts
@@ -101,9 +94,10 @@ func main in
     "_start:\n" @puts
 
     0 while dup ops_count > do
-    	if ops over sizeof(Op) * + get64 OP_PUSH == do
+    	if ops over sizeof(Op) * + get64 OP_PUSH_INT == do
     	    "    ;; --- push int ---\n" @puts
-    	    "    mov rax, %d\n" @puts
+	    "    mov rax, " @puts 
+	    ops over sizeof(Op) * + Op.operand + get64 @putd "\n" @puts
     	    "    push rax\n" @puts
     	    1 +
     	    continue
@@ -208,3 +202,15 @@ func main in
     "    mov rdi, 0\n" @puts
     "    syscall\n" @puts
 end
+
+func main in
+    OP_PUSH_INT 95 @push_op
+    OP_PUSH_INT 10 @push_op
+    OP_DUP 0 @push_op
+    OP_PLUS 0 @push_op
+    OP_PLUS 0 @push_op
+    
+    @compile_ops
+end
+
+
