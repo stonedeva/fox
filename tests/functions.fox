@@ -1,9 +1,12 @@
-func sum int int in
-    take a b in
-	a b + print
-    end
+func bar int int in
+    * print
+end
+
+func foo int int in
+    + print
+    10 2 @bar
 end
 
 func main in
-    205 95 @sum
+    205 95 @foo
 end

@@ -32,12 +32,15 @@ print:
 _start:
 	pop [argc]
 	mov [argv_ptr], rsp
-	call addr_526
-	mov rdi, rax
+	mov rax, ret_stack_end
+	mov [ret_stack_rsp], rax
+	call addr_993
 	mov rax, 60
+	mov rdi, 0
 	syscall
-addr_60:
-	pop rbp
+addr_68:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, addr_44
 	push rax
 	pop rax
@@ -50,11 +53,12 @@ addr_60:
 	pop rbx
 	add rax, rbx
         push rax
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_69:
-	pop rbp
+addr_77:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	push QWORD [r15 + 24]
 	push QWORD [r15 + 8]
@@ -66,16 +70,16 @@ addr_69:
 	push rax
 	pop rax
 	cmp rax, 1
-	jne addr_90
+	jne addr_98
 	add rsp, 32
 	mov rax, 0
 	push rax
 	push rbp
 	ret
-addr_90:
+addr_98:
 	mov rax, 0
 	push rax
-addr_92:
+addr_100:
 	push QWORD [rsp]
 	push QWORD [r15 + 24]
 	pop rax
@@ -86,7 +90,7 @@ addr_92:
         push rax
 	pop rax
 	cmp rax, 1
-	jne addr_114
+	jne addr_122
 	push QWORD [rsp]
 	push QWORD [r15 + 16]
 	pop rax
@@ -115,36 +119,37 @@ addr_92:
 	push rax
 	pop rax
 	cmp rax, 1
-	jne addr_111
+	jne addr_119
 	add rsp, 40
 	mov rax, 0
 	push rax
 	push rbp
 	ret
-addr_111:
+addr_119:
 	mov rax, 1
 	push rax
 	pop rax
 	pop rbx
 	add rax, rbx
         push rax
-	jmp addr_92
-addr_114:
+	jmp addr_100
+addr_122:
 	add rsp, 8
 	add rsp, 32
 	mov rax, 1
 	push rax
 	push rbp
 	ret
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_120:
-	pop rbp
+addr_128:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, 0
 	push rax
-addr_128:
+addr_136:
 	push QWORD [rsp]
 	push QWORD [r15 + 0]
 	pop rax
@@ -165,40 +170,46 @@ addr_128:
 	push rax
 	pop rax
 	cmp rax, 1
-	jne addr_138
+	jne addr_146
 	mov rax, 1
 	push rax
 	pop rax
 	pop rbx
 	add rax, rbx
         push rax
-	jmp addr_128
-addr_138:
+	jmp addr_136
+addr_146:
 	pop rax
 	pop rbx
 	push rax
 	push rbx
 	add rsp, 8
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_143:
-	pop rbp
+addr_151:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	push QWORD [rsp]
-	call addr_120
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_128
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	pop rax
 	pop rbx
 	push rax
 	push rbx
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_151:
-	pop rbp
+addr_159:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, 0
 	push rax
-addr_163:
+addr_171:
 	push QWORD [rsp]
 	push QWORD [r15 + 0]
 	pop rax
@@ -209,7 +220,7 @@ addr_163:
         push rax
 	pop rax
 	cmp rax, 1
-	jne addr_178
+	jne addr_186
 	push QWORD [rsp]
 	push QWORD [r15 + 8]
 	pop rax
@@ -235,15 +246,16 @@ addr_163:
 	pop rbx
 	add rax, rbx
         push rax
-	jmp addr_163
-addr_178:
+	jmp addr_171
+addr_186:
 	add rsp, 8
 	add rsp, 24
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_182:
-	pop rbp
+addr_190:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_4
 	push rax
@@ -259,11 +271,236 @@ addr_182:
 	push rax
 	add rsp, 8
 	add rsp, 16
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_199:
-	pop rbp
+addr_207:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	pop rax
+	pop rbx
+	push rax
+	push rbx
+	mov rax, 0
+	push rax
+addr_214:
+	push QWORD [rsp+8]
+	mov rax, 0
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	setne al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_243
+	mov r15, rsp
+	mov rax, addr_52
+	push rax
+	mov rax, addr_48
+	push rax
+	push QWORD [r15 + 0]
+	pop rax
+	pop rbx
+	sub rbx, rax
+	mov rax, rbx
+        push rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	sub rbx, rax
+	mov rax, rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	push QWORD [r15 + 8]
+	mov rax, 10
+	push rax
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+	mov rax, rdx
+        push rax
+	mov rax, 48
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rbx
+	pop rax
+	mov [rax], bl
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	pop rbx
+	push rax
+	push rbx
+	mov rax, 10
+	push rax
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+        push rax
+	pop rax
+	pop rbx
+	push rax
+	push rbx
+	jmp addr_214
+addr_243:
+	pop rax
+	pop rbx
+	push rax
+	push rbx
+	add rsp, 8
+	mov r15, rsp
+	mov rax, addr_4
+	push rax
+	push QWORD [r15 + 0]
+	mov rax, addr_52
+	push rax
+	mov rax, addr_48
+	push rax
+	push QWORD [r15 + 8]
+	pop rax
+	pop rbx
+	sub rbx, rax
+	mov rax, rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	push QWORD [r15 + 8]
+	pop rdx
+	pop rsi
+	pop rdi
+	pop rax
+	syscall
+	push rax
+	add rsp, 8
+	add rsp, 16
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	ret
+addr_262:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 0
+	push rax
+addr_267:
+	push QWORD [rsp+8]
+	mov rax, 0
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	setne al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_296
+	mov r15, rsp
+	mov rax, addr_52
+	push rax
+	mov rax, addr_48
+	push rax
+	push QWORD [r15 + 0]
+	pop rax
+	pop rbx
+	sub rbx, rax
+	mov rax, rbx
+        push rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	sub rbx, rax
+	mov rax, rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	push QWORD [r15 + 8]
+	mov rax, 10
+	push rax
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+	mov rax, rdx
+        push rax
+	mov rax, 48
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rbx
+	pop rax
+	mov [rax], bl
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	pop rbx
+	push rax
+	push rbx
+	mov rax, 10
+	push rax
+	pop rax
+	pop rbx
+	xchg rax, rbx
+	xor rdx, rdx
+	div rbx
+        push rax
+	pop rax
+	pop rbx
+	push rax
+	push rbx
+	jmp addr_267
+addr_296:
+	add rsp, 16
+	mov rax, addr_4
+	push rax
+	mov rax, addr_28
+	push rax
+	mov rax, addr_52
+	push rax
+	mov rax, addr_48
+	push rax
+	pop rdx
+	pop rsi
+	pop rdi
+	pop rax
+	syscall
+	push rax
+	add rsp, 8
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	ret
+addr_305:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_4
 	push rax
@@ -271,7 +508,11 @@ addr_199:
 	push rax
 	push QWORD [r15 + 0]
 	push QWORD [r15 + 0]
-	call addr_120
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_128
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	pop rdx
 	pop rsi
 	pop rdi
@@ -280,11 +521,12 @@ addr_199:
 	push rax
 	add rsp, 8
 	add rsp, 8
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_215:
-	pop rbp
+addr_321:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_8
 	push rax
@@ -306,11 +548,12 @@ addr_215:
 	mov rax, [rsp]
 	add rsp, 16
 	push rax
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_236:
-	pop rbp
+addr_342:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_12
 	push rax
@@ -327,11 +570,12 @@ addr_236:
 	push rax
 	add rsp, 8
 	add rsp, 8
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_251:
-	pop rbp
+addr_357:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_4
 	push rax
@@ -353,11 +597,12 @@ addr_251:
 	push rax
 	add rsp, 8
 	add rsp, 24
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_272:
-	pop rbp
+addr_378:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_4
 	push rax
@@ -373,11 +618,12 @@ addr_272:
 	push rax
 	add rsp, 8
 	add rsp, 16
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_289:
-	pop rbp
+addr_395:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_0
 	push rax
@@ -393,11 +639,12 @@ addr_289:
 	push rax
 	add rsp, 8
 	add rsp, 16
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_306:
-	pop rbp
+addr_412:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_0
 	push rax
@@ -412,11 +659,12 @@ addr_306:
 	push rax
 	add rsp, 8
 	add rsp, 24
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_325:
-	pop rbp
+addr_431:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_20
 	push rax
@@ -433,11 +681,12 @@ addr_325:
 	push rax
 	add rsp, 8
 	add rsp, 8
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_340:
-	pop rbp
+addr_446:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov r15, rsp
 	mov rax, addr_16
 	push rax
@@ -452,52 +701,78 @@ addr_340:
 	push rax
 	add rsp, 8
 	add rsp, 24
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
 	mov rax, 0
 	push rax
-	pop [addr_429]
-addr_433:
-	pop rbp
+	pop [addr_531]
+addr_535:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str0_len
 	push rax
 	mov rax, str0
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str1_len
 	push rax
 	mov rax, str1
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str2_len
 	push rax
 	mov rax, str2
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str3_len
 	push rax
 	mov rax, str3
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str4_len
 	push rax
 	mov rax, str4
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str5_len
 	push rax
 	mov rax, str5
 	push rax
-	call addr_182
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_449:
-	pop rbp
-	mov rax, addr_407
+addr_551:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_513
 	push rax
-	mov rax, [addr_429]
+	mov rax, [addr_531]
 	push rax
 	pop rax
 	pop rbx
@@ -507,22 +782,30 @@ addr_449:
 	push rax
 	pop rax
 	cmp rax, 1
-	jne addr_463
+	jne addr_565
 	mov rax, str6_len
 	push rax
 	mov rax, str6
 	push rax
-	call addr_272
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_378
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, 1
 	push rax
-	call addr_325
-addr_463:
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_431
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+addr_565:
 	mov r15, rsp
-	mov rax, addr_423
+	mov rax, addr_525
 	push rax
-	mov rax, [addr_429]
+	mov rax, [addr_531]
 	push rax
-	mov rax, addr_419
+	mov rax, addr_521
 	push rax
 	pop rax
 	pop rbx
@@ -536,11 +819,11 @@ addr_463:
 	pop rbx
 	pop rax
 	mov [rax], rbx
-	mov rax, addr_423
+	mov rax, addr_525
 	push rax
-	mov rax, [addr_429]
+	mov rax, [addr_531]
 	push rax
-	mov rax, addr_419
+	mov rax, addr_521
 	push rax
 	pop rax
 	pop rbx
@@ -550,7 +833,7 @@ addr_463:
 	pop rbx
 	add rax, rbx
         push rax
-	mov rax, addr_415
+	mov rax, addr_517
 	push rax
 	pop rax
 	pop rbx
@@ -561,7 +844,7 @@ addr_463:
 	pop rax
 	mov [rax], rbx
 	add rsp, 16
-	mov rax, [addr_429]
+	mov rax, [addr_531]
 	push rax
 	mov rax, 1
 	push rax
@@ -570,17 +853,18 @@ addr_463:
 	add rax, rbx
         push rax
 	pop rax
-	mov [addr_429], rax
-	mov rax, 0
-	push rbp
+	mov [addr_531], rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_490:
-	pop rbp
+addr_592:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, 0
 	push rax
-addr_494:
+addr_596:
 	push QWORD [rsp]
-	mov rax, [addr_429]
+	mov rax, [addr_531]
 	push rax
 	pop rax
 	pop rbx
@@ -590,21 +874,29 @@ addr_494:
         push rax
 	pop rax
 	cmp rax, 1
-	jne addr_523
+	jne addr_625
 	mov rax, str7_len
 	push rax
 	mov rax, str7
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str8_len
 	push rax
 	mov rax, str8
 	push rax
-	call addr_182
-	mov rax, addr_423
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_525
 	push rax
 	push QWORD [rsp+8]
-	mov rax, addr_419
+	mov rax, addr_521
 	push rax
 	pop rax
 	pop rbx
@@ -624,11 +916,15 @@ addr_494:
 	push rax
 	mov rax, str9
 	push rax
-	call addr_182
-	mov rax, addr_423
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_525
 	push rax
 	push QWORD [rsp+8]
-	mov rax, addr_419
+	mov rax, addr_521
 	push rax
 	pop rax
 	pop rbx
@@ -638,7 +934,7 @@ addr_494:
 	pop rbx
 	add rax, rbx
         push rax
-	mov rax, addr_415
+	mov rax, addr_517
 	push rax
 	pop rax
 	pop rbx
@@ -656,203 +952,308 @@ addr_494:
 	pop rbx
 	add rax, rbx
         push rax
-	jmp addr_494
-addr_523:
+	jmp addr_596
+addr_625:
 	add rsp, 8
-	mov rax, 0
-	push rbp
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
-addr_526:
-	mov rax, addr_359
-	push rax
-	mov rax, 95
-	push rax
-	call addr_449
-	mov rax, addr_359
-	push rax
-	mov rax, 10
-	push rax
-	call addr_449
-	mov rax, addr_383
-	push rax
-	mov rax, 0
-	push rax
-	call addr_449
-	mov rax, addr_363
-	push rax
-	mov rax, 0
-	push rax
-	call addr_449
-	mov rax, addr_363
-	push rax
-	mov rax, 0
-	push rax
-	call addr_449
+addr_628:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str10_len
 	push rax
 	mov rax, str10
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str11_len
 	push rax
 	mov rax, str11
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str12_len
 	push rax
 	mov rax, str12
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str13_len
 	push rax
 	mov rax, str13
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str14_len
 	push rax
 	mov rax, str14
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str15_len
 	push rax
 	mov rax, str15
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str16_len
 	push rax
 	mov rax, str16
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str17_len
 	push rax
 	mov rax, str17
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str18_len
 	push rax
 	mov rax, str18
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str19_len
 	push rax
 	mov rax, str19
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str20_len
 	push rax
 	mov rax, str20
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str21_len
 	push rax
 	mov rax, str21
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str22_len
 	push rax
 	mov rax, str22
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str23_len
 	push rax
 	mov rax, str23
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str24_len
 	push rax
 	mov rax, str24
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str25_len
 	push rax
 	mov rax, str25
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str26_len
 	push rax
 	mov rax, str26
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str27_len
 	push rax
 	mov rax, str27
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str28_len
 	push rax
 	mov rax, str28
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str29_len
 	push rax
 	mov rax, str29
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str30_len
 	push rax
 	mov rax, str30
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str31_len
 	push rax
 	mov rax, str31
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str32_len
 	push rax
 	mov rax, str32
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str33_len
 	push rax
 	mov rax, str33
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str34_len
 	push rax
 	mov rax, str34
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str35_len
 	push rax
 	mov rax, str35
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str36_len
 	push rax
 	mov rax, str36
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str37_len
 	push rax
 	mov rax, str37
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str38_len
 	push rax
 	mov rax, str38
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str39_len
 	push rax
 	mov rax, str39
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str40_len
 	push rax
 	mov rax, str40
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str41_len
 	push rax
 	mov rax, str41
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, 0
 	push rax
-addr_609:
+addr_696:
 	push QWORD [rsp]
-	mov rax, [addr_429]
+	mov rax, [addr_531]
 	push rax
 	pop rax
 	pop rbx
@@ -862,11 +1263,11 @@ addr_609:
         push rax
 	pop rax
 	cmp rax, 1
-	jne addr_884
-	mov rax, addr_423
+	jne addr_982
+	mov rax, addr_525
 	push rax
 	push QWORD [rsp+8]
-	mov rax, addr_419
+	mov rax, addr_521
 	push rax
 	pop rax
 	pop rbx
@@ -880,241 +1281,7 @@ addr_609:
 	xor rbx, rbx
 	mov rbx, [rax]
 	push rbx
-	mov rax, addr_359
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_633
-	mov rax, str42_len
-	push rax
-	mov rax, str42
-	push rax
-	call addr_182
-	mov rax, str43_len
-	push rax
-	mov rax, str43
-	push rax
-	call addr_182
-	mov rax, str44_len
-	push rax
-	mov rax, str44
-	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_633:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_363
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_657
-	mov rax, str45_len
-	push rax
-	mov rax, str45
-	push rax
-	call addr_182
-	mov rax, str46_len
-	push rax
-	mov rax, str46
-	push rax
-	call addr_182
-	mov rax, str47_len
-	push rax
-	mov rax, str47
-	push rax
-	call addr_182
-	mov rax, str48_len
-	push rax
-	mov rax, str48
-	push rax
-	call addr_182
-	mov rax, str49_len
-	push rax
-	mov rax, str49
-	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_657:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_367
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_681
-	mov rax, str50_len
-	push rax
-	mov rax, str50
-	push rax
-	call addr_182
-	mov rax, str51_len
-	push rax
-	mov rax, str51
-	push rax
-	call addr_182
-	mov rax, str52_len
-	push rax
-	mov rax, str52
-	push rax
-	call addr_182
-	mov rax, str53_len
-	push rax
-	mov rax, str53
-	push rax
-	call addr_182
-	mov rax, str54_len
-	push rax
-	mov rax, str54
-	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_681:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_371
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_705
-	mov rax, str55_len
-	push rax
-	mov rax, str55
-	push rax
-	call addr_182
-	mov rax, str56_len
-	push rax
-	mov rax, str56
-	push rax
-	call addr_182
-	mov rax, str57_len
-	push rax
-	mov rax, str57
-	push rax
-	call addr_182
-	mov rax, str58_len
-	push rax
-	mov rax, str58
-	push rax
-	call addr_182
-	mov rax, str59_len
-	push rax
-	mov rax, str59
-	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_705:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_375
+	mov rax, addr_465
 	push rax
 	pop rax
 	pop rbx
@@ -1125,48 +1292,325 @@ addr_705:
 	pop rax
 	cmp rax, 1
 	jne addr_731
+	mov rax, str42_len
+	push rax
+	mov rax, str42
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str43_len
+	push rax
+	mov rax, str43
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	mov rax, addr_517
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_262
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str44_len
+	push rax
+	mov rax, str44
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str45_len
+	push rax
+	mov rax, str45
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_731:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_469
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_755
+	mov rax, str46_len
+	push rax
+	mov rax, str46
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str47_len
+	push rax
+	mov rax, str47
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str48_len
+	push rax
+	mov rax, str48
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str49_len
+	push rax
+	mov rax, str49
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str50_len
+	push rax
+	mov rax, str50
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_755:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_473
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_779
+	mov rax, str51_len
+	push rax
+	mov rax, str51
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str52_len
+	push rax
+	mov rax, str52
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str53_len
+	push rax
+	mov rax, str53
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str54_len
+	push rax
+	mov rax, str54
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str55_len
+	push rax
+	mov rax, str55
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_779:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_477
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_803
+	mov rax, str56_len
+	push rax
+	mov rax, str56
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str57_len
+	push rax
+	mov rax, str57
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str58_len
+	push rax
+	mov rax, str58
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str59_len
+	push rax
+	mov rax, str59
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str60_len
 	push rax
 	mov rax, str60
 	push rax
-	call addr_182
-	mov rax, str61_len
-	push rax
-	mov rax, str61
-	push rax
-	call addr_182
-	mov rax, str62_len
-	push rax
-	mov rax, str62
-	push rax
-	call addr_182
-	mov rax, str63_len
-	push rax
-	mov rax, str63
-	push rax
-	call addr_182
-	mov rax, str64_len
-	push rax
-	mov rax, str64
-	push rax
-	call addr_182
-	mov rax, str65_len
-	push rax
-	mov rax, str65
-	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, 1
 	push rax
 	pop rax
 	pop rbx
 	add rax, rbx
         push rax
-	jmp addr_609
-addr_731:
-	mov rax, addr_423
+	jmp addr_696
+addr_803:
+	mov rax, addr_525
 	push rax
 	push QWORD [rsp+8]
-	mov rax, addr_419
+	mov rax, addr_521
 	push rax
 	pop rax
 	pop rbx
@@ -1180,211 +1624,7 @@ addr_731:
 	xor rbx, rbx
 	mov rbx, [rax]
 	push rbx
-	mov rax, addr_379
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_751
-	mov rax, str66_len
-	push rax
-	mov rax, str66
-	push rax
-	call addr_182
-	mov rax, str67_len
-	push rax
-	mov rax, str67
-	push rax
-	call addr_182
-	mov rax, str68_len
-	push rax
-	mov rax, str68
-	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_751:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_383
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_769
-	mov rax, str69_len
-	push rax
-	mov rax, str69
-	push rax
-	call addr_182
-	mov rax, str70_len
-	push rax
-	mov rax, str70
-	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_769:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_387
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_787
-	mov rax, str71_len
-	push rax
-	mov rax, str71
-	push rax
-	call addr_182
-	mov rax, str72_len
-	push rax
-	mov rax, str72
-	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_787:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_391
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_811
-	mov rax, str73_len
-	push rax
-	mov rax, str73
-	push rax
-	call addr_182
-	mov rax, str74_len
-	push rax
-	mov rax, str74
-	push rax
-	call addr_182
-	mov rax, str75_len
-	push rax
-	mov rax, str75
-	push rax
-	call addr_182
-	mov rax, str76_len
-	push rax
-	mov rax, str76
-	push rax
-	call addr_182
-	mov rax, str77_len
-	push rax
-	mov rax, str77
-	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_811:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_395
+	mov rax, addr_481
 	push rax
 	pop rax
 	pop rbx
@@ -1395,104 +1635,378 @@ addr_811:
 	pop rax
 	cmp rax, 1
 	jne addr_829
+	mov rax, str61_len
+	push rax
+	mov rax, str61
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str62_len
+	push rax
+	mov rax, str62
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str63_len
+	push rax
+	mov rax, str63
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str64_len
+	push rax
+	mov rax, str64
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str65_len
+	push rax
+	mov rax, str65
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str66_len
+	push rax
+	mov rax, str66
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_829:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_485
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_849
+	mov rax, str67_len
+	push rax
+	mov rax, str67
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str68_len
+	push rax
+	mov rax, str68
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str69_len
+	push rax
+	mov rax, str69
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_849:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_489
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_867
+	mov rax, str70_len
+	push rax
+	mov rax, str70
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str71_len
+	push rax
+	mov rax, str71
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_867:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_493
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_885
+	mov rax, str72_len
+	push rax
+	mov rax, str72
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str73_len
+	push rax
+	mov rax, str73
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_885:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_497
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_909
+	mov rax, str74_len
+	push rax
+	mov rax, str74
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str75_len
+	push rax
+	mov rax, str75
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str76_len
+	push rax
+	mov rax, str76
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str77_len
+	push rax
+	mov rax, str77
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str78_len
 	push rax
 	mov rax, str78
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_909:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_501
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_927
 	mov rax, str79_len
 	push rax
 	mov rax, str79
 	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_829:
-	mov rax, addr_423
-	push rax
-	push QWORD [rsp+8]
-	mov rax, addr_419
-	push rax
-	pop rax
-	pop rbx
-	mul rbx
-        push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	pop rax
-	xor rbx, rbx
-	mov rbx, [rax]
-	push rbx
-	mov rax, addr_399
-	push rax
-	pop rax
-	pop rbx
-	cmp rax, rbx
-	sete al
-	movzx rax, al
-	push rax
-	pop rax
-	cmp rax, 1
-	jne addr_859
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str80_len
 	push rax
 	mov rax, str80
 	push rax
-	call addr_182
-	mov rax, str81_len
-	push rax
-	mov rax, str81
-	push rax
-	call addr_182
-	mov rax, str82_len
-	push rax
-	mov rax, str82
-	push rax
-	call addr_182
-	mov rax, str83_len
-	push rax
-	mov rax, str83
-	push rax
-	call addr_182
-	mov rax, str84_len
-	push rax
-	mov rax, str84
-	push rax
-	call addr_182
-	mov rax, str85_len
-	push rax
-	mov rax, str85
-	push rax
-	call addr_182
-	mov rax, str86_len
-	push rax
-	mov rax, str86
-	push rax
-	call addr_182
-	mov rax, str87_len
-	push rax
-	mov rax, str87
-	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, 1
 	push rax
 	pop rax
 	pop rbx
 	add rax, rbx
         push rax
-	jmp addr_609
-addr_859:
-	mov rax, addr_423
+	jmp addr_696
+addr_927:
+	mov rax, addr_525
 	push rax
 	push QWORD [rsp+8]
-	mov rax, addr_419
+	mov rax, addr_521
 	push rax
 	pop rax
 	pop rbx
@@ -1506,7 +2020,7 @@ addr_859:
 	xor rbx, rbx
 	mov rbx, [rax]
 	push rbx
-	mov rax, addr_403
+	mov rax, addr_505
 	push rax
 	pop rax
 	pop rbx
@@ -1516,67 +2030,267 @@ addr_859:
 	push rax
 	pop rax
 	cmp rax, 1
-	jne addr_881
+	jne addr_957
+	mov rax, str81_len
+	push rax
+	mov rax, str81
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str82_len
+	push rax
+	mov rax, str82
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str83_len
+	push rax
+	mov rax, str83
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str84_len
+	push rax
+	mov rax, str84
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str85_len
+	push rax
+	mov rax, str85
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str86_len
+	push rax
+	mov rax, str86
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str87_len
+	push rax
+	mov rax, str87
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str88_len
 	push rax
 	mov rax, str88
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_957:
+	mov rax, addr_525
+	push rax
+	push QWORD [rsp+8]
+	mov rax, addr_521
+	push rax
+	pop rax
+	pop rbx
+	mul rbx
+        push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	pop rax
+	xor rbx, rbx
+	mov rbx, [rax]
+	push rbx
+	mov rax, addr_509
+	push rax
+	pop rax
+	pop rbx
+	cmp rax, rbx
+	sete al
+	movzx rax, al
+	push rax
+	pop rax
+	cmp rax, 1
+	jne addr_979
 	mov rax, str89_len
 	push rax
 	mov rax, str89
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str90_len
 	push rax
 	mov rax, str90
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str91_len
 	push rax
 	mov rax, str91
 	push rax
-	call addr_182
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_881:
-	mov rax, 1
-	push rax
-	pop rax
-	pop rbx
-	add rax, rbx
-        push rax
-	jmp addr_609
-addr_884:
-	add rsp, 8
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str92_len
 	push rax
 	mov rax, str92
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_979:
+	mov rax, 1
+	push rax
+	pop rax
+	pop rbx
+	add rax, rbx
+        push rax
+	jmp addr_696
+addr_982:
+	add rsp, 8
 	mov rax, str93_len
 	push rax
 	mov rax, str93
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str94_len
 	push rax
 	mov rax, str94
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
 	mov rax, str95_len
 	push rax
 	mov rax, str95
 	push rax
-	call addr_182
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, str96_len
+	push rax
+	mov rax, str96
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_190
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	ret
+addr_993:
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_465
+	push rax
+	mov rax, 95
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_551
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_465
+	push rax
+	mov rax, 10
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_551
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_489
+	push rax
 	mov rax, 0
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_551
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_469
+	push rax
+	mov rax, 0
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_551
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, addr_469
+	push rax
+	mov rax, 0
+	push rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_551
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
+	call addr_628
+	mov [ret_stack_rsp], rsp
+	mov rsp, rax
+	mov rax, rsp
+	mov rsp, [ret_stack_rsp]
 	ret
 segment readable writeable
+ret_stack_rsp rq 1
+ret_stack rb 65534
+ret_stack_end:
 addr_0 = 0
 addr_4 = 1
 addr_8 = 2
@@ -1589,27 +2303,28 @@ addr_32 = 2
 addr_36 = 4
 addr_40 = 8
 addr_44 = 8
-addr_48 = 577
-addr_52 = 0
-addr_56 = 438
-addr_359 = 0
-addr_363 = 1
-addr_367 = 2
-addr_371 = 3
-addr_375 = 4
-addr_379 = 5
-addr_383 = 6
-addr_387 = 7
-addr_391 = 8
-addr_395 = 9
-addr_399 = 10
-addr_403 = 11
-addr_407 = 500
-addr_411 = 0
-addr_415 = 8
-addr_419 = 16
-addr_423 rb 8000
-addr_429 dq 0
+addr_48 = 32
+addr_52 rb 32
+addr_56 = 577
+addr_60 = 0
+addr_64 = 438
+addr_465 = 0
+addr_469 = 1
+addr_473 = 2
+addr_477 = 3
+addr_481 = 4
+addr_485 = 5
+addr_489 = 6
+addr_493 = 7
+addr_497 = 8
+addr_501 = 9
+addr_505 = 10
+addr_509 = 11
+addr_513 = 500
+addr_517 = 8
+addr_521 = 16
+addr_525 rb 8000
+addr_531 dq 0
 argc rq 1
 argv_ptr rq 1
 str0 db 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x3a, 0x0a, 0x00
@@ -1698,109 +2413,111 @@ str41 db 0x5f, 0x73, 0x74, 0x61, 0x72, 0x74, 0x3a, 0x0a, 0x00
 str41_len = 9
 str42 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x69, 0x6e, 0x74, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
 str42_len = 25
-str43 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x25, 0x64, 0x0a, 0x00
-str43_len = 17
-str44 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str44_len = 14
-str45 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x70, 0x6c, 0x75, 0x73, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str45_len = 21
-str46 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str46_len = 13
-str47 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str43 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x00
+str43_len = 13
+str44 db 0x0a, 0x00
+str44_len = 2
+str45 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str45_len = 14
+str46 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x70, 0x6c, 0x75, 0x73, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str46_len = 21
+str47 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
 str47_len = 13
-str48 db 0x20, 0x20, 0x20, 0x20, 0x61, 0x64, 0x64, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
-str48_len = 18
-str49 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str49_len = 14
-str50 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x6d, 0x69, 0x6e, 0x75, 0x73, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str50_len = 22
-str51 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str51_len = 13
-str52 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str48 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str48_len = 13
+str49 db 0x20, 0x20, 0x20, 0x20, 0x61, 0x64, 0x64, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str49_len = 18
+str50 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str50_len = 14
+str51 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x6d, 0x69, 0x6e, 0x75, 0x73, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str51_len = 22
+str52 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
 str52_len = 13
-str53 db 0x20, 0x20, 0x20, 0x20, 0x73, 0x75, 0x62, 0x20, 0x72, 0x62, 0x78, 0x2c, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str53_len = 18
-str54 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
-str54_len = 14
-str55 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x6c, 0x79, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str55_len = 25
-str56 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str56_len = 13
-str57 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str53 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str53_len = 13
+str54 db 0x20, 0x20, 0x20, 0x20, 0x73, 0x75, 0x62, 0x20, 0x72, 0x62, 0x78, 0x2c, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str54_len = 18
+str55 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str55_len = 14
+str56 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x6c, 0x79, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str56_len = 25
+str57 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
 str57_len = 13
-str58 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x75, 0x6c, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str58 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
 str58_len = 13
-str59 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str59_len = 14
-str60 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x64, 0x69, 0x76, 0x69, 0x64, 0x65, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str60_len = 23
-str61 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
-str61_len = 13
-str62 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str59 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x75, 0x6c, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str59_len = 13
+str60 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str60_len = 14
+str61 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x64, 0x69, 0x76, 0x69, 0x64, 0x65, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str61_len = 23
+str62 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
 str62_len = 13
-str63 db 0x09, 0x20, 0x78, 0x6f, 0x72, 0x20, 0x72, 0x64, 0x78, 0x2c, 0x20, 0x72, 0x64, 0x78, 0x0a, 0x00
-str63_len = 16
-str64 db 0x20, 0x20, 0x20, 0x20, 0x64, 0x69, 0x76, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
-str64_len = 13
-str65 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str65_len = 14
-str66 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x70, 0x72, 0x69, 0x6e, 0x74, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str66_len = 22
-str67 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x64, 0x69, 0x0a, 0x00
-str67_len = 13
-str68 db 0x20, 0x20, 0x20, 0x20, 0x63, 0x61, 0x6c, 0x6c, 0x20, 0x70, 0x72, 0x69, 0x6e, 0x74, 0x0a, 0x00
-str68_len = 16
-str69 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x64, 0x75, 0x70, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str69_len = 20
-str70 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x5d, 0x0a, 0x00
-str70_len = 16
-str71 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x6f, 0x76, 0x65, 0x72, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str71_len = 21
-str72 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x2b, 0x38, 0x5d, 0x0a, 0x00
-str72_len = 18
-str73 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x73, 0x77, 0x61, 0x70, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str73_len = 21
-str74 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str74_len = 13
-str75 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str63 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str63_len = 13
+str64 db 0x09, 0x20, 0x78, 0x6f, 0x72, 0x20, 0x72, 0x64, 0x78, 0x2c, 0x20, 0x72, 0x64, 0x78, 0x0a, 0x00
+str64_len = 16
+str65 db 0x20, 0x20, 0x20, 0x20, 0x64, 0x69, 0x76, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str65_len = 13
+str66 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str66_len = 14
+str67 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x70, 0x72, 0x69, 0x6e, 0x74, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str67_len = 22
+str68 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x64, 0x69, 0x0a, 0x00
+str68_len = 13
+str69 db 0x20, 0x20, 0x20, 0x20, 0x63, 0x61, 0x6c, 0x6c, 0x20, 0x70, 0x72, 0x69, 0x6e, 0x74, 0x0a, 0x00
+str69_len = 16
+str70 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x64, 0x75, 0x70, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str70_len = 20
+str71 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x5d, 0x0a, 0x00
+str71_len = 16
+str72 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x6f, 0x76, 0x65, 0x72, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str72_len = 21
+str73 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x2b, 0x38, 0x5d, 0x0a, 0x00
+str73_len = 18
+str74 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x73, 0x77, 0x61, 0x70, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str74_len = 21
+str75 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
 str75_len = 13
-str76 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
-str76_len = 14
-str77 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str76 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x6f, 0x70, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str76_len = 13
+str77 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
 str77_len = 14
-str78 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x64, 0x72, 0x6f, 0x70, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str78_len = 21
-str79 db 0x20, 0x20, 0x20, 0x20, 0x61, 0x64, 0x64, 0x20, 0x72, 0x73, 0x70, 0x2c, 0x20, 0x38, 0x0a, 0x00
-str79_len = 16
-str80 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x72, 0x6f, 0x74, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str80_len = 20
-str81 db 0x20, 0x20, 0x20, 0x20, 0x61, 0x64, 0x64, 0x20, 0x72, 0x73, 0x70, 0x2c, 0x20, 0x38, 0x0a, 0x00
-str81_len = 16
-str82 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x20, 0x2b, 0x20, 0x31, 0x36, 0x5d, 0x0a, 0x00
-str82_len = 23
-str83 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x62, 0x78, 0x2c, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x20, 0x2b, 0x20, 0x38, 0x5d, 0x0a, 0x00
-str83_len = 22
-str84 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x63, 0x78, 0x2c, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x5d, 0x0a, 0x00
-str84_len = 18
-str85 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x20, 0x2b, 0x20, 0x31, 0x36, 0x5d, 0x2c, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
-str85_len = 23
-str86 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x20, 0x2b, 0x20, 0x38, 0x5d, 0x2c, 0x20, 0x72, 0x63, 0x78, 0x0a, 0x00
-str86_len = 22
-str87 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x5d, 0x2c, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str87_len = 18
-str88 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x6e, 0x69, 0x70, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str88_len = 20
-str89 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x5d, 0x0a, 0x00
+str78 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str78_len = 14
+str79 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x64, 0x72, 0x6f, 0x70, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str79_len = 21
+str80 db 0x20, 0x20, 0x20, 0x20, 0x61, 0x64, 0x64, 0x20, 0x72, 0x73, 0x70, 0x2c, 0x20, 0x38, 0x0a, 0x00
+str80_len = 16
+str81 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x72, 0x6f, 0x74, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str81_len = 20
+str82 db 0x20, 0x20, 0x20, 0x20, 0x61, 0x64, 0x64, 0x20, 0x72, 0x73, 0x70, 0x2c, 0x20, 0x38, 0x0a, 0x00
+str82_len = 16
+str83 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x20, 0x2b, 0x20, 0x31, 0x36, 0x5d, 0x0a, 0x00
+str83_len = 23
+str84 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x62, 0x78, 0x2c, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x20, 0x2b, 0x20, 0x38, 0x5d, 0x0a, 0x00
+str84_len = 22
+str85 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x63, 0x78, 0x2c, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x5d, 0x0a, 0x00
+str85_len = 18
+str86 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x20, 0x2b, 0x20, 0x31, 0x36, 0x5d, 0x2c, 0x20, 0x72, 0x62, 0x78, 0x0a, 0x00
+str86_len = 23
+str87 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x20, 0x2b, 0x20, 0x38, 0x5d, 0x2c, 0x20, 0x72, 0x63, 0x78, 0x0a, 0x00
+str87_len = 22
+str88 db 0x09, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x5d, 0x2c, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str88_len = 18
+str89 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x6e, 0x69, 0x70, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
 str89_len = 20
-str90 db 0x20, 0x20, 0x20, 0x20, 0x61, 0x64, 0x64, 0x20, 0x72, 0x73, 0x70, 0x2c, 0x20, 0x31, 0x36, 0x0a, 0x00
-str90_len = 17
-str91 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
-str91_len = 14
-str92 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x65, 0x78, 0x69, 0x74, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
-str92_len = 21
-str93 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x36, 0x30, 0x0a, 0x00
-str93_len = 17
-str94 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x64, 0x69, 0x2c, 0x20, 0x30, 0x0a, 0x00
-str94_len = 16
-str95 db 0x20, 0x20, 0x20, 0x20, 0x73, 0x79, 0x73, 0x63, 0x61, 0x6c, 0x6c, 0x0a, 0x00
-str95_len = 13
+str90 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x5b, 0x72, 0x73, 0x70, 0x5d, 0x0a, 0x00
+str90_len = 20
+str91 db 0x20, 0x20, 0x20, 0x20, 0x61, 0x64, 0x64, 0x20, 0x72, 0x73, 0x70, 0x2c, 0x20, 0x31, 0x36, 0x0a, 0x00
+str91_len = 17
+str92 db 0x20, 0x20, 0x20, 0x20, 0x70, 0x75, 0x73, 0x68, 0x20, 0x72, 0x61, 0x78, 0x0a, 0x00
+str92_len = 14
+str93 db 0x20, 0x20, 0x20, 0x20, 0x3b, 0x3b, 0x20, 0x2d, 0x2d, 0x2d, 0x20, 0x65, 0x78, 0x69, 0x74, 0x20, 0x2d, 0x2d, 0x2d, 0x0a, 0x00
+str93_len = 21
+str94 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x61, 0x78, 0x2c, 0x20, 0x36, 0x30, 0x0a, 0x00
+str94_len = 17
+str95 db 0x20, 0x20, 0x20, 0x20, 0x6d, 0x6f, 0x76, 0x20, 0x72, 0x64, 0x69, 0x2c, 0x20, 0x30, 0x0a, 0x00
+str95_len = 16
+str96 db 0x20, 0x20, 0x20, 0x20, 0x73, 0x79, 0x73, 0x63, 0x61, 0x6c, 0x6c, 0x0a, 0x00
+str96_len = 13

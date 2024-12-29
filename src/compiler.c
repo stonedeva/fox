@@ -162,9 +162,11 @@ void compiler_emit_base(char* out_path, size_t main_addr)
     fprintf(out, "_start:\n");
     fprintf(out, "	pop [argc]\n");
     fprintf(out, "	mov [argv_ptr], rsp\n");
+    fprintf(out, "	mov rax, ret_stack_end\n");
+    fprintf(out, "	mov [ret_stack_rsp], rax\n");
     fprintf(out, "	call addr_%d\n", main_addr);
-    fprintf(out, "	mov rdi, rax\n");
     fprintf(out, "	mov rax, 60\n");
+    fprintf(out, "	mov rdi, 0\n");
     fprintf(out, "	syscall\n");
 
     fclose(out);
@@ -452,9 +454,8 @@ void compiler_emit_func(Compiler* compiler)
     context->func_count++;
 
     fprintf(out, "addr_%d:\n", compiler->tok_ptr);
-    if (func.addr != context->main_addr) {
-	fprintf(out, "	pop rbp\n");
-    }
+    fprintf(out, "	mov [ret_stack_rsp], rsp\n");
+    fprintf(out, "	mov rsp, rax\n");
 
     compiler->tok_ptr = ptr;
 }
@@ -519,8 +520,11 @@ void compiler_emit_func_call(Compiler* compiler)
 	return;
     }
 
+    fprintf(out, "	mov rax, rsp\n");
+    fprintf(out, "	mov rsp, [ret_stack_rsp]\n");
     fprintf(out, "	call addr_%d\n", func.addr);
-    //fprintf(out, "	push rax\n");
+    fprintf(out, "	mov [ret_stack_rsp], rsp\n");
+    fprintf(out, "	mov rsp, rax\n");
 }
 
 void compiler_emit_push(Compiler* compiler)
@@ -649,6 +653,9 @@ void compiler_emit_segments(Compiler* compiler)
     Context* context = compiler->context;
 
     fprintf(out, "segment readable writeable\n");
+    fprintf(out, "ret_stack_rsp rq 1\n");
+    fprintf(out, "ret_stack rb 65534\n");
+    fprintf(out, "ret_stack_end:\n");
 
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
@@ -720,10 +727,8 @@ void compiler_eval_end(Compiler* compiler)
 	fprintf(out, "addr_%d:\n", i);
 	break;
     case TOK_DEF_FUNC:
-	fprintf(out, "	mov rax, 0\n");
-	if (strcmp("main", context->cw_func) != 0) {
-	    fprintf(out, "	push rbp\n");
-	}
+	fprintf(out, "	mov rax, rsp\n");
+	fprintf(out, "	mov rsp, [ret_stack_rsp]\n");
 	fprintf(out, "	ret\n");
 	context->cw_func = NULL;
 	break;
