@@ -174,15 +174,15 @@ const sizeof(int64) 8 end
 memory list sizeof(int64) 4 * end
 
 func main in
-    list 20 set
-    list 8 + 30 set
-    list 16 + 95 set
-    list 24 + 40 set
+    list 20 set64
+    list 8 + 30 set64
+    list 16 + 95 set64
+    list 24 + 40 set64
 
     var max 0 end
 
     0 while dup 4 > do
-        list over sizeof(int64) * + get
+        list over sizeof(int64) * + get64
         take element in
             if max element > do
                 element #max
