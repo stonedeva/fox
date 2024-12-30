@@ -10,8 +10,6 @@ const OP_DUP 6 end
 const OP_OVER 7 end
 const OP_SWAP 8 end
 const OP_DROP 9 end
-const OP_ROT 10 end
-const OP_NIP 11 end
 
 // struct Ops {
 //   type: u64,
@@ -23,6 +21,19 @@ const sizeof(Op) 16 end
 
 memory ops sizeof(Op) MAX_OPS * end 
 var ops_count 0 end
+
+const MEM_CAPACITY 2400 end
+
+func load_program ptr in
+    dup O_RDONLY 0 @fopen
+
+    take path fd in
+	if fd 0 > do
+	    "ERROR: Could not open '" @puts path @cputs "'\n" @puts
+	    1 @exit
+	end
+    end
+end
 
 func usage in
     "Options:\n" @puts
@@ -173,26 +184,6 @@ func compile_ops in
 	    1 +
 	    continue
 	end
-	if ops over sizeof(Op) * + get64 OP_ROT == do
-	    "    ;; --- rot ---\n" @puts
-	    "    add rsp, 8\n" @puts
-	    "	 mov rax, [rsp + 16]\n" @puts
-	    "	 mov rbx, [rsp + 8]\n" @puts
-	    "	 mov rcx, [rsp]\n" @puts
-	    "	 mov [rsp + 16], rbx\n" @puts
-	    "	 mov [rsp + 8], rcx\n" @puts
-	    "	 mov [rsp], rax\n" @puts
-	    1 +
-	    continue
-	end
-	if ops over sizeof(Op) * + get64 OP_NIP == do
-	    "    ;; --- nip ---\n" @puts
-	    "    mov rax, [rsp]\n" @puts
-	    "    add rsp, 16\n" @puts
-	    "    push rax\n" @puts
-	    1 +
-	    continue
-	end
 	1 +
     end
     drop
@@ -201,14 +192,18 @@ func compile_ops in
     "    mov rax, 60\n" @puts
     "    mov rdi, 0\n" @puts
     "    syscall\n" @puts
+    "segment readable writeable\n" @puts
+    "mem rb " @puts MEM_CAPACITY @putd "\n" @puts
+    "ret_stack_rsp rq 1\n" @puts
+    "ret_stack rb 2400\n" @puts
+    "ret_stack_end:\n" @puts
 end
 
 func main in
     OP_PUSH_INT 95 @push_op
     OP_PUSH_INT 10 @push_op
-    OP_DUP 0 @push_op
     OP_PLUS 0 @push_op
-    OP_PLUS 0 @push_op
+    OP_PRINT 0 @push_op
     
     @compile_ops
 end

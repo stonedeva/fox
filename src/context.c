@@ -65,3 +65,15 @@ Variable context_var_by_name(Context* context, char* name)
 
     return (Variable) {};
 }
+
+Memory context_mem_by_name(Context* context, char* name)
+{
+    for (size_t i = 0; i < context->memory_count; i++) {
+	Memory mem = context->memories[i];
+	if (strcmp(name, mem.name) == 0) {
+	    return mem;
+	}
+    }
+
+    return (Memory) {};
+}

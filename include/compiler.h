@@ -17,6 +17,7 @@ typedef struct {
     Token* tokens;
     char* input_name;
     size_t mem_capacity;
+    size_t used_mem;
 } Compiler;
 
 

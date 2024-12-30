@@ -1,6 +1,7 @@
 import "std.fox"
 
-memory content 1024 end
+const CONTENT_CAP 1024 end
+memory content CONTENT_CAP end
 
 func main in
     "./examples/cat.fox"c O_RDONLY 0 @fopen
@@ -10,9 +11,9 @@ func main in
             "ERROR: Could not open file!\n" @eputs
             1 @exit
         end
-        fd content 1024 @fread
+        fd content CONTENT_CAP @fread
         fd @fclose
     end
 
-    1024 content @puts
+    CONTENT_CAP content @puts
 end

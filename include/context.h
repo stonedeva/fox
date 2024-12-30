@@ -26,14 +26,16 @@ typedef struct {
 
 typedef struct {
     char* name;
-    char* value;
-} Macro;
+    size_t addr;
+    size_t offset;
+} Memory;
 
 typedef struct {
     size_t stmt_count;
     size_t literal_count;
     size_t func_count;
     size_t var_count;
+    size_t memory_count;
     size_t temp_addr;
     char* bindings[8];
     size_t binding_count;
@@ -43,6 +45,7 @@ typedef struct {
     TokenType stmts[MAX_STACK_SIZE];
     Variable vars[MAX_INSTANCES];
     Function funcs[MAX_INSTANCES];
+    Memory memories[MAX_INSTANCES];
     char* literals[MAX_INSTANCES];
     char* cw_func;
 } Context;
@@ -53,5 +56,6 @@ void context_push(Context* context, TokenType type);
 TokenType context_pop(Context* context);
 Function context_func_by_name(Context* context, char* name);
 Variable context_var_by_name(Context* context, char* name);
+Memory context_mem_by_name(Context* context, char* name);
 
 #endif // CONTEXT_H

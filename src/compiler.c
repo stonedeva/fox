@@ -330,16 +330,26 @@ void compiler_emit_reference(Compiler* compiler)
     size_t ptr = compiler->tok_ptr;
 
     Variable var = context_var_by_name(context, name);
-    if (var.name == NULL) {
+    if (var.name != NULL) {
+	if (var.is_const) {
+	    fprintf(out, "	mov rax, addr_%d\n", var.addr);
+	} else {
+	    fprintf(out, "	mov rax, [addr_%d]\n", var.addr);
+	}
+	fprintf(out, "	push rax\n");
+	return;
+    }
+
+    Memory mem = context_mem_by_name(context, name);
+    if (mem.name == NULL) {
 	error_from_parts(compiler->input_name, FATAL,
-			 "Variable in reference does not exist",
+			 "Reference is neither variable or memory",
 			 compiler->tokens[ptr]);
     }
 
-    if (var.is_const || var.is_mem) {
-	fprintf(out, "	mov rax, addr_%d\n", var.addr);
-    } else {
-	fprintf(out, "	mov rax, [addr_%d]\n", var.addr);
+    fprintf(out, "	mov rax, mem\n");
+    if (mem.offset > 0) {
+	fprintf(out, "	add rax, %d\n", mem.offset);
     }
     fprintf(out, "	push rax\n");
 }
@@ -653,16 +663,20 @@ void compiler_emit_segments(Compiler* compiler)
     Context* context = compiler->context;
 
     fprintf(out, "segment readable writeable\n");
+    if (compiler->used_mem > compiler->mem_capacity) {
+	error_throw(compiler, WARNING, "Maximum memory capacity has been exceed");
+	fprintf(out, "mem rb %d\n", compiler->mem_capacity);
+    } else {
+	fprintf(out, "mem rb %d\n", compiler->used_mem);
+    }
     fprintf(out, "ret_stack_rsp rq 1\n");
-    fprintf(out, "ret_stack rb 65534\n");
+    fprintf(out, "ret_stack rb 2400\n");
     fprintf(out, "ret_stack_end:\n");
 
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
 	if (var.is_const) {
 	    fprintf(out, "addr_%d = %d\n", var.addr, var.value);
-	} else if (var.is_mem) {
-	    fprintf(out, "addr_%d rb %d\n", var.addr, var.value);
 	} else {
 	    fprintf(out, "addr_%d dq 0\n", var.addr);
 	}
@@ -817,7 +831,7 @@ uint64_t compiler_eval_const(Compiler* compiler)
     return eval_stack[0];
 }
 
-void compiler_emit_const_def(Compiler* compiler, TokenType type)
+void compiler_emit_const_def(Compiler* compiler)
 {
     Context* context = compiler->context;
 
@@ -826,26 +840,30 @@ void compiler_emit_const_def(Compiler* compiler, TokenType type)
     compiler->tok_ptr += 2;
     uint64_t val = compiler_eval_const(compiler);
 
-    Variable var = {
+    context->vars[context->var_count++] = (Variable) {
 	.name = name,
 	.type = INTEGER,
 	.value = val,
-	.addr = addr
+	.addr = addr,
+	.is_const = true
     };
+}
 
-    switch (type) {
-    case TOK_DEF_MEM:
-	var.is_mem = true;
-	break;
-    case TOK_DEF_CONST:
-	var.is_const = true;
-	break;
-    default:
-	assert(0 && "compiler_emit_const_def(): Illegal token type provided!\n");
-	break;
-    }
+void compiler_emit_mem_def(Compiler* compiler)
+{
+    Context* context = compiler->context;
 
-    context->vars[context->var_count++] = var;
+    size_t addr = compiler->tok_ptr;
+    char* name = compiler_next_tok(compiler);
+    compiler->tok_ptr += 2;
+    uint64_t val = compiler_eval_const(compiler);
+
+    context->memories[context->memory_count++] = (Memory) {
+	.name = name,
+	.addr = addr,
+	.offset = compiler->used_mem
+    };
+    compiler->used_mem += val;
 }
 
 void compiler_emit(Compiler* compiler)
@@ -856,6 +874,7 @@ void compiler_emit(Compiler* compiler)
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	Token tok = compiler->tokens[i];
 
+	// Binding
 	bool binding_res = false;
 	if (context->active_binding) {
 	    for (size_t j = 0; j < context->binding_count; j++) {
@@ -973,13 +992,13 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_nip(compiler);
 	    break;
 	case TOK_DEF_MEM:
-	    compiler_emit_const_def(compiler, TOK_DEF_MEM);
+	    compiler_emit_mem_def(compiler);
 	    break;
 	case TOK_SYSCALL:
 	    compiler_emit_syscall(compiler);
 	    break;
 	case TOK_DEF_CONST:
-	    compiler_emit_const_def(compiler, TOK_DEF_CONST);
+	    compiler_emit_const_def(compiler);
 	    break;
 	case TOK_TAKE:
 	case TOK_PEEK:
