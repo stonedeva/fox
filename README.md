@@ -202,9 +202,9 @@ Write strings to a file
 import "std.fox"
 
 func main in
-    "test.txt"c @fopen
+    "test.txt"c O_WRONLY O_CREAT @fopen
 
-    bind fd in
+    take fd in
 	"Hello, World!\n" fd @fputs
 	"A new line!\n" fd @fputs
 	"Last line!\n" fd @fputs
