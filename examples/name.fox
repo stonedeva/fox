@@ -1,0 +1,8 @@
+import "std.fox"
+
+memory name 20 end
+
+func main in
+    name 20 @read
+    "Hello, " @puts 20 name @puts "!\n" @puts
+end

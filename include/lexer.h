@@ -29,7 +29,6 @@ typedef enum {
     TOK_OVER,
     TOK_ROT,
     TOK_DROP,
-    TOK_NIP,
     TOK_DEF_MEM,
     TOK_DEF_FUNC,
     TOK_FUNC_CALL,

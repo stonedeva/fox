@@ -161,11 +161,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_OVER;
     } else if (strcmp("rot", cstr) == 0) {
 	return TOK_ROT;
-    } else if (strcmp("drop", cstr) == 0 ||
-	       strcmp("drop", cstr + 1) == 0) {
+    } else if (strcmp("drop", cstr) == 0) {
 	return TOK_DROP;
-    } else if (strcmp("nip", cstr) == 0) {
-	return TOK_NIP;
     } else if (strcmp("set8", cstr) == 0) {
 	return TOK_PTR_SET8;
     } else if (strcmp("set32", cstr) == 0) {

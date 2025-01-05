@@ -202,7 +202,8 @@ void compiler_emit_char(Compiler* compiler)
 void compiler_emit_dup(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    fprintf(out, "	push QWORD [rsp]\n"); 
+    fprintf(out, "	mov rax, [rsp]\n");
+    fprintf(out, "	push rax\n"); 
 }
 
 void compiler_emit_swap(Compiler* compiler)
@@ -219,7 +220,8 @@ void compiler_emit_swap(Compiler* compiler)
 void compiler_emit_over(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    fprintf(out, "	push QWORD [rsp+8]\n");
+    fprintf(out, "	mov rax, [rsp+8]\n");
+    fprintf(out, "	push rax\n");
 }
 
 void compiler_emit_rot(Compiler* compiler)
@@ -237,21 +239,7 @@ void compiler_emit_rot(Compiler* compiler)
 void compiler_emit_drop(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    if (!isdigit(compiler_curr_tok(compiler)[0])) {
-	fprintf(out, "	add rsp, 8\n");
-	return;
-    }
-
-    int amount = compiler_curr_tok(compiler)[0] - '0';
-    fprintf(out, "	add rsp, %d\n", 8 * amount);
-}
-
-void compiler_emit_nip(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    fprintf(out, "	mov rax, [rsp]\n");
-    fprintf(out, "	add rsp, 16\n");
-    fprintf(out, "	push rax\n");
+    fprintf(out, "	add rsp, 8\n");
 }
 
 void compiler_emit_continue(Compiler* compiler)
@@ -261,7 +249,7 @@ void compiler_emit_continue(Compiler* compiler)
     fprintf(out, "	jmp addr_%d\n", addr);
 }
 
-void compiler_emit_bind_def(Compiler* compiler)
+void compiler_emit_bind_def(Compiler* compiler, TokenType type)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
@@ -275,6 +263,16 @@ void compiler_emit_bind_def(Compiler* compiler)
     }
 
     fprintf(out, "	mov r15, rsp\n");
+    switch (type) {
+    case TOK_TAKE:
+	fprintf(out, "	sub rsp, %d\n", 8 * context->binding_count);
+	break;
+    case TOK_PEEK:
+	break;
+    default:
+	assert(0 && "compiler_emit_bind_def(): Illegal token type provided!\n");
+    }
+
     compiler->tok_ptr = ptr;
 }
 
@@ -332,7 +330,7 @@ void compiler_emit_reference(Compiler* compiler)
     Variable var = context_var_by_name(context, name);
     if (var.name != NULL) {
 	if (var.is_const) {
-	    fprintf(out, "	mov rax, addr_%d\n", var.addr);
+	    fprintf(out, "	mov rax, %d\n", var.value);
 	} else {
 	    fprintf(out, "	mov rax, [addr_%d]\n", var.addr);
 	}
@@ -473,10 +471,10 @@ void compiler_emit_func(Compiler* compiler)
 void compiler_emit_return(Compiler* compiler)
 {
     FILE* out = compiler->output;
-    if (strcmp("main", compiler->context->cw_func) != 0) {
-	fprintf(out, "	push rbp\n");
-    }
+    fprintf(out, "	mov rax, rsp\n");
+    fprintf(out, "	mov rsp, [ret_stack_rsp]\n");
     fprintf(out, "	ret\n");
+    compiler->context->cw_func = NULL;
 }
 
 void compiler_emit_else(Compiler* compiler)
@@ -537,7 +535,7 @@ void compiler_emit_func_call(Compiler* compiler)
     fprintf(out, "	mov rsp, rax\n");
 }
 
-void compiler_emit_push(Compiler* compiler)
+void compiler_emit_number(Compiler* compiler)
 {
     FILE* out = compiler->output;
     fprintf(out, "	mov rax, %s\n", compiler_curr_tok(compiler));
@@ -675,9 +673,7 @@ void compiler_emit_segments(Compiler* compiler)
 
     for (size_t i = 0; i < context->var_count; i++) {
 	Variable var = context->vars[i];
-	if (var.is_const) {
-	    fprintf(out, "addr_%d = %d\n", var.addr, var.value);
-	} else {
+	if (!var.is_const) {
 	    fprintf(out, "addr_%d dq 0\n", var.addr);
 	}
     }
@@ -754,13 +750,9 @@ void compiler_eval_end(Compiler* compiler)
 	size_t var_addr = context->vars[context->var_count - 1].addr;
 	fprintf(out, "	pop [addr_%d]\n", var_addr);
 	break;
+    case TOK_TAKE:
     case TOK_PEEK:
 	context->active_binding = false;
-	context->binding_count = 0;
-	break;
-    case TOK_TAKE:
-	context->active_binding = false;
-	fprintf(out, "	add rsp, %d\n", context->binding_count * 8);
 	context->binding_count = 0;
 	break;
     }
@@ -880,7 +872,8 @@ void compiler_emit(Compiler* compiler)
 	    for (size_t j = 0; j < context->binding_count; j++) {
 		if (strcmp(tok.token, context->bindings[j]) == 0) {
 		    size_t addr = (context->binding_count - j - 1) * 8;
-		    fprintf(out, "	push QWORD [r15 + %d]\n", addr);
+		    fprintf(out, "	mov rax, [r15 + %d]\n", addr);
+		    fprintf(out, "	push rax\n");
 		    binding_res = true;
 		}
 	    }
@@ -936,7 +929,7 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_redef_var(compiler);
 	    break;
 	case TOK_NUMBER:
-	    compiler_emit_push(compiler);
+	    compiler_emit_number(compiler);
 	    break;
 	case TOK_BINARYOP:
 	    compiler_emit_binaryop(compiler);
@@ -988,9 +981,6 @@ void compiler_emit(Compiler* compiler)
 	case TOK_DROP:
 	    compiler_emit_drop(compiler);
 	    break;
-	case TOK_NIP:
-	    compiler_emit_nip(compiler);
-	    break;
 	case TOK_DEF_MEM:
 	    compiler_emit_mem_def(compiler);
 	    break;
@@ -1004,7 +994,7 @@ void compiler_emit(Compiler* compiler)
 	case TOK_PEEK:
 	    context->active_binding = true;
 	    context_push(context, tok.type);
-	    compiler_emit_bind_def(compiler);
+	    compiler_emit_bind_def(compiler, tok.type);
 	    break;
 	case TOK_ARGC:
 	    compiler_emit_argc(compiler);

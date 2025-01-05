@@ -30,18 +30,14 @@ end
 // strcmp - Compare two strings
 // : n1, s1, n2, s2 => comparisson
 func strcmp int ptr int ptr in
-    // TODO: "take" only removes the elements when closing the block.
-    // this requires the drop all the consumend elements
-    // before returning. Make "take" remove the elements at the beginning
     take n1 s1 n2 s2 in
 	if n1 n2 != do
-	    4drop
 	    0 return
 	end
         0 while dup n1 > do
             if dup s1 + get8 over s2 + get8 != do
-                5drop
-                0 return
+		drop
+		0 return
             end
             1 +
         end
@@ -53,12 +49,11 @@ end
 // cstrlen - Determine length of null-terminated string
 // : pointer => length
 func cstrlen ptr in
-    peek str in
+    take str in
         0 while dup str + get8 0 != do
             1 +
         end
     end
-    swap drop
 end
 
 // cstr_to_fstr - Convert a C-style string to a Fox-string
@@ -121,7 +116,7 @@ func putd int in
         1 +
         swap 10 / swap
     end
-    2drop
+    drop drop
 
     SYS_write stdout putd_buffer PUTD_BUFFER_CAP syscall 
     drop
@@ -139,10 +134,9 @@ end
 // fopen - Opens a file
 // : pointer, mode, permission => file descriptor
 func fopen ptr int int in
-    peek path mode perm in
+    take path mode perm in
 	SYS_open path mode perm syscall
     end
-    nip nip nip
 end
 
 // fclose - Closes a file

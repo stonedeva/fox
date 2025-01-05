@@ -1,4 +1,2 @@
 func main in
-    20 10 + print
 end
-
