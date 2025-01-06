@@ -613,7 +613,14 @@ void compiler_emit_do(Compiler* compiler)
     if (typestack->type_count < 1) {
 	error_throw(compiler, FATAL, "Operation 'do' requires one argument");
     }
-    (void) typestack_pop(typestack);
+
+    VarType a = typestack_pop(typestack);
+    if (a != BOOLEAN) {
+	char err_msg[MSG_CAP];
+	sprintf(err_msg, "Operation 'do' expected 'bool' but got '%s'",
+		typestack_cstr_from_type(a));
+	error_throw(compiler, WARNING, err_msg);
+    }
 
     fprintf(out, "	pop rax\n");
     fprintf(out, "	cmp rax, 1\n");
@@ -802,13 +809,13 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	div rbx\n");
 	break;
     case '<':
-	typestack_push(typestack, INTEGER);
+	typestack_push(typestack, BOOLEAN);
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	setl al\n");
 	fprintf(out, "	movzx rax, al\n");
 	break;
     case '>':
-	typestack_push(typestack, INTEGER);
+	typestack_push(typestack, BOOLEAN);
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	setg al\n");
 	fprintf(out, "	movzx rax, al\n");
