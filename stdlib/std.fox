@@ -2,7 +2,6 @@ const SYS_read 0 end
 const SYS_write 1 end
 const SYS_open 2 end
 const SYS_close 3 end
-const SYS_execve 59 end
 const SYS_exit 60 end
 
 const stdin 0 end
@@ -46,6 +45,16 @@ func strcmp int ptr int ptr in
     1 return
 end
 
+// strchop - Chop whitespaces at beginning from the string
+// : pointer => modified pointer
+func strchop ptr in
+    peek str in
+	0 while dup str + get8 ' ' == do
+	    1 +
+	end
+    end
+end
+
 // cstrlen - Determine length of null-terminated string
 // : pointer => length
 func cstrlen ptr in
@@ -68,7 +77,7 @@ func memcpy ptr ptr int in
     take dst src n in
 	0 while dup n > do
 	    dup src + get8
-	    dst over + set8
+	    over dst + swap set8
 	    1 +
 	end
 	drop
@@ -189,15 +198,6 @@ end
 func exit int in
     take code in
 	SYS_exit code 0 0 syscall
-	drop
-    end
-end
-
-// execve - Executes process
-// : filename, argv, envp
-func execve ptr ptr ptr in
-    take filename argv envp in
-	SYS_execve filename argv envp syscall
 	drop
     end
 end

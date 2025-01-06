@@ -31,13 +31,18 @@ typedef struct {
 } Memory;
 
 typedef struct {
+    char* name;
+    VarType type;
+} Binding;
+
+typedef struct {
     size_t stmt_count;
     size_t literal_count;
     size_t func_count;
     size_t var_count;
     size_t memory_count;
     size_t temp_addr;
-    char* bindings[8];
+    Binding bindings[8];
     size_t binding_count;
     bool active_binding;
     size_t main_addr;

@@ -84,11 +84,6 @@ static int fox_init(int argc, char* argv[])
     Lexer lexer = lexer_init(input_path, "stdlib");
     lexer_proc(&lexer);
 
-    if (has_typecheck) {
-	TypeStack typestack = typestack_init(&lexer);
-	typestack_evaluate(&typestack);
-    }
-
     char output_path[20];
 
 #ifndef DEBUG
@@ -98,7 +93,6 @@ static int fox_init(int argc, char* argv[])
 #endif
 
     Compiler compiler = compiler_init(output_path, &lexer, mem_capacity);
-    compiler_emit_base(output_path, compiler.context->main_addr);
     compiler_emit(&compiler);
 
     return 0;

@@ -11,7 +11,7 @@
 Compiler compiler_init(char* output_path, Lexer* lexer, size_t mem_capacity)
 {
     Compiler compiler = {0};
-    FILE* output = fopen(output_path, "a");
+    FILE* output = fopen(output_path, "w");
 
     if (!output) {
 	perror(output_path);
@@ -26,6 +26,7 @@ Compiler compiler_init(char* output_path, Lexer* lexer, size_t mem_capacity)
     compiler.tok_sz = lexer->tok_sz;
     compiler.tok_ptr = 0;
     compiler.mem_capacity = mem_capacity;
+    compiler.typestack = typestack_init(lexer);
 
     compiler_crossreference(&compiler);
 
@@ -120,14 +121,8 @@ char* compiler_curr_tok(Compiler* compiler)
     return compiler->tokens[ptr].token;
 }
 
-void compiler_emit_base(char* out_path, size_t main_addr)
+void compiler_emit_base(FILE* out, size_t main_addr)
 {
-    FILE* out = fopen(out_path, "w");
-    if (!out) {
-	perror(out_path);
-	exit(1);
-    }
-
     fprintf(out, "format ELF64 executable 0\n");
     fprintf(out, "entry _start\n");
     fprintf(out, "segment readable executable\n");
@@ -168,12 +163,20 @@ void compiler_emit_base(char* out_path, size_t main_addr)
     fprintf(out, "	mov rax, 60\n");
     fprintf(out, "	mov rdi, 0\n");
     fprintf(out, "	syscall\n");
-
-    fclose(out);
 }
 
 void compiler_emit_syscall(Compiler* compiler)
 {
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 4) {
+	char err_msg[100];
+	sprintf(err_msg, "Operation 'syscall' requires 4 arguments but got %d", 
+		typestack->type_count);
+	error_throw(compiler, FATAL, err_msg);
+    }
+
+    typestack->type_count -= 4;
+
     FILE* out = compiler->output;
     fprintf(out, "	pop rdx\n");
     fprintf(out, "	pop rsi\n");
@@ -181,11 +184,20 @@ void compiler_emit_syscall(Compiler* compiler)
     fprintf(out, "	pop rax\n");
     fprintf(out, "	syscall\n");
     fprintf(out, "	push rax\n");
+    
+    typestack_push(typestack, INTEGER);
 }
 
 void compiler_emit_print(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 1) {
+	error_throw(compiler, FATAL, "Operation 'print' requires one argument");
+    }
+    (void) typestack_pop(compiler->typestack);
+
     fprintf(out, "	pop rdi\n");
     fprintf(out, "	call print\n");
 }
@@ -195,6 +207,8 @@ void compiler_emit_char(Compiler* compiler)
     FILE* out = compiler->output;
     char ch = compiler_curr_tok(compiler)[1];
     
+    typestack_push(compiler->typestack, BYTE);
+
     fprintf(out, "	mov rax, %d\n", (int)ch);
     fprintf(out, "	push rax\n");
 }
@@ -202,6 +216,13 @@ void compiler_emit_char(Compiler* compiler)
 void compiler_emit_dup(Compiler* compiler)
 {
     FILE* out = compiler->output;
+
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 1) {
+	error_throw(compiler, FATAL, "Operation 'dup' requires one argument");
+    }
+    typestack_push(typestack, typestack->types[typestack->type_count - 1]);
+
     fprintf(out, "	mov rax, [rsp]\n");
     fprintf(out, "	push rax\n"); 
 }
@@ -210,6 +231,19 @@ void compiler_emit_swap(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 2) {
+	char err_msg[100];
+	sprintf(err_msg, "Operation 'swap' requires 2 arguments but got %d",
+		typestack->type_count);
+	error_throw(compiler, FATAL, err_msg);
+    }
+
+    VarType a = typestack_pop(typestack);
+    VarType b = typestack_pop(typestack);
+    typestack_push(typestack, a);
+    typestack_push(typestack, b);
 
     fprintf(out, "	pop rax\n");
     fprintf(out, "	pop rbx\n");
@@ -220,6 +254,16 @@ void compiler_emit_swap(Compiler* compiler)
 void compiler_emit_over(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 2) {
+	char err_msg[100];
+	sprintf(err_msg, "Operation 'over' requires 2 arguments but got %d",
+		typestack->type_count);
+	error_throw(compiler, FATAL, err_msg);
+    }
+    typestack_push(typestack, typestack->types[typestack->type_count - 2]);
+
     fprintf(out, "	mov rax, [rsp+8]\n");
     fprintf(out, "	push rax\n");
 }
@@ -227,6 +271,20 @@ void compiler_emit_over(Compiler* compiler)
 void compiler_emit_rot(Compiler* compiler)
 {
     FILE* out = compiler->output;
+
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 3) {
+	char err_msg[100];
+	sprintf(err_msg, "Operation 'rot' requires 3 arguments but got %d",
+		typestack->type_count);
+	error_throw(compiler, FATAL, err_msg);
+    }
+    VarType a = typestack_pop(typestack);
+    VarType b = typestack_pop(typestack);
+    VarType c = typestack_pop(typestack);
+    typestack_push(typestack, b);
+    typestack_push(typestack, c);
+    typestack_push(typestack, a);
 
     fprintf(out, "	mov rax, [rsp + 16]\n");
     fprintf(out, "	mov rbx, [rsp + 8]\n");
@@ -239,6 +297,13 @@ void compiler_emit_rot(Compiler* compiler)
 void compiler_emit_drop(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 1) {
+	error_throw(compiler, FATAL, "Operation 'drop' requires one argument");
+    }
+    (void) typestack_pop(typestack);
+
     fprintf(out, "	add rsp, 8\n");
 }
 
@@ -253,18 +318,25 @@ void compiler_emit_bind_def(Compiler* compiler, TokenType type)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+    TypeStack* typestack = compiler->typestack;
 
     size_t ptr = compiler->tok_ptr;
     ptr++;
 
     while (strcmp("in", compiler->tokens[ptr].token) != 0) {
-	context->bindings[context->binding_count++] = compiler->tokens[ptr].token;
+	context->bindings[context->binding_count++] = (Binding) {
+	    .name = compiler->tokens[ptr].token,
+	};
 	ptr++;
     }
-
+    for (size_t i = 0; i < context->binding_count; i++) {
+	context->bindings[i].type = typestack->types[typestack->type_count - context->binding_count + i];
+    }
+    
     fprintf(out, "	mov r15, rsp\n");
     switch (type) {
     case TOK_TAKE:
+	typestack->type_count -= context->binding_count;
 	fprintf(out, "	sub rsp, %d\n", 8 * context->binding_count);
 	break;
     case TOK_PEEK:
@@ -287,7 +359,6 @@ void compiler_emit_var(Compiler* compiler)
 	.name = strdup(name),
 	.addr = compiler->tok_ptr,
 	.type = INTEGER,
-	.value = NULL
     };
 
     context->vars[context->var_count++] = var;
@@ -329,6 +400,7 @@ void compiler_emit_reference(Compiler* compiler)
 
     Variable var = context_var_by_name(context, name);
     if (var.name != NULL) {
+	typestack_push(compiler->typestack, INTEGER);
 	if (var.is_const) {
 	    fprintf(out, "	mov rax, %d\n", var.value);
 	} else {
@@ -344,6 +416,7 @@ void compiler_emit_reference(Compiler* compiler)
 			 "Reference is neither variable or memory",
 			 compiler->tokens[ptr]);
     }
+    typestack_push(compiler->typestack, POINTER);
 
     fprintf(out, "	mov rax, mem\n");
     if (mem.offset > 0) {
@@ -361,6 +434,8 @@ void compiler_emit_ptr_ref(Compiler* compiler)
     char* name = compiler_curr_tok(compiler);
     name++;
 
+    typestack_push(compiler->typestack, POINTER);
+
     Variable var = context_var_by_name(context, name);
     if (var.name == NULL) {
 	error_from_parts(compiler->input_name, FATAL,
@@ -376,6 +451,26 @@ void compiler_emit_ptr_set(Compiler* compiler, TokenType type)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+
+    TypeStack* typestack = compiler->typestack;
+    char err_msg[100];
+    if (typestack->type_count < 2) {
+	sprintf(err_msg, "Operation 'set' requires 2 arguments but got %d",
+		typestack->type_count);
+	error_throw(compiler, FATAL, err_msg);
+    }
+    VarType a = typestack_pop(typestack);
+    VarType b = typestack_pop(typestack);
+    if (a != INTEGER) {
+	sprintf(err_msg, "Operation 'set' expected 'int' as 2 argument but got '%s'",
+		typestack_cstr_from_type(a));
+	error_throw(compiler, FATAL, err_msg);
+    }
+    if (b != POINTER) {
+	sprintf(err_msg, "Operation 'set' expected 'ptr' as 1 argument but got '%s'",
+		typestack_cstr_from_type(b));
+	error_throw(compiler, FATAL, err_msg);
+    }
 
     char* name = compiler_curr_tok(compiler);
     name++;
@@ -406,6 +501,19 @@ void compiler_emit_ptr_get(Compiler* compiler, TokenType type)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 1) {
+	error_throw(compiler, FATAL, "Operation 'get' requires one argument");
+    }
+
+    VarType a = typestack_pop(typestack);
+    if (a != POINTER) {
+	char err_msg[100];
+	sprintf(err_msg, "Operation 'get' expected 'ptr' but got '%s'",
+		typestack_cstr_from_type(a));
+	error_throw(compiler, FATAL, err_msg);
+    }
+
     switch (type) {
     case TOK_PTR_GET8:
 	fprintf(out, "	pop rax\n");
@@ -428,6 +536,7 @@ void compiler_emit_ptr_get(Compiler* compiler, TokenType type)
     default:
 	assert(0 && "compiler_emit_ptr_get(): Illegal token type provided!\n"); 
     }
+    typestack_push(typestack, INTEGER);
 }
 
 void compiler_emit_func(Compiler* compiler)
@@ -453,6 +562,7 @@ void compiler_emit_func(Compiler* compiler)
 	if (arg_type == TYPE_INVALID) {
 	    error_throw(compiler, FATAL, "Invalid argument type");
 	}
+	typestack_push(compiler->typestack, arg_type);
 
 	func.args[func.arg_count++] = arg_type;
 	ptr++;
@@ -498,6 +608,12 @@ void compiler_emit_do(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
 
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 1) {
+	error_throw(compiler, FATAL, "Operation 'do' requires one argument");
+    }
+    (void) typestack_pop(typestack);
+
     fprintf(out, "	pop rax\n");
     fprintf(out, "	cmp rax, 1\n");
 
@@ -528,6 +644,25 @@ void compiler_emit_func_call(Compiler* compiler)
 	return;
     }
 
+    TypeStack* typestack = compiler->typestack;
+    char err_msg[100];
+    if (typestack->type_count < func.arg_count) {
+	sprintf(err_msg, "Function '%s' expected %d arguments but got %d",
+		func.name, func.arg_count, typestack->type_count);
+	error_throw(compiler, FATAL, err_msg);
+    }
+
+    for (size_t i = 0; i < func.arg_count; i++) {
+	VarType actual_type = typestack_pop(typestack);
+	VarType expected_type = func.args[func.arg_count - i - 1];
+	if (actual_type != expected_type) {
+	    sprintf(err_msg, "Function '%s' expected '%s' as %d argument but got '%s'", 
+		    func.name, typestack_cstr_from_type(expected_type), i + 1, 
+		    typestack_cstr_from_type(actual_type));
+	    error_throw(compiler, FATAL, err_msg);
+	}
+    }
+
     fprintf(out, "	mov rax, rsp\n");
     fprintf(out, "	mov rsp, [ret_stack_rsp]\n");
     fprintf(out, "	call addr_%d\n", func.addr);
@@ -538,6 +673,8 @@ void compiler_emit_func_call(Compiler* compiler)
 void compiler_emit_number(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    typestack_push(compiler->typestack, INTEGER);
+
     fprintf(out, "	mov rax, %s\n", compiler_curr_tok(compiler));
     fprintf(out, "	push rax\n");
 }
@@ -547,6 +684,10 @@ void compiler_emit_str(Compiler* compiler)
     FILE* out = compiler->output;
     Context* context = compiler->context;
     size_t ptr = compiler->tok_ptr;
+
+    TypeStack* typestack = compiler->typestack;
+    typestack_push(typestack, INTEGER);
+    typestack_push(typestack, POINTER);
 
     bool is_cstr = false;
 
@@ -579,75 +720,108 @@ void compiler_emit_binaryop(Compiler* compiler)
     size_t ptr = compiler->tok_ptr;
 
     char* op = compiler_curr_tok(compiler);
+    
+    TypeStack* typestack = compiler->typestack;
+    if (typestack->type_count < 2) {
+	char err_msg[100];
+	sprintf(err_msg, "Operation '%s' requires 2 arguments but got %d",
+		op, typestack->type_count);
+	error_throw(compiler, FATAL, err_msg);
+    }
 
     fprintf(out, "	pop rax\n");
     fprintf(out, "	pop rbx\n");
 
     if (strcmp(op, "==") == 0) {
+	typestack_push(typestack, BOOLEAN);
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	sete al\n");
 	fprintf(out, "	movzx rax, al\n");
 	fprintf(out, "	push rax\n");
 	return;
     } else if (strcmp(op, "!=") == 0) {
+	typestack_push(typestack, BOOLEAN);
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	setne al\n");
 	fprintf(out, "	movzx rax, al\n");
 	fprintf(out, "	push rax\n");
 	return;
     } else if (strcmp(op, "&&") == 0) {
+	typestack_push(typestack, BOOLEAN);
 	fprintf(out, "	and rax, rbx\n");
 	fprintf(out, "	push rax\n");
 	return;
     } else if (strcmp(op, "||") == 0) {
+	typestack_push(typestack, BOOLEAN);
 	fprintf(out, "	or rax, rbx\n");
 	fprintf(out, "	push rax\n");
 	return;
     } else if (strcmp(op, "<<") == 0) {
+	typestack_push(typestack, INTEGER);
 	fprintf(out, "	mov cl, al\n");
 	fprintf(out, "	shl rbx, cl\n");
 	fprintf(out, "	push rbx\n");
 	return;
     } else if (strcmp(op, ">>") == 0) {
+	typestack_push(typestack, INTEGER);
 	fprintf(out, "	mov cl, al\n");
 	fprintf(out, "	shr rbx, cl\n");
 	fprintf(out, "	push rbx\n");
 	return;
     }
 
+    VarType a = typestack_pop(typestack);
+    VarType b = typestack_pop(typestack);
+
     switch (op[0]) {
     case '+':
+	if (a == POINTER || b == POINTER) {
+	    typestack_push(typestack, POINTER);
+	} else {
+	    typestack_push(typestack, INTEGER);
+	}
 	fprintf(out, "	add rax, rbx\n");
 	break;
     case '-':
+	if (a == POINTER || b == POINTER) {
+	    typestack_push(typestack, POINTER);
+	} else {
+	    typestack_push(typestack, INTEGER);
+	}
 	fprintf(out, "	sub rbx, rax\n");
 	fprintf(out, "	mov rax, rbx\n");
 	break;
     case '*':
+	typestack_push(typestack, INTEGER);
 	fprintf(out, "	mul rbx\n");
 	break;
     case '/':
+	typestack_push(typestack, INTEGER);
 	fprintf(out, "	xchg rax, rbx\n");
 	fprintf(out, "	xor rdx, rdx\n");
 	fprintf(out, "	div rbx\n");
 	break;
     case '<':
+	typestack_push(typestack, INTEGER);
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	setl al\n");
 	fprintf(out, "	movzx rax, al\n");
 	break;
     case '>':
+	typestack_push(typestack, INTEGER);
 	fprintf(out, "	cmp rax, rbx\n");
 	fprintf(out, "	setg al\n");
 	fprintf(out, "	movzx rax, al\n");
 	break;
     case '%':
+	typestack_push(typestack, INTEGER);
 	fprintf(out, "	xchg rax, rbx\n");
 	fprintf(out, "	xor rdx, rdx\n");
 	fprintf(out, "	div rbx\n");
 	fprintf(out, "	mov rax, rdx\n");
 	break;
     case '^':
+	typestack_push(typestack, INTEGER);
 	fprintf(out, "	xor rax, rbx\n");
 	break;
     }
@@ -761,6 +935,8 @@ void compiler_eval_end(Compiler* compiler)
 void compiler_emit_argc(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    typestack_push(compiler->typestack, INTEGER);
+
     fprintf(out, "	mov rax, [argc]\n");
     fprintf(out, "	push rax\n");
 }
@@ -768,6 +944,8 @@ void compiler_emit_argc(Compiler* compiler)
 void compiler_emit_argv(Compiler* compiler)
 {
     FILE* out = compiler->output;
+    typestack_push(compiler->typestack, POINTER);
+
     fprintf(out, "	mov rax, [argv_ptr]\n");
     fprintf(out, "	push rax\n");
 }
@@ -862,6 +1040,8 @@ void compiler_emit(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+    
+    compiler_emit_base(out, context->main_addr);
 
     for (size_t i = 0; i < compiler->tok_sz; i++) {
 	Token tok = compiler->tokens[i];
@@ -870,7 +1050,10 @@ void compiler_emit(Compiler* compiler)
 	bool binding_res = false;
 	if (context->active_binding) {
 	    for (size_t j = 0; j < context->binding_count; j++) {
-		if (strcmp(tok.token, context->bindings[j]) == 0) {
+		Binding binding = context->bindings[j];
+		if (strcmp(tok.token, binding.name) == 0) {
+		    typestack_push(compiler->typestack, binding.type);
+
 		    size_t addr = (context->binding_count - j - 1) * 8;
 		    fprintf(out, "	mov rax, [r15 + %d]\n", addr);
 		    fprintf(out, "	push rax\n");

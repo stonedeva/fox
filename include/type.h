@@ -21,12 +21,13 @@ typedef struct {
     char* filename;
 } TypeStack;
 
-TypeStack typestack_init(Lexer* lexer);
+TypeStack* typestack_init(Lexer* lexer);
 void typestack_evaluate(TypeStack* stack);
 void typestack_free(TypeStack* stack);
 
 void typestack_push(TypeStack* stack, VarType type);
 VarType typestack_pop(TypeStack* stack);
 VarType typestack_type_from_cstr(const char* cstr);
+char* typestack_cstr_from_type(VarType type);
 
 #endif // TYPE_H
