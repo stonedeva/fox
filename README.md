@@ -18,7 +18,7 @@ cc -o cbuild cbuild.c
 - [x] Stack based
 - [x] Native
 - [x] Turing-Complete
-- [ ] Static types
+- [x] Static types
 - [ ] Self hosted
 - [ ] Compile to Native Code
 

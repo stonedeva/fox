@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <stdint.h>
 
+#define MSG_CAP 100
 
 Compiler compiler_init(char* output_path, Lexer* lexer, size_t mem_capacity)
 {
@@ -169,7 +170,7 @@ void compiler_emit_syscall(Compiler* compiler)
 {
     TypeStack* typestack = compiler->typestack;
     if (typestack->type_count < 4) {
-	char err_msg[100];
+	char err_msg[MSG_CAP];
 	sprintf(err_msg, "Operation 'syscall' requires 4 arguments but got %d", 
 		typestack->type_count);
 	error_throw(compiler, FATAL, err_msg);
@@ -234,7 +235,7 @@ void compiler_emit_swap(Compiler* compiler)
 
     TypeStack* typestack = compiler->typestack;
     if (typestack->type_count < 2) {
-	char err_msg[100];
+	char err_msg[MSG_CAP];
 	sprintf(err_msg, "Operation 'swap' requires 2 arguments but got %d",
 		typestack->type_count);
 	error_throw(compiler, FATAL, err_msg);
@@ -257,7 +258,7 @@ void compiler_emit_over(Compiler* compiler)
     
     TypeStack* typestack = compiler->typestack;
     if (typestack->type_count < 2) {
-	char err_msg[100];
+	char err_msg[MSG_CAP];
 	sprintf(err_msg, "Operation 'over' requires 2 arguments but got %d",
 		typestack->type_count);
 	error_throw(compiler, FATAL, err_msg);
@@ -274,7 +275,7 @@ void compiler_emit_rot(Compiler* compiler)
 
     TypeStack* typestack = compiler->typestack;
     if (typestack->type_count < 3) {
-	char err_msg[100];
+	char err_msg[MSG_CAP];
 	sprintf(err_msg, "Operation 'rot' requires 3 arguments but got %d",
 		typestack->type_count);
 	error_throw(compiler, FATAL, err_msg);
@@ -453,7 +454,7 @@ void compiler_emit_ptr_set(Compiler* compiler, TokenType type)
     Context* context = compiler->context;
 
     TypeStack* typestack = compiler->typestack;
-    char err_msg[100];
+    char err_msg[MSG_CAP];
     if (typestack->type_count < 2) {
 	sprintf(err_msg, "Operation 'set' requires 2 arguments but got %d",
 		typestack->type_count);
@@ -508,7 +509,7 @@ void compiler_emit_ptr_get(Compiler* compiler, TokenType type)
 
     VarType a = typestack_pop(typestack);
     if (a != POINTER) {
-	char err_msg[100];
+	char err_msg[MSG_CAP];
 	sprintf(err_msg, "Operation 'get' expected 'ptr' but got '%s'",
 		typestack_cstr_from_type(a));
 	error_throw(compiler, FATAL, err_msg);
@@ -645,7 +646,7 @@ void compiler_emit_func_call(Compiler* compiler)
     }
 
     TypeStack* typestack = compiler->typestack;
-    char err_msg[100];
+    char err_msg[MSG_CAP];
     if (typestack->type_count < func.arg_count) {
 	sprintf(err_msg, "Function '%s' expected %d arguments but got %d",
 		func.name, func.arg_count, typestack->type_count);
@@ -723,11 +724,13 @@ void compiler_emit_binaryop(Compiler* compiler)
     
     TypeStack* typestack = compiler->typestack;
     if (typestack->type_count < 2) {
-	char err_msg[100];
+	char err_msg[MSG_CAP];
 	sprintf(err_msg, "Operation '%s' requires 2 arguments but got %d",
 		op, typestack->type_count);
 	error_throw(compiler, FATAL, err_msg);
     }
+    VarType a = typestack_pop(typestack);
+    VarType b = typestack_pop(typestack);
 
     fprintf(out, "	pop rax\n");
     fprintf(out, "	pop rbx\n");
@@ -769,9 +772,6 @@ void compiler_emit_binaryop(Compiler* compiler)
 	fprintf(out, "	push rbx\n");
 	return;
     }
-
-    VarType a = typestack_pop(typestack);
-    VarType b = typestack_pop(typestack);
 
     switch (op[0]) {
     case '+':
@@ -1040,6 +1040,7 @@ void compiler_emit(Compiler* compiler)
 {
     FILE* out = compiler->output;
     Context* context = compiler->context;
+    TypeStack* typestack = compiler->typestack;
     
     compiler_emit_base(out, context->main_addr);
 
@@ -1192,6 +1193,13 @@ void compiler_emit(Compiler* compiler)
 
 	i = compiler->tok_ptr;
 	compiler->tok_ptr++;
+    }
+
+    size_t type_count = typestack->type_count;
+    if (type_count > 0) {
+	char err_msg[MSG_CAP];
+	sprintf(err_msg, "%d unhandled type(s) on the stack", type_count);
+	error_throw(compiler, WARNING, err_msg);
     }
 
     compiler_emit_segments(compiler);
