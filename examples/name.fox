@@ -1,8 +1,9 @@
 import "std.fox"
 
-memory name 20 end
+const NAME_CAP 20 end
+memory name NAME_CAP end
 
 func main in
-    name 20 @read
-    "Hello, " @puts 20 name @puts "!\n" @puts
+    "Your Name: " @puts name NAME_CAP @read
+    "Hello, " @puts NAME_CAP name @puts "\n" @puts
 end

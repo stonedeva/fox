@@ -9,6 +9,7 @@
 
 #define MSG_CAP 100
 
+
 Compiler compiler_init(char* output_path, Lexer* lexer, size_t mem_capacity)
 {
     Compiler compiler = {0};
@@ -308,13 +309,6 @@ void compiler_emit_drop(Compiler* compiler)
     fprintf(out, "	add rsp, 8\n");
 }
 
-void compiler_emit_continue(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    size_t addr = compiler->context->current_loop;
-    fprintf(out, "	jmp addr_%d\n", addr);
-}
-
 void compiler_emit_bind_def(Compiler* compiler, TokenType type)
 {
     FILE* out = compiler->output;
@@ -382,9 +376,9 @@ void compiler_emit_redef_var(Compiler* compiler)
 			 compiler->tokens[ptr]);
     }
 
-    if (var.is_const || var.is_mem) {
+    if (var.is_const) {
 	error_from_parts(compiler->input_name, FATAL,
-			 "Variable in redefinition is constant or memory",
+			 "Variable in redefinition is constant",
 			 compiler->tokens[ptr]);
     }
 
@@ -553,13 +547,22 @@ void compiler_emit_func(Compiler* compiler)
 	.addr = ptr
     };
     
-    context->cw_func = name;
     ptr += 2;
 
     while (strcmp("in", compiler->tokens[ptr].token) != 0) {
 	char* arg_name = compiler->tokens[ptr].token;
+	if (arg_name[0] == '-' && strlen(arg_name) == 1) {
+	    ptr++;
+	    VarType return_type = typestack_type_from_cstr(compiler->tokens[ptr].token);
+	    if (return_type == TYPE_INVALID) {
+		error_throw(compiler, FATAL, "Invalid return type");
+	    }
+	    func.return_type = return_type;
+	    ptr++;
+	    break;
+	}
+
 	VarType arg_type = typestack_type_from_cstr(arg_name);
-	
 	if (arg_type == TYPE_INVALID) {
 	    error_throw(compiler, FATAL, "Invalid argument type");
 	}
@@ -569,8 +572,8 @@ void compiler_emit_func(Compiler* compiler)
 	ptr++;
     }
 
-    context->funcs[context->func_count] = func;
-    context->func_count++;
+    context->funcs[context->func_count++] = func;
+    context->cw_func = func;
 
     fprintf(out, "addr_%d:\n", compiler->tok_ptr);
     fprintf(out, "	mov [ret_stack_rsp], rsp\n");
@@ -585,7 +588,7 @@ void compiler_emit_return(Compiler* compiler)
     fprintf(out, "	mov rax, rsp\n");
     fprintf(out, "	mov rsp, [ret_stack_rsp]\n");
     fprintf(out, "	ret\n");
-    compiler->context->cw_func = NULL;
+    compiler->context->cw_func = (Function) {0};
 }
 
 void compiler_emit_else(Compiler* compiler)
@@ -645,15 +648,17 @@ void compiler_emit_func_call(Compiler* compiler)
 
     char* name = compiler_curr_tok(compiler);
     name++;
-    
+
+    char err_msg[MSG_CAP];
+
     Function func = context_func_by_name(context, name);
     if (func.name == NULL) {
-	error_throw(compiler, FATAL, "Function does not exist");
+	sprintf(err_msg, "Function '%s' does not exist", name);
+	error_throw(compiler, FATAL, err_msg);
 	return;
     }
 
     TypeStack* typestack = compiler->typestack;
-    char err_msg[MSG_CAP];
     if (typestack->type_count < func.arg_count) {
 	sprintf(err_msg, "Function '%s' expected %d arguments but got %d",
 		func.name, func.arg_count, typestack->type_count);
@@ -669,6 +674,10 @@ void compiler_emit_func_call(Compiler* compiler)
 		    typestack_cstr_from_type(actual_type));
 	    error_throw(compiler, FATAL, err_msg);
 	}
+    }
+
+    if (func.return_type != 0) { 
+	typestack_push(typestack, func.return_type);
     }
 
     fprintf(out, "	mov rax, rsp\n");
@@ -698,13 +707,7 @@ void compiler_emit_str(Compiler* compiler)
     typestack_push(typestack, POINTER);
 
     bool is_cstr = false;
-
     char* str = compiler_curr_tok(compiler);
-    if (context->cw_func == NULL) {
-	error_throw(compiler, FATAL, "Strings are not allowed at top-level");
-	return;
-    }
-
     if (str[strlen(str) - 1] == 'c') {
 	is_cstr = true;
 	str[strlen(str) - 1] = '\0';
@@ -713,7 +716,7 @@ void compiler_emit_str(Compiler* compiler)
     context->literals[context->literal_count] = str;
 
     if (!is_cstr) {
-	fprintf(out, "	mov rax, str%d_len\n", context->literal_count);
+	fprintf(out, "	mov rax, %d\n", strlen(str) - 2);
 	fprintf(out, "	push rax\n");
     }
     fprintf(out, "	mov rax, str%d\n", context->literal_count);
@@ -902,7 +905,6 @@ void compiler_emit_segments(Compiler* compiler)
 	    }    
 	}
 	fprintf(out, "0x%02x\n", (unsigned int)0x00);
-	fprintf(out, "str%d_len = %d\n", i, strlen(literal));
     }
 }
 
@@ -910,6 +912,7 @@ void compiler_eval_end(Compiler* compiler)
 {
     TokenType type = context_pop(compiler->context);
     Context* context = compiler->context;
+    TypeStack* typestack = compiler->typestack;
     FILE* out = compiler->output;
     size_t i = compiler->tok_ptr;
     
@@ -921,7 +924,22 @@ void compiler_eval_end(Compiler* compiler)
 	fprintf(out, "	mov rax, rsp\n");
 	fprintf(out, "	mov rsp, [ret_stack_rsp]\n");
 	fprintf(out, "	ret\n");
-	context->cw_func = NULL;
+
+	char err_msg[MSG_CAP];
+	VarType expected_type = context->cw_func.return_type;
+	if (expected_type != 0) {
+	    VarType actual_type = typestack_pop(typestack);
+	    if (expected_type != actual_type) {
+		sprintf(err_msg, 
+			"Function '%s' was expected to return '%s' but provided '%s'",
+			context->cw_func.name,
+			typestack_cstr_from_type(expected_type), 
+			typestack_cstr_from_type(actual_type));
+		error_throw(compiler, FATAL, err_msg);
+	    }
+	}
+
+	context->cw_func = (Function) {0};
 	break;
     case TOK_LOOP:
 	fprintf(out, "	jmp addr_%d\n", compiler->tokens[i].operand);
@@ -1104,7 +1122,7 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_loop(compiler);
 	    break;
 	case TOK_CONTINUE:
-	    compiler_emit_continue(compiler);
+	    fprintf(out, "	jmp addr_%d\n", context->current_loop);
 	    break;
 	case TOK_DO:
 	    compiler_emit_do(compiler);
@@ -1129,10 +1147,6 @@ void compiler_emit(Compiler* compiler)
 	    compiler_emit_str(compiler);
 	    break;
 	case TOK_FUNC_CALL:
-	    if (context->cw_func == NULL) {
-		error_throw(compiler, FATAL, "Words are not allowed at top-level");
-		return;
-	    }
 	    compiler_emit_func_call(compiler);
 	    break;
 	case TOK_VAR_REF:

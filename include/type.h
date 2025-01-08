@@ -6,11 +6,11 @@
 #define MAX_TYPES 200
 
 typedef enum {
-    INTEGER,
-    BYTE,
-    POINTER,
-    BOOLEAN,
-    TYPE_INVALID
+    INTEGER = 1,
+    BYTE = 2,
+    POINTER = 3,
+    BOOLEAN = 4,
+    TYPE_INVALID = 5
 } VarType;
 
 typedef struct {

@@ -13,7 +13,6 @@ typedef struct {
     char* name;
     size_t value;
     bool is_const;
-    bool is_mem;
     size_t addr;
 } Variable;
 
@@ -22,6 +21,7 @@ typedef struct {
     size_t arg_count;
     VarType args[MAX_ARGS];
     size_t addr;
+    VarType return_type;
 } Function;
 
 typedef struct {
@@ -52,7 +52,7 @@ typedef struct {
     Function funcs[MAX_INSTANCES];
     Memory memories[MAX_INSTANCES];
     char* literals[MAX_INSTANCES];
-    char* cw_func;
+    Function cw_func;
 } Context;
 
 Context* context_init();

@@ -105,7 +105,8 @@ func compile_ops in
     "_start:\n" @puts
 
     0 while dup ops_count > do
-    	if ops over sizeof(Op) * + get64 OP_PUSH_INT == do
+	ops over sizeof(Op) * +
+    	if dup get64 OP_PUSH_INT == do
     	    "    ;; --- push int ---\n" @puts
 	    "    mov rax, " @puts 
 	    ops over sizeof(Op) * + Op.operand + get64 @putd "\n" @puts
@@ -113,7 +114,7 @@ func compile_ops in
     	    1 +
     	    continue
     	end
-    	if ops over sizeof(Op) * + get64 OP_PLUS == do
+    	if dup get64 OP_PLUS == do
     	    "    ;; --- plus ---\n" @puts
     	    "    pop rax\n" @puts
     	    "    pop rbx\n" @puts
@@ -122,7 +123,7 @@ func compile_ops in
     	    1 +
     	    continue
     	end 
-    	if ops over sizeof(Op) * + get64 OP_MINUS == do
+    	if dup get64 OP_MINUS == do
     	    "    ;; --- minus ---\n" @puts
     	    "    pop rax\n" @puts
     	    "    pop rbx\n" @puts
@@ -131,7 +132,7 @@ func compile_ops in
     	    1 +
     	    continue
     	end 
-    	if ops over sizeof(Op) * + get64 OP_MULT == do
+    	if dup get64 OP_MULT == do
     	    "    ;; --- multiply ---\n" @puts
     	    "    pop rax\n" @puts
     	    "    pop rbx\n" @puts
@@ -140,7 +141,7 @@ func compile_ops in
     	    1 +
     	    continue
     	end
-    	if ops over sizeof(Op) * + get64 OP_DIVI == do
+    	if dup get64 OP_DIVI == do
     	    "    ;; --- divide ---\n" @puts
     	    "    pop rbx\n" @puts
     	    "    pop rax\n" @puts
@@ -150,26 +151,28 @@ func compile_ops in
     	    1 +
     	    continue
     	end
-    	if ops over sizeof(Op) * + get64 OP_PRINT == do
+    	if dup get64 OP_PRINT == do
     	    "    ;; --- print ---\n" @puts
     	    "    pop rdi\n" @puts
     	    "    call print\n" @puts
     	    1 +
     	    continue
     	end
-	if ops over sizeof(Op) * + get64 OP_DUP == do
+	if dup get64 OP_DUP == do
 	    "    ;; --- dup ---\n" @puts
-	    "    push [rsp]\n" @puts
+	    "    mov rax, [rsp]\n" @puts
+	    "    push rax\n" @puts
 	    1 +
 	    continue
 	end
-	if ops over sizeof(Op) * + get64 OP_OVER == do
+	if dup get64 OP_OVER == do
 	    "    ;; --- over ---\n" @puts
-	    "    push [rsp+8]\n" @puts
+	    "    mov rax, [rsp+8]\n" @puts
+	    "    push rax\n" @puts
 	    1 +
 	    continue
 	end
-	if ops over sizeof(Op) * + get64 OP_SWAP == do
+	if dup get64 OP_SWAP == do
 	    "    ;; --- swap ---\n" @puts
 	    "    pop rax\n" @puts
 	    "    pop rbx\n" @puts
@@ -178,12 +181,13 @@ func compile_ops in
 	    1 +
 	    continue
 	end
-	if ops over sizeof(Op) * + get64 OP_DROP == do
+	if dup get64 OP_DROP == do
 	    "    ;; --- drop ---\n" @puts
 	    "    add rsp, 8\n" @puts
 	    1 +
 	    continue
 	end
+	drop
 	1 +
     end
     drop
@@ -202,8 +206,8 @@ end
 func main in
     OP_PUSH_INT 95 @push_op
     OP_PUSH_INT 10 @push_op
-    OP_PLUS 0 @push_op
-    OP_PRINT 0 @push_op
+    //OP_PLUS 0 @push_op
+    //OP_PRINT 0 @push_op
     
     @compile_ops
 end
