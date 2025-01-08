@@ -1,4 +1,2 @@
-import "std.fox"
-
 func main in
 end
