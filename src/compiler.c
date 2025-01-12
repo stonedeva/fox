@@ -64,12 +64,26 @@ void compiler_crossreference(Compiler* compiler)
 	    stack[stack_sz++] = i;
 	    context_push(compiler->context, tok);
 	    break;
+	case TOK_ELIF:
+	    TokenType elif_ref = context_pop(compiler->context);
+	    if (elif_ref != TOK_CONDITION && elif_ref != TOK_ELIF) {
+		error_from_parts(compiler->input_name, FATAL, 
+				 "'elif' can only be opened by 'if' or 'else'",
+				 compiler->tokens[i]);
+	    }
+	    context_push(compiler->context, TOK_ELIF);
+
+	    size_t elif_ip = stack[stack_sz - 1];
+	    compiler->tokens[elif_ip].operand = i;
+	    stack[stack_sz - 1] = i;
+	    break;
 	case TOK_ELSE:
-	    if (context_pop(compiler->context) != TOK_CONDITION) {
+	    VarType else_ref = context_pop(compiler->context);
+	    if (else_ref != TOK_CONDITION && else_ref != TOK_ELIF) {
 		break;
 	    }
 
-	    context_push(compiler->context, tok);
+	    context_push(compiler->context, TOK_ELSE);
 
 	    size_t if_ip = stack[stack_sz - 1];
 	    compiler->tokens[if_ip].operand = i;
@@ -87,7 +101,7 @@ void compiler_crossreference(Compiler* compiler)
 	    if (stack_sz < 1) {
 		error_from_parts(compiler->input_name, FATAL, 
 				"Uncorresponding token 'end'", 
-				compiler->tokens[0]);
+				compiler->tokens[i]);
 	    }
 
 	    size_t ref_ip = stack[stack_sz - 1];
@@ -600,13 +614,6 @@ void compiler_emit_else(Compiler* compiler)
     fprintf(out, "addr_%d:\n", compiler->tok_ptr);
 }
 
-void compiler_emit_loop(Compiler* compiler)
-{
-    FILE* out = compiler->output;
-    Context* context = compiler->context;
-    fprintf(out, "addr_%d:\n", compiler->tok_ptr);
-}
-
 void compiler_emit_do(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -633,6 +640,7 @@ void compiler_emit_do(Compiler* compiler)
     switch (type) {
     case TOK_LOOP:
     case TOK_CONDITION:
+    case TOK_ELIF:
 	fprintf(out, "	jne addr_%d\n", context->temp_addr);
 	break;
     default:
@@ -839,6 +847,28 @@ void compiler_emit_binaryop(Compiler* compiler)
     fprintf(out, "        push rax\n");
 }
 
+int compiler_parse_escape_char(char ch)
+{
+    switch (ch) {
+    case 'n':
+	return 0xA;
+    case 'r':
+	return 0x0D;
+    case 't':
+	return 0x09;
+    case 'b':
+	return 0x08;
+    case 'v':
+	return 0x0B;
+    case '0':
+	return 0x00;
+    case '\\':
+	return 0x5C;
+    default:
+	assert(0 && "compiler_parse_escape_char(): Unhandled character provided!\n");
+    }	
+}
+
 void compiler_emit_segments(Compiler* compiler)
 {
     FILE* out = compiler->output;
@@ -876,29 +906,7 @@ void compiler_emit_segments(Compiler* compiler)
 	for (size_t i = 0; i < lit_len - 1; i++) {
 	    if (literal[i] == '\\' && i + 1 <= lit_len) {
 		char escaped = literal[i + 1];
-		switch (escaped) {
-		case 'n':
-		    fprintf(out, "0x%02x, ", (unsigned int)0xA);
-		    break;
-		case 'r':
-		    fprintf(out, "0x%02x, ", (unsigned int)0x0D);
-		    break;
-		case 't':
-		    fprintf(out, "0x%02x, ", (unsigned int)0x09);
-		    break;
-		case 'b':
-		    fprintf(out, "0x%02x, ", (unsigned int)0x08);
-		    break;
-		case 'v':
-		    fprintf(out, "0x%02x, ", (unsigned int)0x0B);
-		    break;
-		case '0':
-		    fprintf(out, "0x%02x, ", (unsigned int)0x00);
-		    break;
-		case '\\':
-		    fprintf(out, "0x%02x, ", (unsigned int)0x5C);
-		    break;
-		}
+		fprintf(out, "0x%02x, ", (unsigned int)compiler_parse_escape_char(escaped));
 		i++;
 	    } else {
 		fprintf(out, "0x%02x, ", (unsigned int)literal[i]);
@@ -1111,6 +1119,10 @@ void compiler_emit(Compiler* compiler)
 	    context_push(context, TOK_CONDITION);
 	    context->temp_addr = compiler->tokens[i].operand;
 	    break;
+	case TOK_ELIF:
+	    context_push(context, TOK_ELIF);
+	    context->temp_addr = compiler->tokens[i].operand;
+	    break;
 	case TOK_ELSE:
 	    context->temp_addr = compiler->tokens[i].operand;
 	    compiler_emit_else(compiler);
@@ -1119,7 +1131,7 @@ void compiler_emit(Compiler* compiler)
 	    context->current_loop = compiler->tok_ptr;
 	    context_push(context, TOK_LOOP);
 	    context->temp_addr = compiler->tokens[i].operand;
-	    compiler_emit_loop(compiler);
+	    fprintf(out, "addr_%d:\n", i);
 	    break;
 	case TOK_CONTINUE:
 	    fprintf(out, "	jmp addr_%d\n", context->current_loop);

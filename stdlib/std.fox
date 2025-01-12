@@ -26,6 +26,42 @@ func argv_at int - ptr in
     sizeof(ptr) * argv +
 end
 
+// inc64 - Increase 64-bit value at memory address
+// : address
+func inc64 ptr in
+    dup get64 1 + set64
+end
+
+// dec64 - Decrease 64-bit value at memory address
+// : address
+func dec64 ptr in
+    dup get64 1 - set64
+end
+
+// inc32 - Increase 32-bit value at memory address
+// : address
+func inc32 ptr in
+    dup get32 1 + set32
+end
+
+// dec32 - Decrease 32-bit value at memory address
+// : address
+func dec32 ptr in
+    dup get32 1 - set32
+end
+
+// inc8 - Increase 8-bit value at memory address
+// : address
+func inc8 ptr in
+    dup get8 1 + set8
+end
+
+// dec8 - Decrease 8-bit value at memory address
+// : address
+func dec8 ptr in
+    dup get8 1 - set8
+end
+
 // strcmp - Compare two strings
 // : n1, s1, n2, s2 => comparisson
 func strcmp int ptr int ptr - bool in
@@ -79,6 +115,18 @@ func memcpy ptr ptr int in
 	0 while dup n > do
 	    dup src + get8
 	    over dst + swap set8
+	    1 +
+	end
+	drop
+    end
+end
+
+// memset - Set a memory region to a specific value
+// : source, value, n
+func memset ptr int int in
+    take src val n in
+	0 while dup n > do
+	    dup src + val set8
 	    1 +
 	end
 	drop

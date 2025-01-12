@@ -18,6 +18,7 @@ typedef enum {
     TOK_BINARYOP,
     TOK_NUMBER,
     TOK_CONDITION,
+    TOK_ELIF,
     TOK_ELSE,
     TOK_LOOP,
     TOK_CONTINUE,

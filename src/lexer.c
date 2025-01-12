@@ -181,6 +181,8 @@ static TokenType _lexer_type_from_cstr(char* cstr)
 	return TOK_RETURN;
     } else if (strcmp("if", cstr) == 0) {
 	return TOK_CONDITION;
+    } else if (strcmp("elif", cstr) == 0) {
+	return TOK_ELIF;
     } else if (strcmp("else", cstr) == 0) {
 	return TOK_ELSE;
     } else if (strcmp("while", cstr) == 0) {

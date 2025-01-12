@@ -105,89 +105,9 @@ func compile_ops in
     "_start:\n" @puts
 
     0 while dup ops_count > do
-	ops over sizeof(Op) * +
-    	if dup get64 OP_PUSH_INT == do
-    	    "    ;; --- push int ---\n" @puts
-	    "    mov rax, " @puts 
-	    ops over sizeof(Op) * + Op.operand + get64 @putd "\n" @puts
-    	    "    push rax\n" @puts
-    	    1 +
-    	    continue
-    	end
-    	if dup get64 OP_PLUS == do
-    	    "    ;; --- plus ---\n" @puts
-    	    "    pop rax\n" @puts
-    	    "    pop rbx\n" @puts
-    	    "    add rax, rbx\n" @puts
-    	    "    push rax\n" @puts
-    	    1 +
-    	    continue
-    	end 
-    	if dup get64 OP_MINUS == do
-    	    "    ;; --- minus ---\n" @puts
-    	    "    pop rax\n" @puts
-    	    "    pop rbx\n" @puts
-    	    "    sub rbx, rax\n" @puts
-    	    "    push rbx\n" @puts
-    	    1 +
-    	    continue
-    	end 
-    	if dup get64 OP_MULT == do
-    	    "    ;; --- multiply ---\n" @puts
-    	    "    pop rax\n" @puts
-    	    "    pop rbx\n" @puts
-    	    "    mul rbx\n" @puts
-    	    "    push rax\n" @puts
-    	    1 +
-    	    continue
-    	end
-    	if dup get64 OP_DIVI == do
-    	    "    ;; --- divide ---\n" @puts
-    	    "    pop rbx\n" @puts
-    	    "    pop rax\n" @puts
-    	    "	 xor rdx, rdx\n" @puts
-    	    "    div rbx\n" @puts
-    	    "    push rax\n" @puts
-    	    1 +
-    	    continue
-    	end
-    	if dup get64 OP_PRINT == do
-    	    "    ;; --- print ---\n" @puts
-    	    "    pop rdi\n" @puts
-    	    "    call print\n" @puts
-    	    1 +
-    	    continue
-    	end
-	if dup get64 OP_DUP == do
-	    "    ;; --- dup ---\n" @puts
-	    "    mov rax, [rsp]\n" @puts
-	    "    push rax\n" @puts
-	    1 +
-	    continue
+	dup sizeof(Op) * ops +
+	if dup get64 OP_PUSH_INT == do
 	end
-	if dup get64 OP_OVER == do
-	    "    ;; --- over ---\n" @puts
-	    "    mov rax, [rsp+8]\n" @puts
-	    "    push rax\n" @puts
-	    1 +
-	    continue
-	end
-	if dup get64 OP_SWAP == do
-	    "    ;; --- swap ---\n" @puts
-	    "    pop rax\n" @puts
-	    "    pop rbx\n" @puts
-	    "    push rbx\n" @puts
-	    "    push rax\n" @puts
-	    1 +
-	    continue
-	end
-	if dup get64 OP_DROP == do
-	    "    ;; --- drop ---\n" @puts
-	    "    add rsp, 8\n" @puts
-	    1 +
-	    continue
-	end
-	drop
 	1 +
     end
     drop
