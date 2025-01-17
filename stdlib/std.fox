@@ -63,7 +63,7 @@ func dec8 ptr in
 end
 
 // strcmp - Compare two strings
-// : n1, s1, n2, s2 => comparisson
+// : n1, s1, n2, s2 => comparison
 func strcmp int ptr int ptr - bool in
     take n1 s1 n2 s2 in
 	if n1 n2 != do

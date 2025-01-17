@@ -1,2 +1,11 @@
 func main in
+    if 1 2 == do
+	1 print
+    elif 2 3 == do
+	2 print
+    elif 3 4 == do
+	3 print
+    else
+	4 print
+    end
 end

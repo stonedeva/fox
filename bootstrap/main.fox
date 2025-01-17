@@ -23,6 +23,7 @@ memory ops sizeof(Op) MAX_OPS * end
 var ops_count 0 end
 
 const MEM_CAPACITY 2400 end
+const RET_STACK_CAPACITY 1200 end
 
 func load_program ptr in
     dup O_RDONLY 0 @fopen
@@ -45,10 +46,6 @@ func usage in
 end
 
 func push_op int int in
-    if MAX_OPS ops_count == do
-	"ERROR: Operation limit has been reached!\n" @eputs
-	1 @exit
-    end
     take type operand in
 	ops ops_count sizeof(Op) * + type set64
 	ops ops_count sizeof(Op) * + Op.operand + operand set64
@@ -62,9 +59,9 @@ func dump_ops in
     0 while dup ops_count > do
 	"============\n" @puts
 	"Type: " @puts
-	ops over sizeof(Op) * + get64 print
+	dup sizeof(Op) * ops + get64 print
 	"Operand: " @puts
-	ops over sizeof(Op) * + Op.operand + get64 print
+	dup sizeof(Op) * ops + Op.operand + get64 print
 	1 +
     end
     drop
@@ -105,9 +102,46 @@ func compile_ops in
     "_start:\n" @puts
 
     0 while dup ops_count > do
-	dup sizeof(Op) * ops +
-	if dup get64 OP_PUSH_INT == do
+	if dup sizeof(Op) * ops + get64 OP_PUSH_INT == do
+	    "    mov rax, %d\n" @puts
+	    "    push rax\n" @puts
+	    1 +
+	    continue
 	end
+	if dup sizeof(Op) * ops + get64 OP_PLUS == do
+	    "    pop rax\n" @puts
+	    "    pop rbx\n" @puts
+	    "    add rax, rbx\n" @puts
+	    "    push rax\n" @puts
+	    1 +
+	    continue
+	end
+	if dup sizeof(Op) * ops + get64 OP_MINUS == do
+	    "    pop rax\n" @puts
+	    "    pop rbx\n" @puts
+	    "    sub rbx, rax\n" @puts
+	    "    push rbx\n" @puts
+	    1 +
+	    continue
+	end
+	if dup sizeof(Op) * ops + get64 OP_MULT == do
+	    "    pop rax\n" @puts
+	    "    pop rbx\n" @puts
+	    "    mul rbx\n" @puts
+	    "    push rax\n" @puts
+	    1 +
+	    continue
+	end
+	if dup sizeof(Op) * ops + get64 OP_DIVI == do
+	    "    pop rbx\n" @puts
+	    "    pop rax\n" @puts
+	    "    xor rdx, rdx\n" @puts
+	    "    div rbx\n" @puts
+	    "    push rax\n" @puts
+	    1 +
+	    continue
+	end
+
 	1 +
     end
     drop
@@ -119,15 +153,14 @@ func compile_ops in
     "segment readable writeable\n" @puts
     "mem rb " @puts MEM_CAPACITY @putd "\n" @puts
     "ret_stack_rsp rq 1\n" @puts
-    "ret_stack rb 2400\n" @puts
+    "ret_stack rb " @puts RET_STACK_CAPACITY @putd "\n" @puts
     "ret_stack_end:\n" @puts
 end
 
 func main in
     OP_PUSH_INT 95 @push_op
-    OP_PUSH_INT 10 @push_op
-    //OP_PLUS 0 @push_op
-    //OP_PRINT 0 @push_op
+    OP_PLUS 0 @push_op
+    OP_PRINT 0 @push_op
     
     @compile_ops
 end
